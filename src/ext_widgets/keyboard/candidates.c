@@ -125,6 +125,8 @@ static uint32_t candidates_calc_child_width(canvas_t* c, widget_t* widget) {
 
 static ret_t candidates_relayout_children(widget_t* widget) {
   uint32_t i = 0;
+  //hack by pulleyzzz
+  xy_t spacer_w = 20;
   xy_t margin = 2;
   wh_t child_w = 0;
   xy_t child_x = margin;
@@ -150,8 +152,8 @@ static ret_t candidates_relayout_children(widget_t* widget) {
       child_w = 0;
       widget_set_visible(iter, FALSE, FALSE);
     }
-    widget_move_resize(iter, child_x, child_y, child_w, child_h);
-    child_x += child_w + margin;
+    widget_move_resize(iter, child_x, child_y, child_w+spacer_w, child_h);
+    child_x += child_w + margin+spacer_w;
 
     if (iter->focused) {
       focused = iter;
