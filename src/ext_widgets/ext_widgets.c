@@ -56,6 +56,10 @@
 #include "base/children_layouter_factory.h"
 #include "scroll_view/children_layouter_list_view.h"
 
+#include "guage_time_clock/guage_hour_pointer.h"
+#include "guage_time_clock/guage_minute_pointer.h"
+#include "guage_time_clock/guage_second_pointer.h"
+
 #if defined(WITH_FS_RES) || defined(WITH_FS)
 #include "file_browser/file_browser_view.h"
 #endif /*WITH_FS*/
@@ -107,6 +111,13 @@ ret_t tk_ext_widgets_init(void) {
   widget_factory_register(f, WIDGET_TYPE_HSCROLL_LABEL, hscroll_label_create);
   widget_factory_register(f, WIDGET_TYPE_COMBO_BOX_EX, combo_box_ex_create);
   widget_factory_register(f, WIDGET_TYPE_DRAGGABLE, draggable_create);
+
+  widget_factory_register(widget_factory(), WIDGET_TYPE_GUAGE_HOUR_POINTER,
+                          guage_hour_pointer_create);
+  widget_factory_register(widget_factory(), WIDGET_TYPE_GUAGE_MINUTE_POINTER,
+                          guage_minute_pointer_create);
+  widget_factory_register(widget_factory(), WIDGET_TYPE_GUAGE_SECOND_POINTER,
+                          guage_second_pointer_create);
 
 #ifdef TK_FILE_BROWSER_VIEW_H
   widget_factory_register(f, WIDGET_TYPE_FILE_BROWSER_VIEW, file_browser_view_create);
