@@ -556,9 +556,19 @@ static conf_node_t* conf_doc_get_node(conf_doc_t* doc, const char* path,
     }
 
     if (*token == '[') {
-      iter = conf_node_find_child_by_index(node, tk_atoi(token + 1));
-      /*node must be exist if find by index */
-      return_value_if_fail(iter != NULL, NULL);
+      int32_t index = tk_atoi(token + 1);
+      iter = conf_node_find_child_by_index(node, index);
+      if (iter == NULL) {
+        if (index == conf_node_count_children(node)) {
+          if(index == 0) {
+            node->node_type = CONF_NODE_ARRAY;
+          }
+          /*append*/
+        } else {
+          /*node must be exist if find by index */
+          return_value_if_fail(iter != NULL, NULL);
+        }
+      }
     } else if (*token == '#') {
       return node;
     } else {
@@ -595,6 +605,10 @@ static conf_node_t* conf_doc_get_node(conf_doc_t* doc, const char* path,
 ret_t conf_doc_set(conf_doc_t* doc, const char* path, const value_t* v) {
   conf_node_t* node = NULL;
   return_value_if_fail(doc != NULL && path != NULL && v != NULL, RET_BAD_PARAMS);
+
+  if (doc->root == NULL) {
+    doc->root = conf_doc_create_node(doc, CONF_NODE_ROOT_NAME);
+  }
 
   node = conf_doc_get_node(doc, path, TRUE);
 
@@ -787,6 +801,15 @@ int32_t conf_doc_get_int(conf_doc_t* doc, const char* path, int32_t defval) {
   }
 }
 
+bool_t conf_doc_get_bool(conf_doc_t* doc, const char* path, bool_t defval) {
+  value_t vv;
+  if (conf_doc_get(doc, path, &vv) == RET_OK) {
+    return value_bool(&vv);
+  } else {
+    return defval;
+  }
+}
+
 float conf_doc_get_float(conf_doc_t* doc, const char* path, float defval) {
   value_t vv;
   if (conf_doc_get(doc, path, &vv) == RET_OK) {
@@ -808,6 +831,11 @@ const char* conf_doc_get_str(conf_doc_t* doc, const char* path, const char* defv
 ret_t conf_doc_set_int(conf_doc_t* doc, const char* path, int32_t v) {
   value_t vv;
   return conf_doc_set(doc, path, value_set_int32(&vv, v));
+}
+
+ret_t conf_doc_set_bool(conf_doc_t* doc, const char* path, bool_t v) {
+  value_t vv;
+  return conf_doc_set(doc, path, value_set_bool(&vv, v));
 }
 
 ret_t conf_doc_set_float(conf_doc_t* doc, const char* path, float v) {
