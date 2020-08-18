@@ -1,4 +1,38 @@
 # 最新动态
+
+* 2020/08/10
+  * 完善 conf_node 增加一些 wrapper 函数。
+
+* 2020/08/08
+  * 完善 fontgen，支持生成二进制数据。
+  * 增加 [自定义字体加载器](https://github.com/zlgopen/awtk-custom-font-loader)，实现加载部分字体。
+  * 修改输入法中内存临时泄漏（在窗口关闭时会释放）。
+
+* 2020/08/07
+  * 候选字控件 (candidate) 支持设置 margin style。
+
+* 2020/08/06
+  * 完善离线 lcd（感谢智明提供补丁）。
+  * 完善 slist （感谢智明提供补丁）。
+  * 增加 vgcanvas_clear_cache（感谢智明提供补丁）。
+
+* 2020/08/04
+  * 完善 keyboard 增加 back/back_to_home 按钮的支持。
+  * edit/mledit/slider 支持 WIDGET_PROP_INPUTING 属性，用于辅助实现 MVVM。
+  
+* 2020/08/03
+  * 完善 emitter 的注释（感谢智明提供补丁）。
+  * 完善 fragment lcd framebuffer（感谢智明提供补丁）。
+  * 完善文档《避坑指南》
+  
+* 2020/07/31
+  * 增加 EVT_RESET
+  * 部分文件增加 UTF8-BOM（感谢陈谭提供补丁）。
+
+* 2020/07/30
+  * 如果新窗口的 sensitive 属性为 FALSE，不切换窗口焦点。
+  * 完善 text edit, 修复 mledit 在非缺省字体时的问题（感谢俊杰提供补丁）。
+
 * 2020/07/29
   * 增加文档《如何续期使用 AWTK Designer》（感谢俊杰提供补丁）。
 

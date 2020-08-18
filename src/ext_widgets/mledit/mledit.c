@@ -22,6 +22,7 @@
 #include "tkc/mem.h"
 #include "tkc/utf8.h"
 #include "tkc/utils.h"
+#include "tkc/time_now.h"
 #include "base/events.h"
 #include "mledit/mledit.h"
 #include "mledit/line_number.h"
@@ -175,6 +176,12 @@ static ret_t mledit_get_prop(widget_t* widget, const char* name, value_t* v) {
     text_edit_state_t state;
     text_edit_get_state(mledit->model, &state);
     value_set_int(v, state.caret.y - state.oy);
+    return RET_OK;
+  } else if (tk_str_eq(name, WIDGET_PROP_INPUTING)) {
+    int64_t delta = (time_now_ms() - mledit->last_user_action_time);
+    bool_t inputing =
+        (delta < TK_INPUTING_TIMEOUT) && (mledit->last_user_action_time > 0) && widget->focused;
+    value_set_bool(v, inputing);
     return RET_OK;
   }
 
@@ -432,6 +439,7 @@ static ret_t mledit_on_event(widget_t* widget, event_t* e) {
       if (widget->target == NULL) {
         mledit_request_input_method(widget);
       }
+      mledit->last_user_action_time = e->time;
       mledit_update_status(widget);
       widget_invalidate(widget, NULL);
       break;
@@ -449,11 +457,16 @@ static ret_t mledit_on_event(widget_t* widget, event_t* e) {
           ret = RET_STOP;
         }
       }
+
+      if (evt.pressed) {
+        mledit->last_user_action_time = e->time;
+      }
       widget_invalidate(widget, NULL);
       break;
     }
     case EVT_POINTER_UP: {
       widget_ungrab(widget->parent, widget);
+      mledit->last_user_action_time = e->time;
       widget_invalidate(widget, NULL);
       break;
     }
@@ -474,6 +487,7 @@ static ret_t mledit_on_event(widget_t* widget, event_t* e) {
 
       mledit_update_status(widget);
       ret = RET_STOP;
+      mledit->last_user_action_time = e->time;
       widget_invalidate(widget, NULL);
       break;
     }
@@ -495,18 +509,22 @@ static ret_t mledit_on_event(widget_t* widget, event_t* e) {
       }
       mledit_commit_str(widget, evt->text);
       mledit_update_status(widget);
+      mledit->last_user_action_time = e->time;
       widget_invalidate(widget, NULL);
       break;
     }
     case EVT_IM_PREEDIT: {
+      mledit->last_user_action_time = e->time;
       text_edit_preedit(mledit->model);
       break;
     }
     case EVT_IM_PREEDIT_CONFIRM: {
+      mledit->last_user_action_time = e->time;
       text_edit_preedit_confirm(mledit->model);
       break;
     }
     case EVT_IM_PREEDIT_ABORT: {
+      mledit->last_user_action_time = e->time;
       text_edit_preedit_abort(mledit->model);
       break;
     }
@@ -522,6 +540,7 @@ static ret_t mledit_on_event(widget_t* widget, event_t* e) {
       } else {
         ret = text_edit_key_up(mledit->model, key_event);
       }
+      mledit->last_user_action_time = e->time;
       widget_invalidate(widget, NULL);
       break;
     }
@@ -566,6 +585,7 @@ static ret_t mledit_on_event(widget_t* widget, event_t* e) {
         }
       }
       ret = RET_STOP;
+      mledit->last_user_action_time = e->time;
       widget_invalidate(widget, NULL);
       break;
     }
