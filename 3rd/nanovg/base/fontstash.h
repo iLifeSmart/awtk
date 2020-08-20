@@ -920,8 +920,24 @@ error:
 	return FONS_INVALID;
 }
 
-int fonsAddFontMem(FONScontext* stash, const char* name, unsigned char* data, int dataSize, int freeData)
+int fonsAddFontMem(FONScontext* stash, const char* name, unsigned char* data_r, int dataSize_r, int freeData)
 {
+	//hack by pulleyzzz
+	uint8_t* data=NULL;
+  uint32_t dataSize=0;
+  printf("fonsAddFontMem %s %p:%d\n",name,data_r,dataSize_r);
+  if (dataSize_r>=8&&dataSize_r<=32)
+  {
+    printf("font %s : use mmmap %s\n",name,data_r);
+    data=((uint8_t**)data_r)[0];
+    dataSize=((uint8_t**)data_r)[1];
+    printf("mmmap %p:%d\n",data,dataSize);
+  }
+  else
+  {
+    data=data_r;
+    dataSize=dataSize_r;
+  }
 	int i, ascent, descent, fh, lineGap;
 	FONSfont* font;
 

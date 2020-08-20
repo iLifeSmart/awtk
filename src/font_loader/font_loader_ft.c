@@ -161,13 +161,30 @@ static ret_t font_ft_destroy(font_t* f) {
 static ret_t destroy_glyph(void* data) {
   return glyph_ft_destory((glyph_ft_t*)(data));
 }
-
-font_t* font_ft_create_ex(const char* name, const uint8_t* buff, uint32_t size, bool_t mono) {
+//hack by pulleyzzz
+font_t* font_ft_create_ex(const char* name, const uint8_t* buff_r, uint32_t size_r, bool_t mono) {
   font_ft_t* f = NULL;
-  return_value_if_fail(buff != NULL && name != NULL, NULL);
-
+  return_value_if_fail(buff_r != NULL && name != NULL, NULL);
+  printf("font_ft_create_ex %s \n",name);
   f = TKMEM_ZALLOC(font_ft_t);
   return_value_if_fail(f != NULL, NULL);
+
+  uint8_t* buff=NULL;
+  uint32_t buff_size=0;
+  printf("font_stb_create %s %p:%d\n",name,buff_r,buff_size_r);
+  if (buff_size_r>=8&&buff_size_r<=32)
+  {
+    printf("font %s : use mmmap %s\n",name,buff_r);
+    buff=((uint8_t**)buff_r)[0];
+    buff_size=((uint8_t**)buff_r)[1];
+    printf("mmmap %p:%d\n",buff,buff_size);
+  }
+  else
+  {
+    buff=buff_r;
+    buff_size=buff_size_r;
+  }
+
 
   f->mono = mono;
   if (FT_Init_FreeType(&f->ft_font.library)) {

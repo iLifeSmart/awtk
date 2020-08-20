@@ -131,12 +131,29 @@ static ret_t destroy_glyph(void* data) {
   return RET_OK;
 }
 
-font_t* font_stb_create(const char* name, const uint8_t* buff, uint32_t buff_size) {
+//hack by pulleyzzz
+font_t* font_stb_create(const char* name, const uint8_t* buff_r, uint32_t buff_size_r) {
   font_stb_t* f = NULL;
-  return_value_if_fail(buff != NULL && name != NULL, NULL);
+  return_value_if_fail(buff_r != NULL && name != NULL, NULL);
 
   f = TKMEM_ZALLOC(font_stb_t);
   return_value_if_fail(f != NULL, NULL);
+
+  uint8_t* buff=NULL;
+  uint32_t buff_size=0;
+  printf("font_stb_create %s %p:%d\n",name,buff_r,buff_size_r);
+  if (buff_size_r>=8&&buff_size_r<=32)
+  {
+    printf("font %s : use mmmap %s\n",name,buff_r);
+    buff=((uint8_t**)buff_r)[0];
+    buff_size=((uint8_t**)buff_r)[1];
+    printf("mmmap %p:%d\n",buff,buff_size);
+  }
+  else
+  {
+    buff=buff_r;
+    buff_size=buff_size_r;
+  }
 
   f->base.match = font_stb_match;
   f->base.destroy = font_stb_destroy;
