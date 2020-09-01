@@ -89,8 +89,8 @@
 * 丰富的控件 （持续增加中）。
 * 支持各种图片格式 (png/jpg/gif/svg)。
 * 支持各种字体格式 （点阵和矢量）。
-* 支持窗口动画
-* 支持控件动画
+* 支持窗口动画。
+* 支持控件动画。
 * 支持高清屏。
 * 支持界面描述文件。
 * 支持主题描述文件。
@@ -101,6 +101,8 @@
 * 支持从低端的 Cortex M3 到各种高端 CPU。
 * 支持无文件系统和自定义的文件系统。
 * 支持裸系统和 RTOS。
+* 支持事件录制与重放进行压力测试。
+* 支持 Appium 进行全自动化 UI 测试。
 
 ### 5. 易用
 
@@ -172,6 +174,8 @@
 ```
 git clone https://github.com/zlgopen/awtk.git
 ```
+
+> 国内用户推荐使用：https://hub.fastgit.org/zlgopen/awtk.git
 
 > Windows 下可以用带 GUI 的 git 下载代码。
 
@@ -280,6 +284,12 @@ pip install Pillow
 
 * [模板工程](https://github.com/zlgopen/awtk-hello)
 
+* [MVVM 模板工程](https://github.com/zlgopen/awtk-mvvm-c-hello)
+
+* [awtk-restful-httpd](https://github.com/zlgopen/awtk-restful-httpd)
+
+* [自动测试引擎](https://github.com/zlgopen/awtk-ui-automation)
+
 * [C 示例代码](https://github.com/zlgopen/awtk-c-demos)
 
 * [精彩示例](https://github.com/zlgopen/awtk-examples)
@@ -302,6 +312,8 @@ pip install Pillow
 
 * [扩展控件实例：表格视图](https://github.com/zlgopen/awtk-widget-table-view)
 
+* [扩展控件实例：仿微信列表项](https://github.com/zlgopen/awtk-widget-slidable-row)
+
 * [自定义字体加载器：加载部分字体](https://github.com/zlgopen/awtk-custom-font-loader)
 
 第三方提供：
@@ -311,7 +323,6 @@ pip install Pillow
 * [扩展控件实例：二维码](https://github.com/CUITzhaoqi/awtk-qr)
 
 * [扩展控件实例：圆形滑块](https://github.com/longyuwlz/awtk_slider_circle)
-
 
 ## 九、文档
 

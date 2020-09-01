@@ -4995,6 +4995,14 @@
         "name": "EVT_IM_COMMIT"
       },
       {
+        "desc": "清除编辑器内容(event_t)。",
+        "name": "EVT_IM_CLEAR"
+      },
+      {
+        "desc": "取消编辑，恢复之前的内容(event_t)。",
+        "name": "EVT_IM_CANCEL"
+      },
+      {
         "desc": "进入预编辑状态(event_t)。",
         "name": "EVT_IM_PREEDIT"
       },
@@ -11039,6 +11047,27 @@
             "type": "wstr_t*",
             "name": "str",
             "desc": "str对象。"
+          },
+          {
+            "type": "wchar_t",
+            "name": "c",
+            "desc": "字符。"
+          }
+        ],
+        "annotation": {},
+        "desc": "统计指定字符的个数。",
+        "name": "wstr_count_char",
+        "return": {
+          "type": "uint32_t",
+          "desc": "返回指定字符的个数。"
+        }
+      },
+      {
+        "params": [
+          {
+            "type": "wstr_t*",
+            "name": "str",
+            "desc": "str对象。"
           }
         ],
         "annotation": {},
@@ -12030,6 +12059,22 @@
       {
         "desc": "圆角半径(仅在WITH_VGCANVAS定义时生效)。",
         "name": "STYLE_ID_ROUND_RADIUS"
+      },
+      {
+        "desc": "左上角圆角半径(仅在WITH_VGCANVAS定义时生效)。",
+        "name": "STYLE_ID_ROUND_RADIUS_TOP_LETF"
+      },
+      {
+        "desc": "右上角圆角半径(仅在WITH_VGCANVAS定义时生效)。",
+        "name": "STYLE_ID_ROUND_RADIUS_TOP_RIGHT"
+      },
+      {
+        "desc": "左下角圆角半径(仅在WITH_VGCANVAS定义时生效)。",
+        "name": "STYLE_ID_ROUND_RADIUS_BOTTOM_LETF"
+      },
+      {
+        "desc": "右下角圆角半径(仅在WITH_VGCANVAS定义时生效)。",
+        "name": "STYLE_ID_ROUND_RADIUS_BOTTOM_RIGHT"
       },
       {
         "desc": "子控件布局参数。",
@@ -14545,7 +14590,23 @@
           }
         ],
         "annotation": {},
-        "desc": "重置状态。",
+        "desc": "重置所有状态。",
+        "name": "vgcanvas_reset",
+        "return": {
+          "type": "ret_t",
+          "desc": "返回RET_OK表示成功，否则表示失败。"
+        }
+      },
+      {
+        "params": [
+          {
+            "type": "vgcanvas_t*",
+            "name": "vg",
+            "desc": "vgcanvas对象。"
+          }
+        ],
+        "annotation": {},
+        "desc": "重置当前状态。",
         "name": "vgcanvas_reset",
         "return": {
           "type": "ret_t",
@@ -17496,6 +17557,10 @@
         "name": "WIDGET_PROP_READONLY"
       },
       {
+        "desc": "是否可取消。",
+        "name": "WIDGET_PROP_CANCELABLE"
+      },
+      {
         "desc": "密码是否可见。",
         "name": "WIDGET_PROP_PASSWORD_VISIBLE"
       },
@@ -17636,8 +17701,16 @@
         "name": "WIDGET_PROP_REPEAT"
       },
       {
+        "desc": "触发长按事件的时间(ms)。",
+        "name": "WIDGET_PROP_LONG_PRESS_TIME"
+      },
+      {
         "desc": "是否启用长按。",
         "name": "WIDGET_PROP_ENABLE_LONG_PRESS"
+      },
+      {
+        "desc": "是否启用点击穿透。",
+        "name": "WIDGET_PROP_CLICK_THROUGH"
       },
       {
         "desc": "是否启用动画。",
@@ -18108,6 +18181,10 @@
       {
         "desc": "正常状态。",
         "name": "WIDGET_STATE_NORMAL"
+      },
+      {
+        "desc": "内容被修改的状态。",
+        "name": "WIDGET_STATE_CHANGED"
       },
       {
         "desc": "指针按下状态。",
@@ -18873,6 +18950,32 @@
         "desc": "设置控件的文本。\n只是对widget\\_set\\_prop的包装，文本的意义由子类控件决定。",
         "name": "widget_set_text_utf8",
         "alias": "set_text",
+        "return": {
+          "type": "ret_t",
+          "desc": "返回RET_OK表示成功，否则表示失败。"
+        }
+      },
+      {
+        "params": [
+          {
+            "type": "widget_t*",
+            "name": "widget",
+            "desc": "控件对象。"
+          },
+          {
+            "type": "char*",
+            "name": "text",
+            "desc": "用于返回文本。"
+          },
+          {
+            "type": "uint32_t",
+            "name": "size",
+            "desc": "text内存长度。"
+          }
+        ],
+        "annotation": {},
+        "desc": "获取控件的文本。\n只是对widget\\_get\\_prop的包装，文本的意义由子类控件决定。",
+        "name": "widget_get_text_utf8",
         "return": {
           "type": "ret_t",
           "desc": "返回RET_OK表示成功，否则表示失败。"
@@ -21752,7 +21855,7 @@
         "annotation": {
           "scriptable": true
         },
-        "desc": "设置整数类型的style。",
+        "desc": "设置整数类型的style。\n\n> * [state 的取值](https://github.com/zlgopen/awtk/blob/master/docs/manual/widget_state_t.md)\n> * [name 的取值](https://github.com/zlgopen/awtk/blob/master/docs/theme.md)",
         "name": "widget_set_style_int",
         "return": {
           "type": "ret_t",
@@ -21780,7 +21883,7 @@
         "annotation": {
           "scriptable": true
         },
-        "desc": "设置字符串类型的style。",
+        "desc": "设置字符串类型的style。\n\n> * [state 的取值](https://github.com/zlgopen/awtk/blob/master/docs/manual/widget_state_t.md)\n> * [name 的取值](https://github.com/zlgopen/awtk/blob/master/docs/theme.md)",
         "name": "widget_set_style_str",
         "return": {
           "type": "ret_t",
@@ -21808,7 +21911,7 @@
         "annotation": {
           "scriptable": true
         },
-        "desc": "设置颜色类型的style。",
+        "desc": "设置颜色类型的style。\n\n> * [state 的取值](https://github.com/zlgopen/awtk/blob/master/docs/manual/widget_state_t.md)\n> * [name 的取值](https://github.com/zlgopen/awtk/blob/master/docs/theme.md)",
         "name": "widget_set_style_color",
         "return": {
           "type": "ret_t",
@@ -23191,6 +23294,167 @@
     "header": "tkc/value_desc.h",
     "name": "arg_desc_flags_t",
     "prefix": "ARG_DESC_FLAGS_",
+    "level": 1
+  },
+  {
+    "type": "enum",
+    "desc": "编码名称。",
+    "consts": [
+      {
+        "desc": "UTF-8。",
+        "name": "ENCODING_UTF8"
+      },
+      {
+        "desc": "UTF-16。",
+        "name": "ENCODING_UTF16"
+      },
+      {
+        "desc": "UTF-32。",
+        "name": "ENCODING_UTF32"
+      },
+      {
+        "desc": "GBK。",
+        "name": "ENCODING_GBK"
+      },
+      {
+        "desc": "BIG5-2003。",
+        "name": "ENCODING_BIG"
+      },
+      {
+        "desc": "GB_2312-80。",
+        "name": "ENCODING_GB2312"
+      },
+      {
+        "desc": "GB18030。",
+        "name": "ENCODING_GB18030"
+      }
+    ],
+    "header": "charset/encoding.h",
+    "name": "encoding_name_t",
+    "prefix": "ENCODING_NAME_",
+    "level": 1
+  },
+  {
+    "type": "class",
+    "methods": [
+      {
+        "params": [
+          {
+            "type": "encoding_name_t",
+            "name": "from",
+            "desc": "源字符串的编码名称。"
+          },
+          {
+            "type": "const char*",
+            "name": "from_str",
+            "desc": "源字符串。"
+          },
+          {
+            "type": "uint32_t",
+            "name": "from_size",
+            "desc": "源字符串的长度。"
+          },
+          {
+            "type": "encoding_name_t",
+            "name": "to",
+            "desc": "目标字符串的编码名称。"
+          },
+          {
+            "type": "const char*",
+            "name": "",
+            "desc": "。"
+          },
+          {
+            "type": "uint32_t",
+            "name": "to_size",
+            "desc": "目标字符串的最大长度。"
+          }
+        ],
+        "annotation": {
+          "static": true
+        },
+        "desc": "字符集转换。",
+        "name": "encoding_convert",
+        "return": {
+          "type": "ret_t",
+          "desc": "返回RET_OK表示成功，否则表示失败。"
+        }
+      },
+      {
+        "params": [
+          {
+            "type": "const char*",
+            "name": "from_str",
+            "desc": "源字符串(utf8)。"
+          },
+          {
+            "type": "uint32_t",
+            "name": "from_size",
+            "desc": "源字符串的长度。"
+          },
+          {
+            "type": "const char*",
+            "name": "to_str",
+            "desc": "目标字符串(gbk)。"
+          },
+          {
+            "type": "uint32_t",
+            "name": "to_size",
+            "desc": "目标字符串的最大长度。"
+          }
+        ],
+        "annotation": {
+          "static": true
+        },
+        "desc": "将utf8转换成gbk编码。",
+        "name": "encoding_utf8_to_gbk",
+        "return": {
+          "type": "ret_t",
+          "desc": "返回RET_OK表示成功，否则表示失败。"
+        }
+      },
+      {
+        "params": [
+          {
+            "type": "const char*",
+            "name": "from_str",
+            "desc": "源字符串(gbk)。"
+          },
+          {
+            "type": "uint32_t",
+            "name": "from_size",
+            "desc": "源字符串的长度。"
+          },
+          {
+            "type": "const char*",
+            "name": "",
+            "desc": "。"
+          },
+          {
+            "type": "uint32_t",
+            "name": "to_size",
+            "desc": "目标字符串的最大长度。"
+          }
+        ],
+        "annotation": {
+          "static": true
+        },
+        "desc": "将gbk转换成utf8编码。",
+        "name": "encoding_gbk_to_utf8",
+        "return": {
+          "type": "ret_t",
+          "desc": "返回RET_OK表示成功，否则表示失败。"
+        }
+      }
+    ],
+    "events": [],
+    "properties": [],
+    "header": "charset/encoding.h",
+    "desc": "encoding conversion\n\n示例：\n\n```c\n```",
+    "name": "encoding_t",
+    "annotation": {
+      "fake": true
+    },
     "level": 1
   },
   {
@@ -26912,7 +27176,7 @@
           }
         ],
         "annotation": {},
-        "desc": "等待线程退出。",
+        "desc": "等待线程退出。\n必须调用 tk_thread_destroy 函数来释放线程资源，以免出现内存泄漏的问题。",
         "name": "tk_thread_join",
         "return": {
           "type": "ret_t",
@@ -26944,7 +27208,7 @@
           }
         ],
         "annotation": {},
-        "desc": "销毁thread对象。",
+        "desc": "销毁thread对象。\n在销毁对象前必须调用 tk_thread_join 函数等待退出线程",
         "name": "tk_thread_destroy",
         "return": {
           "type": "ret_t",
@@ -33770,6 +34034,22 @@
           }
         ],
         "annotation": {},
+        "desc": "把离线 canvas 清除所有数据，并把背景设置为全透明\n该函数调用前必须要先 canvas_offline_begin_draw 函数。\n该函数用来解决离线 canvas 多次绘图半透效果后导致半透效果无效的问题。",
+        "name": "canvas_offline_clear_canvas",
+        "return": {
+          "type": "ret_t",
+          "desc": "返回RET_OK表示成功，否则表示失败。"
+        }
+      },
+      {
+        "params": [
+          {
+            "type": "canvas_t*",
+            "name": "canvas",
+            "desc": "离线 canvas 对象。"
+          }
+        ],
+        "annotation": {},
         "desc": "设置离线 canvas 开始绘图",
         "name": "canvas_offline_begin_draw",
         "return": {
@@ -35197,6 +35477,52 @@
           },
           {
             "type": "uint32_t",
+            "name": "radius_tl",
+            "desc": "左上角圆角半径。"
+          },
+          {
+            "type": "uint32_t",
+            "name": "radius_tr",
+            "desc": "右上角圆角半径。"
+          },
+          {
+            "type": "uint32_t",
+            "name": "radius_bl",
+            "desc": "左下角圆角半径。"
+          },
+          {
+            "type": "uint32_t",
+            "name": "radius_br",
+            "desc": "右下角圆角半径。"
+          }
+        ],
+        "annotation": {},
+        "desc": "填充区域。\n半径半径小于等于2，则表示该角为直角，如果全部角都为直角则返回RET_FAIL。（如果全是直角，该函数效率没有canvas_fill_rect函数快）\n如果各个半径都不一样的话，就是会使用vg，如果不支持vg就会返回RET_FAIL（直角的情况除外）。",
+        "name": "canvas_fill_rounded_rect_ex",
+        "return": {
+          "type": "ret_t",
+          "desc": "返回RET_OK表示成功，否则表示失败。"
+        }
+      },
+      {
+        "params": [
+          {
+            "type": "canvas_t*",
+            "name": "c",
+            "desc": "canvas对象。"
+          },
+          {
+            "type": "rect_t*",
+            "name": "r",
+            "desc": "矩形。"
+          },
+          {
+            "type": "color_t*",
+            "name": "color",
+            "desc": "颜色。"
+          },
+          {
+            "type": "uint32_t",
             "name": "radius",
             "desc": "圆角半径。"
           },
@@ -35209,6 +35535,57 @@
         "annotation": {},
         "desc": "绘制边框。",
         "name": "canvas_stroke_rounded_rect",
+        "return": {
+          "type": "ret_t",
+          "desc": "返回RET_OK表示成功，否则表示失败。"
+        }
+      },
+      {
+        "params": [
+          {
+            "type": "canvas_t*",
+            "name": "c",
+            "desc": "canvas对象。"
+          },
+          {
+            "type": "rect_t*",
+            "name": "r",
+            "desc": "矩形。"
+          },
+          {
+            "type": "color_t*",
+            "name": "color",
+            "desc": "颜色。"
+          },
+          {
+            "type": "uint32_t",
+            "name": "radius_tl",
+            "desc": "左上角圆角半径。"
+          },
+          {
+            "type": "uint32_t",
+            "name": "radius_tr",
+            "desc": "右上角圆角半径。"
+          },
+          {
+            "type": "uint32_t",
+            "name": "radius_bl",
+            "desc": "左下角圆角半径。"
+          },
+          {
+            "type": "uint32_t",
+            "name": "radius_br",
+            "desc": "右下角圆角半径。"
+          },
+          {
+            "type": "uint32_t",
+            "name": "border_width",
+            "desc": "边宽。"
+          }
+        ],
+        "annotation": {},
+        "desc": "绘制边框。\n半径半径小于等于2，则表示该角为直角，如果全部角都为直角则返回RET_FAIL。（如果全是直角，该函数效率没有canvas_stroke_rect函数快）\n如果各个半径都不一样的话，就是会使用vg，如果不支持vg就会返回RET_FAIL（直角的情况除外）。",
+        "name": "canvas_stroke_rounded_rect_ex",
         "return": {
           "type": "ret_t",
           "desc": "返回RET_OK表示成功，否则表示失败。"
@@ -36805,6 +37182,100 @@
       {
         "params": [],
         "annotation": {},
+        "desc": "创建缺省的资源加载器。",
+        "name": "asset_loader_create",
+        "return": {
+          "type": "asset_loader_t*",
+          "desc": "返回loader对象。"
+        }
+      },
+      {
+        "params": [
+          {
+            "type": "asset_loader_t*",
+            "name": "loader",
+            "desc": "loader对象。"
+          },
+          {
+            "type": "uint16_t",
+            "name": "type",
+            "desc": "资源类型。"
+          },
+          {
+            "type": "uint16_t",
+            "name": "subtype",
+            "desc": "资源子类型。"
+          },
+          {
+            "type": "const char*",
+            "name": "path",
+            "desc": "路径。"
+          },
+          {
+            "type": "const char*",
+            "name": "name",
+            "desc": "名称。"
+          }
+        ],
+        "annotation": {},
+        "desc": "加载指定的资源。",
+        "name": "asset_loader_load",
+        "return": {
+          "type": "asset_info_t*",
+          "desc": "返回资源对象(由调用者销毁)。"
+        }
+      },
+      {
+        "params": [
+          {
+            "type": "asset_loader_t*",
+            "name": "loader",
+            "desc": "loader对象。"
+          },
+          {
+            "type": "const char*",
+            "name": "path",
+            "desc": "资源是路径。"
+          }
+        ],
+        "annotation": {},
+        "desc": "判断指定资源是否存在。\n。",
+        "name": "asset_loader_exist",
+        "return": {
+          "type": "bool_t",
+          "desc": "返回TRUE表示存在，否则不存在。"
+        }
+      },
+      {
+        "params": [
+          {
+            "type": "asset_loader_t*",
+            "name": "loader",
+            "desc": "loader对象。"
+          }
+        ],
+        "annotation": {},
+        "desc": "销毁loader对象。",
+        "name": "asset_loader_destroy",
+        "return": {
+          "type": "ret_t",
+          "desc": "返回RET_OK表示成功，否则表示失败。"
+        }
+      }
+    ],
+    "events": [],
+    "properties": [],
+    "header": "base/asset_loader.h",
+    "desc": "资源加载器接口。",
+    "name": "asset_loader_t",
+    "level": 1
+  },
+  {
+    "type": "class",
+    "methods": [
+      {
+        "params": [],
+        "annotation": {},
         "desc": "创建cond。",
         "name": "tk_cond_create",
         "return": {
@@ -36897,100 +37368,6 @@
     "header": "tkc/cond.h",
     "desc": "条件变量。",
     "name": "tk_cond_t",
-    "level": 1
-  },
-  {
-    "type": "class",
-    "methods": [
-      {
-        "params": [],
-        "annotation": {},
-        "desc": "创建缺省的资源加载器。",
-        "name": "asset_loader_create",
-        "return": {
-          "type": "asset_loader_t*",
-          "desc": "返回loader对象。"
-        }
-      },
-      {
-        "params": [
-          {
-            "type": "asset_loader_t*",
-            "name": "loader",
-            "desc": "loader对象。"
-          },
-          {
-            "type": "uint16_t",
-            "name": "type",
-            "desc": "资源类型。"
-          },
-          {
-            "type": "uint16_t",
-            "name": "subtype",
-            "desc": "资源子类型。"
-          },
-          {
-            "type": "const char*",
-            "name": "path",
-            "desc": "路径。"
-          },
-          {
-            "type": "const char*",
-            "name": "name",
-            "desc": "名称。"
-          }
-        ],
-        "annotation": {},
-        "desc": "加载指定的资源。",
-        "name": "asset_loader_load",
-        "return": {
-          "type": "asset_info_t*",
-          "desc": "返回资源对象(由调用者销毁)。"
-        }
-      },
-      {
-        "params": [
-          {
-            "type": "asset_loader_t*",
-            "name": "loader",
-            "desc": "loader对象。"
-          },
-          {
-            "type": "const char*",
-            "name": "path",
-            "desc": "资源是路径。"
-          }
-        ],
-        "annotation": {},
-        "desc": "判断指定资源是否存在。\n。",
-        "name": "asset_loader_exist",
-        "return": {
-          "type": "bool_t",
-          "desc": "返回TRUE表示存在，否则不存在。"
-        }
-      },
-      {
-        "params": [
-          {
-            "type": "asset_loader_t*",
-            "name": "loader",
-            "desc": "loader对象。"
-          }
-        ],
-        "annotation": {},
-        "desc": "销毁loader对象。",
-        "name": "asset_loader_destroy",
-        "return": {
-          "type": "ret_t",
-          "desc": "返回RET_OK表示成功，否则表示失败。"
-        }
-      }
-    ],
-    "events": [],
-    "properties": [],
-    "header": "base/asset_loader.h",
-    "desc": "资源加载器接口。",
-    "name": "asset_loader_t",
     "level": 1
   },
   {
@@ -39171,62 +39548,45 @@
             "desc": "高度。"
           },
           {
+            "type": "bitmap_format_t",
+            "name": "format",
+            "desc": "离线lcd的格式。一般用 BITMAP_FMT_BGR565 或 BITMAP_FMT_RGBA8888。"
+          },
+          {
             "type": "lcd_flush_t",
             "name": "flush",
-            "desc": "用于刷新数据到硬件的回调函数。"
+            "desc": "回调函数，用于刷新GUI数据到实际的LCD。"
+          },
+          {
+            "type": "lcd_resize_t",
+            "name": "on_resize",
+            "desc": "用于调整LCD的大小。一般用NULL即可。"
           },
           {
             "type": "lcd_destroy_t",
             "name": "on_destroy",
-            "desc": "销毁lcd时的回调函数。"
+            "desc": "lcd销毁时的回调函数。"
           },
           {
             "type": "void*",
             "name": "ctx",
-            "desc": "flush/on_destroy回调函数的上下文。"
+            "desc": "回调函数的上下文。"
           }
         ],
-        "annotation": {
-          "constructor": true
-        },
-        "desc": "创建单色LCD对象。",
-        "name": "lcd_mono_create",
+        "annotation": {},
+        "desc": "创建lcd对象。",
+        "name": "lcd_mem_special_create",
         "return": {
           "type": "lcd_t*",
-          "desc": "lcd对象。"
+          "desc": "返回lcd对象。"
         }
       }
     ],
     "events": [],
-    "properties": [
-      {
-        "name": "data",
-        "desc": "Framebuffer首地址。",
-        "type": "uint8_t*",
-        "annotation": {
-          "readable": true
-        }
-      },
-      {
-        "name": "ctx",
-        "desc": "flush/on_destroy回调函数的上下文信息。",
-        "type": "void*",
-        "annotation": {
-          "private": true
-        }
-      },
-      {
-        "name": "on_destroy",
-        "desc": "lcd销毁时的回调函数。",
-        "type": "lcd_destroy_t",
-        "annotation": {
-          "private": true
-        }
-      }
-    ],
-    "header": "lcd/lcd_mono.h",
-    "desc": "单色LCD。\n\nlcd\\_mono是一个特殊的Framebuffer，它用一个比特来表示一个pixel。\n\nlcd\\_mono只是负责硬件无关的逻辑处理，调用者需要在创建时提供一个flush回调函数，\n在flush函数中把脏矩形中的数据刷新到硬件中。",
-    "name": "lcd_mono_t",
+    "properties": [],
+    "header": "lcd/lcd_mem_special.h",
+    "desc": "特殊的LCD。\n\n通过重载flush函数来提交GUI绘制的结果到硬件。适用于：\n\n* lcd 硬件不支持framebuffer，如SPI接口的屏。\n* lcd 硬件支持framebuffer，但是其格式特殊，AWTK目前不支持。可以用flush进行格式转换。",
+    "name": "lcd_mem_special_t",
     "parent": "lcd_t",
     "level": 2
   },
@@ -41390,6 +41750,29 @@
           },
           {
             "type": "bool_t",
+            "name": "cancelable",
+            "desc": "是否为可撤销修。"
+          }
+        ],
+        "annotation": {
+          "scriptable": true
+        },
+        "desc": "设置编辑器是否为可撤销修改。",
+        "name": "edit_set_cancelable",
+        "return": {
+          "type": "ret_t",
+          "desc": "返回RET_OK表示成功，否则表示失败。"
+        }
+      },
+      {
+        "params": [
+          {
+            "type": "widget_t*",
+            "name": "widget",
+            "desc": "widget对象。"
+          },
+          {
+            "type": "bool_t",
             "name": "auto_fix",
             "desc": "自动改正。"
           }
@@ -41443,7 +41826,7 @@
         "annotation": {
           "scriptable": true
         },
-        "desc": "设置编辑器是否在获得焦点时打开输入法。",
+        "desc": "设置编辑器是否在获得焦点时打开输入法。\n\n> * 设置默认焦点时，打开窗口时不弹出软键盘。\n> * 用键盘切换焦点时，编辑器获得焦点时不弹出软键盘。",
         "name": "edit_set_open_im_when_focused",
         "return": {
           "type": "ret_t",
@@ -41986,6 +42369,19 @@
         "name": "step",
         "desc": "步长。\n作为数值型编辑器时，一次增加和减少时的数值。",
         "type": "double",
+        "annotation": {
+          "set_prop": true,
+          "get_prop": true,
+          "readable": true,
+          "persitent": true,
+          "design": true,
+          "scriptable": true
+        }
+      },
+      {
+        "name": "cancelable",
+        "desc": "是否支持撤销编辑。如果为TRUE，在失去焦点之前可以撤销所有修改(恢复获得焦点之前的内容)。\n\n> * 1.一般配合keyboard的\"cancel\"按钮使用。\n> * 2.为TRUE时，如果内容有变化，会设置编辑器的状态为changed，所以此时编辑器需要支持changed状态的style。",
+        "type": "bool_t",
         "annotation": {
           "set_prop": true,
           "get_prop": true,
@@ -42610,45 +43006,62 @@
             "desc": "高度。"
           },
           {
-            "type": "bitmap_format_t",
-            "name": "format",
-            "desc": "离线lcd的格式。一般用 BITMAP_FMT_BGR565 或 BITMAP_FMT_RGBA8888。"
-          },
-          {
             "type": "lcd_flush_t",
             "name": "flush",
-            "desc": "回调函数，用于刷新GUI数据到实际的LCD。"
-          },
-          {
-            "type": "lcd_resize_t",
-            "name": "on_resize",
-            "desc": "用于调整LCD的大小。一般用NULL即可。"
+            "desc": "用于刷新数据到硬件的回调函数。"
           },
           {
             "type": "lcd_destroy_t",
             "name": "on_destroy",
-            "desc": "lcd销毁时的回调函数。"
+            "desc": "销毁lcd时的回调函数。"
           },
           {
             "type": "void*",
             "name": "ctx",
-            "desc": "回调函数的上下文。"
+            "desc": "flush/on_destroy回调函数的上下文。"
           }
         ],
-        "annotation": {},
-        "desc": "创建lcd对象。",
-        "name": "lcd_mem_special_create",
+        "annotation": {
+          "constructor": true
+        },
+        "desc": "创建单色LCD对象。",
+        "name": "lcd_mono_create",
         "return": {
           "type": "lcd_t*",
-          "desc": "返回lcd对象。"
+          "desc": "lcd对象。"
         }
       }
     ],
     "events": [],
-    "properties": [],
-    "header": "lcd/lcd_mem_special.h",
-    "desc": "特殊的LCD。\n\n通过重载flush函数来提交GUI绘制的结果到硬件。适用于：\n\n* lcd 硬件不支持framebuffer，如SPI接口的屏。\n* lcd 硬件支持framebuffer，但是其格式特殊，AWTK目前不支持。可以用flush进行格式转换。",
-    "name": "lcd_mem_special_t",
+    "properties": [
+      {
+        "name": "data",
+        "desc": "Framebuffer首地址。",
+        "type": "uint8_t*",
+        "annotation": {
+          "readable": true
+        }
+      },
+      {
+        "name": "ctx",
+        "desc": "flush/on_destroy回调函数的上下文信息。",
+        "type": "void*",
+        "annotation": {
+          "private": true
+        }
+      },
+      {
+        "name": "on_destroy",
+        "desc": "lcd销毁时的回调函数。",
+        "type": "lcd_destroy_t",
+        "annotation": {
+          "private": true
+        }
+      }
+    ],
+    "header": "lcd/lcd_mono.h",
+    "desc": "单色LCD。\n\nlcd\\_mono是一个特殊的Framebuffer，它用一个比特来表示一个pixel。\n\nlcd\\_mono只是负责硬件无关的逻辑处理，调用者需要在创建时提供一个flush回调函数，\n在flush函数中把脏矩形中的数据刷新到硬件中。",
+    "name": "lcd_mono_t",
     "parent": "lcd_t",
     "level": 2
   },
@@ -48383,6 +48796,29 @@
             "desc": "控件对象。"
           },
           {
+            "type": "uint32_t",
+            "name": "long_press_time",
+            "desc": "触发长按事件的时间(毫秒)。"
+          }
+        ],
+        "annotation": {
+          "scriptable": true
+        },
+        "desc": "设置触发长按事件的时间。",
+        "name": "button_set_long_press_time",
+        "return": {
+          "type": "ret_t",
+          "desc": "返回RET_OK表示成功，否则表示失败。"
+        }
+      },
+      {
+        "params": [
+          {
+            "type": "widget_t*",
+            "name": "widget",
+            "desc": "控件对象。"
+          },
+          {
             "type": "bool_t",
             "name": "enable_long_press",
             "desc": "是否启用长按事件。"
@@ -48429,6 +48865,19 @@
         "name": "enable_long_press",
         "desc": "是否启用长按事件，为true时才触发长按事件。\n\n触发长按事件后不再触发点击事件。\n缺省不启用。",
         "type": "bool_t",
+        "annotation": {
+          "set_prop": true,
+          "get_prop": true,
+          "readable": true,
+          "persitent": true,
+          "design": true,
+          "scriptable": true
+        }
+      },
+      {
+        "name": "long_press_time",
+        "desc": "触发长按事件的时间(ms)",
+        "type": "uint32_t",
         "annotation": {
           "set_prop": true,
           "get_prop": true,
@@ -50108,6 +50557,29 @@
           },
           {
             "type": "bool_t",
+            "name": "cancelable",
+            "desc": "是否为可撤销修。"
+          }
+        ],
+        "annotation": {
+          "scriptable": true
+        },
+        "desc": "设置编辑器是否为可撤销修改。",
+        "name": "mledit_set_cancelable",
+        "return": {
+          "type": "ret_t",
+          "desc": "返回RET_OK表示成功，否则表示失败。"
+        }
+      },
+      {
+        "params": [
+          {
+            "type": "widget_t*",
+            "name": "widget",
+            "desc": "widget对象。"
+          },
+          {
+            "type": "bool_t",
             "name": "focus",
             "desc": "是否为焦点。"
           }
@@ -50450,6 +50922,19 @@
         "name": "scroll_line",
         "desc": "鼠标一次滚动行数。",
         "type": "uint32_t",
+        "annotation": {
+          "set_prop": true,
+          "get_prop": true,
+          "readable": true,
+          "persitent": true,
+          "design": true,
+          "scriptable": true
+        }
+      },
+      {
+        "name": "cancelable",
+        "desc": "是否支持撤销编辑。如果为TRUE，在失去焦点之前可以撤销所有修改(恢复获得焦点之前的内容)。\n\n> * 1.一般配合keyboard的\"cancel\"按钮使用。\n> * 2.为TRUE时，如果内容有变化，会设置编辑器的状态为changed，所以此时编辑器需要支持changed状态的style。",
+        "type": "bool_t",
         "annotation": {
           "set_prop": true,
           "get_prop": true,
@@ -57028,7 +57513,7 @@
     "events": [],
     "properties": [],
     "header": "keyboard/keyboard.h",
-    "desc": "软键盘。\n\n软键盘是一个特殊的窗口，由编辑器通过输入法自动打开和关闭。\n\n这里介绍一下定制软键盘的方法：\n\n编辑器输入类型和软键盘UI资源文件的对应关系:\n\n| 输入类型       | 软键盘UI资源文件|\n|----------------|:---------------:|\n| INPUT\\_PHONE    | kb\\_phone.xml    |\n| INPUT\\_INT      | kb\\_int.xml      |\n| INPUT\\_FLOAT    | kb\\_float.xml    |\n| INPUT\\_UINT     | kb\\_uint.xml     |\n| INPUT\\_UFLOAT   | kb\\_ufloat.xml   |\n| INPUT\\_HEX      | kb\\_hex.xml      |\n| INPUT\\_EMAIL    | kb\\_ascii.xml    |\n| INPUT\\_PASSWORD | kb\\_ascii.xml    |\n| INPUT\\_CUSTOM   | 使用自定义的键盘 |\n| 其它            | kb\\_default.xml  |\n\nkeyboard中按钮子控件的名称有些特殊要求：\n\n|  名称          | 功能            |\n|----------------|:---------------:|\n| return         | 回车键          |\n| action         | 定制按钮        |\n| backspace      | 删除键          |\n| tab            | tab键           |\n| space          | 空格键          |\n| close          | 关闭软键盘       |\n| back           | 关闭当前窗口     |\n| back_to_home   | 返回home窗口    |\n| 前缀key:        | 键值           |\n| 前缀hard_key:   | 模拟物理键盘    |\n| 前缀page:       | 切换到页面      |\n| 前缀opt:        | 多个字符选择一个，点击切换到下一个，超时提交字符(用于实现九宫格输入) |\n\n示例：\n\n* 按键\"a\"，提交输入法处理。\n\n```xml\n<button repeat=\"300\" name=\"key:a\" text=\"a\"/>\n```\n\n* 字符\"a\"，直接提交到编辑器。\n\n```xml\n<button repeat=\"300\" name=\"a\" text=\"a\"/>\n```\n\n* 模拟物理键盘数字\"1\"，触发key down/up事件（可以用来选择候选字）。\n\n```xml\n<button repeat=\"300\" name=\"hard_key:1\" text=\"1\"/>\n```\n\n* 九宫格输入\n\n```xml\n<button repeat=\"300\" name=\"opt:._@/#\" text=\"._@/#\"/>\n<button repeat=\"300\" name=\"opt:abc\" text=\"abc\"/>\n<button repeat=\"300\" name=\"opt:def\" text=\"def\"/>\n```\n\n\n* 输入语言切换\n\n有的输入法，同时支持输入多种语言。\n比如T9，可以同时支持中文和英文输入，配合软键盘随时切换输入的语言。\n\n可以在pages的页面里指定lang属性，切换到该页面时会设置输入法的语言。如：\n\n```xml\n<pages x=\"0\" y=\"bottom\" w=\"100%\" h=\"-28\" active=\"2\">\n<view name=\"lower\" lang=\"en_us\"\nx=\"0\" y=\"0\" w=\"100%\" h=\"100%\" children_layout=\"default(r=4,c=4,s=2,m=2)\">\n...\n</view>\n<view name=\"chinese\" lang=\"zh_cn\"\nx=\"0\" y=\"0\" w=\"100%\" h=\"100%\" children_layout=\"default(r=4,c=4,s=2,m=2)\">\n...\n</view>\n</pages>\n```\n\n> 更多用法请参考：\n[kb_default](https://github.com/zlgopen/awtk/blob/master/design/default/ui/kb_default.xml)",
+    "desc": "软键盘。\n\n软键盘是一个特殊的窗口，由编辑器通过输入法自动打开和关闭。\n\n这里介绍一下定制软键盘的方法：\n\n编辑器输入类型和软键盘UI资源文件的对应关系:\n\n| 输入类型       | 软键盘UI资源文件|\n|----------------|:---------------:|\n| INPUT\\_PHONE    | kb\\_phone.xml    |\n| INPUT\\_INT      | kb\\_int.xml      |\n| INPUT\\_FLOAT    | kb\\_float.xml    |\n| INPUT\\_UINT     | kb\\_uint.xml     |\n| INPUT\\_UFLOAT   | kb\\_ufloat.xml   |\n| INPUT\\_HEX      | kb\\_hex.xml      |\n| INPUT\\_EMAIL    | kb\\_ascii.xml    |\n| INPUT\\_PASSWORD | kb\\_ascii.xml    |\n| INPUT\\_CUSTOM   | 使用自定义的键盘 |\n| 其它            | kb\\_default.xml  |\n\nkeyboard中按钮子控件的名称有些特殊要求：\n\n|  名称          | 功能            |\n|----------------|:---------------:|\n| return         | 回车键          |\n| action         | 定制按钮        |\n| backspace      | 删除键          |\n| tab            | tab键           |\n| space          | 空格键          |\n| close          | 关闭软键盘       |\n| clear          | 清除编辑器的内容 |\n| cancel         | 恢复编辑器的内容 |\n| back           | 关闭当前窗口     |\n| back_to_home   | 返回home窗口    |\n| 前缀key:        | 键值           |\n| 前缀hard_key:   | 模拟物理键盘    |\n| 前缀page:       | 切换到页面      |\n| 前缀opt:        | 多个字符选择一个，点击切换到下一个，超时提交字符(用于实现九宫格输入) |\n\n示例：\n\n* 按键\"a\"，提交输入法处理。\n\n```xml\n<button repeat=\"300\" name=\"key:a\" text=\"a\"/>\n```\n\n* 字符\"a\"，直接提交到编辑器。\n\n```xml\n<button repeat=\"300\" name=\"a\" text=\"a\"/>\n```\n\n* 模拟物理键盘数字\"1\"，触发key down/up事件（可以用来选择候选字）。\n\n```xml\n<button repeat=\"300\" name=\"hard_key:1\" text=\"1\"/>\n```\n\n* 九宫格输入\n\n```xml\n<button repeat=\"300\" name=\"opt:._@/#\" text=\"._@/#\"/>\n<button repeat=\"300\" name=\"opt:abc\" text=\"abc\"/>\n<button repeat=\"300\" name=\"opt:def\" text=\"def\"/>\n```\n\n\n* 输入语言切换\n\n有的输入法，同时支持输入多种语言。\n比如T9，可以同时支持中文和英文输入，配合软键盘随时切换输入的语言。\n\n可以在pages的页面里指定lang属性，切换到该页面时会设置输入法的语言。如：\n\n```xml\n<pages x=\"0\" y=\"bottom\" w=\"100%\" h=\"-28\" active=\"2\">\n<view name=\"lower\" lang=\"en_us\"\nx=\"0\" y=\"0\" w=\"100%\" h=\"100%\" children_layout=\"default(r=4,c=4,s=2,m=2)\">\n...\n</view>\n<view name=\"chinese\" lang=\"zh_cn\"\nx=\"0\" y=\"0\" w=\"100%\" h=\"100%\" children_layout=\"default(r=4,c=4,s=2,m=2)\">\n...\n</view>\n</pages>\n```\n\n> 更多用法请参考：\n[kb_default](https://github.com/zlgopen/awtk/blob/master/design/default/ui/kb_default.xml)",
     "name": "keyboard_t",
     "parent": "window_base_t",
     "annotation": {
@@ -59522,6 +60007,29 @@
           {
             "type": "widget_t*",
             "name": "widget",
+            "desc": "控件对象。"
+          },
+          {
+            "type": "bool_t",
+            "name": "click_through",
+            "desc": "是否启用点击穿透。"
+          }
+        ],
+        "annotation": {
+          "scriptable": true
+        },
+        "desc": "设置是否启用点击穿透。",
+        "name": "overlay_set_click_through",
+        "return": {
+          "type": "ret_t",
+          "desc": "返回RET_OK表示成功，否则表示失败。"
+        }
+      },
+      {
+        "params": [
+          {
+            "type": "widget_t*",
+            "name": "widget",
             "desc": "overlay对象。"
           }
         ],
@@ -59538,7 +60046,21 @@
       }
     ],
     "events": [],
-    "properties": [],
+    "properties": [
+      {
+        "name": "click_through",
+        "desc": "点击穿透。点击没有子控件的位置，是否穿透到底层窗口。\n\n缺省不启用。",
+        "type": "bool_t",
+        "annotation": {
+          "set_prop": true,
+          "get_prop": true,
+          "readable": true,
+          "persitent": true,
+          "design": true,
+          "scriptable": true
+        }
+      }
+    ],
     "header": "widgets/overlay.h",
     "desc": "overlay窗口。\n\noverlay窗口有点类似于非模态的dialog，但是它位置和大小是完全自由的，窗口管理器不会对它做任何限制。\n\n如果overlay窗口有透明或半透效果，则不支持窗口动画，但可以通过移动窗口位置来实现类似动画的效果。\n\noverlay\\_t是[window\\_base\\_t](window_base_t.md)的子类控件，window\\_base\\_t的函数均适用于overlay\\_t控件。\n\n在xml中使用\"overlay\"标签创建窗口。需要指定坐标和大小，可以指定主题和动画名称。如：\n\n```xml\n<overlay theme=\"basic\" x=\"100\" y=\"100\" w=\"200\" h=\"300\">\n...\n</overlay>\n```\n\n>\n更多用法请参考：[overlay.xml](https://github.com/zlgopen/awtk/blob/master/design/default/ui/)\n\n在c代码中使用函数overlay\\_create创建窗口。如：\n\n```c\nwidget_t* overlay = overlay_create(NULL, 100, 100, 200, 300);\n```\n\n> 完整示例请参考：[overlay\ndemo](https://github.com/zlgopen/awtk-c-demos/blob/master/demos/)\n\n可用通过style来设置窗口的风格，如背景颜色或图片等。如：\n\n```xml\n<style name=\"bricks\">\n<normal bg_image=\"bricks\"  bg_image_draw_type=\"repeat\"/>\n</style>\n```\n\n> 更多用法请参考：[theme\ndefault](https://github.com/zlgopen/awtk/blob/master/design/default/styles/default.xml#L0)",
     "name": "overlay_t",

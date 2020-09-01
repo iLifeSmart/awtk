@@ -1,8 +1,61 @@
 # 最新动态
 
+* 2020/09/01 
+  * 增加FAQ《如何在打开新窗口时关闭当前窗口？》
+  * 增加FAQ《如何设置当前的语言？》
+  * 增加FAQ《如何将板子键盘的键值映射到 AWTK？》
+  * 增加FAQ《如何定制软键盘/候选字的风格？》
+  * 完整主题文档，增加颜色格式的说明。
+
+* 2020/08/30
+  * 完善 app helper脚本，从project.json读取lcd width/height
+
+* 2020/08/28
+  * overlay 增加 click_throgh 属性，允许 overlay 窗口在没点击到子控件时，穿透到底层窗口。
+
+* 2020/08/27
+  * 增加函数 wst\_count\_char
+  * edit 增加对 password/email 长度限制。
+  * 修改 edit password 居中的问题。
+  * 修复 agge 模式下修改窗口（SDL 窗口）大小后出现报错警告（感谢智明提供补丁）。
+  * 增加圆角矩形支持设置不同的圆角半径，不改变原来的函数，新增两个函数 canvas_fill_rounded_rect_ex 和 canvas_stroke_rounded_rect_ex 函数来支持改功能（感谢智明提供补丁）。
+  * 修复了离线 canvas 在使用在线 vg 绘图的时候，保存和还原 vg 的数据堆栈信息不正确导致画面异常的问题，给 vg 新增了一个 vgcanvas_reset_curr_state 来清除当前的 vg 状态数据（给 agge 模式下使用，清除 vg 堆栈对离线 canvas 的绘图产生影响）和在 nanovg 中新增了 nvgBeginFrameEx 函数（用于给绑定 fbo 时候使用，以免破坏 vg 的堆栈数据）（感谢智明提供补丁）。
+
+* 2020/08/25
+  * 修复 nanovg 在解析部分字体的是有可能因为顶点过多导致缓冲区不够大产生中断问题（感谢智明提供补丁）。
+  * 修复 nanovg 在 win10 或者 win8 的高分屏上有概率出现裁减区虚化的问题（感谢智明提供补丁）。
+
+* 2020/08/24
+  * mledit 支持 cancelable 属性，为 TRUE 时，如果内容有变化，会设置编辑器的状态为 changed，所以此时编辑器需要支持 changed 状态的 style。
+  * 完善 windows 时间函数。
+  * 完善 edit pattern
+  * edit 格式编辑时，获得焦点时，把光标设置到最前面。
+  * 修复 serial helper 和测试程序中内存泄漏（感谢智明提供补丁）。
+
+* 2020/08/23
+  * 修复 edit 编辑 ip/date/time 时，cancel 编辑时的问题。
+  * 新增 [awtk-restful-httpd](https://github.com/zlgopen/awtk-restful-httpd)
+  * 新增 [自动测试引擎](https://github.com/zlgopen/awtk-ui-automation)
+  * 新增函数 widget\_get\_text\_utf8
+  
+* 2020/08/21
+  * 修复 main_loop_simple.c 事件部分成员没有初始化的问题（感谢梦幻櫻花提供补丁）。
+
+* 2020/08/20
+  * 软键盘支持“clear"/"cancel"两个功能按钮。
+  * 修复 opengles 截屏的时候反算预乘时候数据溢出问题（感谢智明提供补丁）。
+  * 修复离线 canvas 在 agge 下有可能导致原来（感谢智明提供补丁）。
+  * edit 支持 cancelable 属性，为 TRUE 时，如果内容有变化，会设置编辑器的状态为 changed，所以此时编辑器需要支持 changed 状态的 style。
+
+* 2020/08/19
+  * 完善 app conf 保存 json 时字符串转义处理。
+  * 完整 ui serializer，增加 xml 预处理指令。
+  * 增加 [字符集编码转换函数](https://github.com/zlgopen/awtk/tree/master/src/charset/README.md)。
+  * t9ext 输入法引擎支持设置语言（感谢梦幻櫻花提供补丁）。
+
 * 2020/08/18
   * 修复了一些潜在的内存泄露。
-  * button支持设置长按时间。
+  * button 支持设置长按时间。
   * 完善编译脚本（感谢朝泽提供补丁）
 
 * 2020/08/17
@@ -172,7 +225,7 @@
   * 完善 graphic\_buffer\_default
   * 增加 tk\_mem\_is\_valid\_addr
   * 完善 edit 注释（感谢俊杰提供补丁）。
-   *  gif 隐藏后不再刷新。 
+  *  gif 隐藏后不再刷新。 
   * 完善 ui loader（感谢 dog2nd_Zhao 提供补丁）。
 
 * 2020/06/30

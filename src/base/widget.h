@@ -76,6 +76,7 @@ typedef ret_t (*widget_get_prop_t)(widget_t* widget, const char* name, value_t* 
 typedef ret_t (*widget_get_prop_default_value_t)(widget_t* widget, const char* name, value_t* v);
 typedef ret_t (*widget_set_prop_t)(widget_t* widget, const char* name, const value_t* v);
 typedef ret_t (*widget_on_copy_t)(widget_t* widget, widget_t* other);
+typedef bool_t (*widget_is_point_in_t)(widget_t* widget, xy_t x, xy_t y);
 typedef widget_t* (*widget_find_target_t)(widget_t* widget, xy_t x, xy_t y);
 typedef widget_t* (*widget_create_t)(widget_t* parent, xy_t x, xy_t y, wh_t w, wh_t h);
 typedef ret_t (*widget_on_destroy_t)(widget_t* widget);
@@ -159,6 +160,7 @@ struct _widget_vtable_t {
   widget_set_prop_t set_prop;
   widget_invalidate_t invalidate;
   widget_find_target_t find_target;
+  widget_is_point_in_t is_point_in;
   widget_get_prop_default_value_t get_prop_default_value;
 
   widget_on_copy_t on_copy;
@@ -778,6 +780,18 @@ ret_t widget_use_style(widget_t* widget, const char* style);
  * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
  */
 ret_t widget_set_text_utf8(widget_t* widget, const char* text);
+
+/**
+ * @method widget_get_text_utf8
+ * 获取控件的文本。
+ * 只是对widget\_get\_prop的包装，文本的意义由子类控件决定。
+ * @param {widget_t*} widget 控件对象。
+ * @param {char*}  text 用于返回文本。
+ * @param {uint32_t} size text内存长度。
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
+ */
+ret_t widget_get_text_utf8(widget_t* widget, char* text, uint32_t size);
 
 /**
  * @method widget_set_child_text_utf8
@@ -2287,6 +2301,10 @@ ret_t widget_set_self_layout_params(widget_t* widget, const char* x, const char*
 /**
  * @method widget_set_style_int
  * 设置整数类型的style。
+ *
+ * > * [state 的取值](https://github.com/zlgopen/awtk/blob/master/docs/manual/widget_state_t.md)
+ * > * [name 的取值](https://github.com/zlgopen/awtk/blob/master/docs/theme.md)
+ *
  * @annotation ["scriptable"]
  * @param {widget_t*} widget 控件对象。
  * @param {const char*} state_and_name 状态和名字，用英文的冒号分隔。
@@ -2299,6 +2317,10 @@ ret_t widget_set_style_int(widget_t* widget, const char* state_and_name, int32_t
 /**
  * @method widget_set_style_str
  * 设置字符串类型的style。
+ *
+ * > * [state 的取值](https://github.com/zlgopen/awtk/blob/master/docs/manual/widget_state_t.md)
+ * > * [name 的取值](https://github.com/zlgopen/awtk/blob/master/docs/theme.md)
+ *
  * @annotation ["scriptable"]
  * @param {widget_t*} widget 控件对象。
  * @param {const char*} state_and_name 状态和名字，用英文的冒号分隔。
@@ -2311,10 +2333,20 @@ ret_t widget_set_style_str(widget_t* widget, const char* state_and_name, const c
 /**
  * @method widget_set_style_color
  * 设置颜色类型的style。
+ *
+ * > * [state 的取值](https://github.com/zlgopen/awtk/blob/master/docs/manual/widget_state_t.md)
+ * > * [name 的取值](https://github.com/zlgopen/awtk/blob/master/docs/theme.md)
+ *
  * @annotation ["scriptable"]
  * @param {widget_t*} widget 控件对象。
  * @param {const char*} state_and_name 状态和名字，用英文的冒号分隔。
- * @param {uint32_t} value 值。
+ * @param {uint32_t} value 值。颜色值一般用十六进制表示，每两个数字表示一个颜色通道，从高位到低位，依次是ABGR。
+ * 
+ * 在下面这个例子中，R=0x11 G=0x22 B=0x33 A=0xFF
+ * 
+ * ```c
+ *  widget_set_style_color(label, "style:normal:bg_color", 0xFF332211);
+ * ```
  *
  * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
  */
