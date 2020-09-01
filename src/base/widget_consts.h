@@ -396,6 +396,12 @@ BEGIN_C_DECLS
 #define WIDGET_PROP_READONLY "readonly"
 
 /**
+ * @const WIDGET_PROP_CANCELABLE
+ * 是否可取消。
+ */
+#define WIDGET_PROP_CANCELABLE "cancelable"
+
+/**
  * @const WIDGET_PROP_PASSWORD_VISIBLE
  * 密码是否可见。
  */
@@ -616,6 +622,12 @@ BEGIN_C_DECLS
  * 是否启用长按。
  */
 #define WIDGET_PROP_ENABLE_LONG_PRESS "enable_long_press"
+
+/**
+ * @const WIDGET_PROP_CLICK_THROUGH
+ * 是否启用点击穿透。
+ */
+#define WIDGET_PROP_CLICK_THROUGH "click_through"
 
 /**
  * @const WIDGET_PROP_ANIMATABLE
@@ -1265,6 +1277,12 @@ typedef enum _window_closable_t {
  * 正常状态。
  */
 #define WIDGET_STATE_NORMAL "normal"
+
+/**
+ * @const WIDGET_STATE_CHANGED
+ * 内容被修改的状态。
+ */
+#define WIDGET_STATE_CHANGED "changed"
 
 /**
  * @const WIDGET_STATE_PRESSED

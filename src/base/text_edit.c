@@ -512,10 +512,11 @@ static int32_t text_edit_calc_x(text_edit_t* text_edit, row_info_t* iter) {
   canvas_t* c = text_edit->c;
   widget_t* widget = text_edit->widget;
   wstr_t* text = &(widget->text);
+  wchar_t chr = impl->mask ? impl->mask_char : 0;
   text_layout_info_t* layout_info = &(impl->layout_info);
   align_h_t align_h = widget_get_text_align_h(text_edit->widget);
 
-  uint32_t row_width = text_edit_measure_text(c, text->str + iter->offset, 0, iter->length);
+  uint32_t row_width = text_edit_measure_text(c, text->str + iter->offset, chr, iter->length);
   if (row_width < layout_info->w) {
     switch (align_h) {
       case ALIGN_H_CENTER: {
@@ -616,6 +617,12 @@ static ret_t text_edit_paint_real_text(text_edit_t* text_edit, canvas_t* c) {
 
     if (impl->single_line) {
       y = (layout_info->h - c->font_size) / 2 + layout_info->margin_t;
+
+      /*FIXME: 密码编辑时，*字符本身偏高，看起来不像居中。但是无法拿到字模信息，只好手工修正一下。*/
+      if (impl->mask && impl->mask_char == '*') {
+        y += c->font_size / 6;
+      }
+
     } else {
       y = i * line_height + layout_info->margin_t;
     }

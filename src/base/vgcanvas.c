@@ -39,6 +39,12 @@ ret_t vgcanvas_reset(vgcanvas_t* vg) {
   return vg->vt->reset(vg);
 }
 
+ret_t vgcanvas_reset_curr_state(vgcanvas_t* vg) {
+  return_value_if_fail(vg != NULL && vg->vt->reset_curr_state != NULL, RET_BAD_PARAMS);
+
+  return vg->vt->reset_curr_state(vg);
+}
+
 ret_t vgcanvas_flush(vgcanvas_t* vg) {
   return_value_if_fail(vg != NULL && vg->vt->flush != NULL, RET_BAD_PARAMS);
 
@@ -523,5 +529,5 @@ ret_t vgcanvas_clear_cache(vgcanvas_t* vg) {
   return_value_if_fail(vg != NULL && vg->vt != NULL, RET_BAD_PARAMS);
   return_value_if_fail(vg->vt->clear_cache != NULL, RET_BAD_PARAMS);
 
-   return vg->vt->clear_cache(vg);
+  return vg->vt->clear_cache(vg);
 }

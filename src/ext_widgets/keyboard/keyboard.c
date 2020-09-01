@@ -142,6 +142,8 @@ static ret_t keyboard_set_active_page(widget_t* button, const char* name) {
 
 #define STR_BACK "back"
 #define STR_CLOSE "close"
+#define STR_CLEAR "clear"
+#define STR_CANCEL "cancel"
 #define STR_RETURN "return"
 #define STR_ACTION "action"
 #define STR_KEY_SPACE "space"
@@ -199,6 +201,20 @@ static ret_t keyboard_on_button_click(void* ctx, event_t* e) {
   keyboard->last_click_button = button;
   if (tk_str_eq(name, STR_CLOSE)) {
     input_method_request(im, NULL);
+
+    return RET_OK;
+  }
+
+  if (tk_str_eq(name, STR_CLEAR)) {
+    event_t e = event_init(EVT_IM_CLEAR, NULL);
+    input_method_dispatch_to_widget(im, &e);
+
+    return RET_OK;
+  }
+
+  if (tk_str_eq(name, STR_CANCEL)) {
+    event_t e = event_init(EVT_IM_CANCEL, NULL);
+    input_method_dispatch_to_widget(im, &e);
 
     return RET_OK;
   }

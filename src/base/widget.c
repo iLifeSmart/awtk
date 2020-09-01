@@ -276,6 +276,27 @@ ret_t widget_set_text_utf8(widget_t* widget, const char* text) {
   return widget_set_prop(widget, WIDGET_PROP_TEXT, value_set_str(&v, text));
 }
 
+ret_t widget_get_text_utf8(widget_t* widget, char* text, uint32_t size) {
+  value_t v;
+  ret_t ret = RET_OK;
+  return_value_if_fail(widget != NULL && text != NULL && size > 0, RET_BAD_PARAMS);
+
+  value_set_str(&v, NULL);
+  memset(text, 0x00, size);
+  if (widget_get_prop(widget, WIDGET_PROP_TEXT, &v) == RET_OK) {
+    if (v.type == VALUE_TYPE_STRING) {
+      tk_strncpy(text, value_str(&v), size - 1);
+      tk_utf8_from_utf16(value_wstr(&v), text, size);
+      ret = RET_OK;
+    } else if (v.type == VALUE_TYPE_WSTRING) {
+      tk_utf8_from_utf16(value_wstr(&v), text, size);
+      ret = RET_OK;
+    }
+  }
+
+  return ret;
+}
+
 image_manager_t* widget_get_image_manager(widget_t* widget) {
   image_manager_t* ret = image_manager();
   return_value_if_fail(widget != NULL && widget->vt != NULL, ret);
@@ -1272,9 +1293,13 @@ ret_t widget_fill_rect(widget_t* widget, canvas_t* c, rect_t* r, bool_t bg,
   style_t* style = widget->astyle;
   color_t trans = color_init(0, 0, 0, 0);
   uint32_t radius = style_get_int(style, STYLE_ID_ROUND_RADIUS, 0);
-  rect_t bg_r = rect_init(widget->x, widget->y, widget->w, widget->h);
   const char* color_key = bg ? STYLE_ID_BG_COLOR : STYLE_ID_FG_COLOR;
   const char* image_key = bg ? STYLE_ID_BG_IMAGE : STYLE_ID_FG_IMAGE;
+  rect_t bg_r = rect_init(widget->x, widget->y, widget->w, widget->h);
+  uint32_t radius_tl = style_get_int(style, STYLE_ID_ROUND_RADIUS_TOP_LETF, radius);
+  uint32_t radius_tr = style_get_int(style, STYLE_ID_ROUND_RADIUS_TOP_RIGHT, radius);
+  uint32_t radius_bl = style_get_int(style, STYLE_ID_ROUND_RADIUS_BOTTOM_LETF, radius);
+  uint32_t radius_br = style_get_int(style, STYLE_ID_ROUND_RADIUS_BOTTOM_RIGHT, radius);
   const char* draw_type_key = bg ? STYLE_ID_BG_IMAGE_DRAW_TYPE : STYLE_ID_FG_IMAGE_DRAW_TYPE;
 
   color_t color = style_get_color(style, color_key, trans);
@@ -1282,11 +1307,13 @@ ret_t widget_fill_rect(widget_t* widget, canvas_t* c, rect_t* r, bool_t bg,
 
   if (color.rgba.a && r->w > 0 && r->h > 0) {
     canvas_set_fill_color(c, color);
-    if (radius > 3) {
+    if (radius_tl > 3 || radius_tr > 3 || radius_bl > 3 || radius_br > 3) {
       if (bg) {
-        ret = canvas_fill_rounded_rect(c, r, NULL, &color, radius);
+        ret = canvas_fill_rounded_rect_ex(c, r, NULL, &color, radius_tl, radius_tr, radius_bl,
+                                          radius_br);
       } else {
-        ret = canvas_fill_rounded_rect(c, r, &bg_r, &color, radius);
+        ret = canvas_fill_rounded_rect_ex(c, r, &bg_r, &color, radius_tl, radius_tr, radius_bl,
+                                          radius_br);
       }
       if (ret == RET_FAIL) {
         canvas_fill_rect(c, r->x, r->y, r->w, r->h);
@@ -1350,12 +1377,17 @@ ret_t widget_stroke_border_rect(widget_t* widget, canvas_t* c, rect_t* r) {
   uint32_t radius = style_get_int(style, STYLE_ID_ROUND_RADIUS, 0);
   int32_t border = style_get_int(style, STYLE_ID_BORDER, BORDER_ALL);
   uint32_t border_width = style_get_int(style, STYLE_ID_BORDER_WIDTH, 1);
+  uint32_t radius_tl = style_get_int(style, STYLE_ID_ROUND_RADIUS_TOP_LETF, radius);
+  uint32_t radius_tr = style_get_int(style, STYLE_ID_ROUND_RADIUS_TOP_RIGHT, radius);
+  uint32_t radius_bl = style_get_int(style, STYLE_ID_ROUND_RADIUS_BOTTOM_LETF, radius);
+  uint32_t radius_br = style_get_int(style, STYLE_ID_ROUND_RADIUS_BOTTOM_RIGHT, radius);
 
   if (bd.rgba.a) {
     canvas_set_stroke_color(c, bd);
-    if (radius > 3) {
+    if (radius_tl > 3 || radius_tr > 3 || radius_bl > 3 || radius_br > 3) {
       if (border == BORDER_ALL) {
-        if (canvas_stroke_rounded_rect(c, r, NULL, &bd, radius, border_width) != RET_OK) {
+        if (canvas_stroke_rounded_rect_ex(c, r, NULL, &bd, radius_tl, radius_tr, radius_bl,
+                                          radius_br, border_width) != RET_OK) {
           widget_stroke_border_rect_for_border_type(c, r, bd, border, border_width);
         }
       } else {
@@ -2868,7 +2900,7 @@ static ret_t widget_set_parent_not_dirty(widget_t* widget) {
 
 ret_t widget_invalidate(widget_t* widget, rect_t* r) {
   rect_t rself;
-  return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
+  return_value_if_fail(widget != NULL && widget->vt != NULL, RET_BAD_PARAMS);
 
   if (widget->dirty) {
     return RET_OK;
@@ -3356,7 +3388,11 @@ bool_t widget_is_point_in(widget_t* widget, xy_t x, xy_t y, bool_t is_local) {
     widget_to_local(widget, &p);
   }
 
-  return (p.x >= 0 && p.y >= 0 && p.x < widget->w && p.y < widget->h);
+  if (widget->vt->is_point_in != NULL) {
+    return widget->vt->is_point_in(widget, p.x, p.y);
+  } else {
+    return (p.x >= 0 && p.y >= 0 && p.x < widget->w && p.y < widget->h);
+  }
 }
 
 const char* widget_get_type(widget_t* widget) {
