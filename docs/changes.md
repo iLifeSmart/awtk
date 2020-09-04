@@ -1,14 +1,29 @@
 # 最新动态
 
+* 2020/09/04
+  * 完善 ringbuffer（感谢网友 J, 提供补丁）
+  * 完善窗口动画截图（感谢智明提供补丁）。
+
+* 2020/09/03
+  * 完善 toast（感谢智明提供补丁）。
+  * 完善 calibration win（感谢俊杰提供补丁）。 
+
+* 2020/09/02 
+  * 修改了圆角矩形的函数名字和修改了 vg 接口的注释（感谢智明提供补丁）。
+  * 按照上星期说的 dialog\_toast 问题（感谢智明提供补丁）。
+  * 更新主题文档。
+  * 完善 demoui，增加指定单个圆角半径的示例。
+  * 增加文档 [《如何将生成的可执行文件和资源打包》](docs/how_to_release_app.md)
+  
 * 2020/09/01 
-  * 增加FAQ《如何在打开新窗口时关闭当前窗口？》
-  * 增加FAQ《如何设置当前的语言？》
-  * 增加FAQ《如何将板子键盘的键值映射到 AWTK？》
-  * 增加FAQ《如何定制软键盘/候选字的风格？》
+  * 增加 FAQ《如何在打开新窗口时关闭当前窗口？》
+  * 增加 FAQ《如何设置当前的语言？》
+  * 增加 FAQ《如何将板子键盘的键值映射到 AWTK？》
+  * 增加 FAQ《如何定制软键盘/候选字的风格？》
   * 完整主题文档，增加颜色格式的说明。
 
 * 2020/08/30
-  * 完善 app helper脚本，从project.json读取lcd width/height
+  * 完善 app helper 脚本，从 project.json 读取 lcd width/height
 
 * 2020/08/28
   * overlay 增加 click_throgh 属性，允许 overlay 窗口在没点击到子控件时，穿透到底层窗口。
@@ -18,8 +33,8 @@
   * edit 增加对 password/email 长度限制。
   * 修改 edit password 居中的问题。
   * 修复 agge 模式下修改窗口（SDL 窗口）大小后出现报错警告（感谢智明提供补丁）。
-  * 增加圆角矩形支持设置不同的圆角半径，不改变原来的函数，新增两个函数 canvas_fill_rounded_rect_ex 和 canvas_stroke_rounded_rect_ex 函数来支持改功能（感谢智明提供补丁）。
-  * 修复了离线 canvas 在使用在线 vg 绘图的时候，保存和还原 vg 的数据堆栈信息不正确导致画面异常的问题，给 vg 新增了一个 vgcanvas_reset_curr_state 来清除当前的 vg 状态数据（给 agge 模式下使用，清除 vg 堆栈对离线 canvas 的绘图产生影响）和在 nanovg 中新增了 nvgBeginFrameEx 函数（用于给绑定 fbo 时候使用，以免破坏 vg 的堆栈数据）（感谢智明提供补丁）。
+  * 增加圆角矩形支持设置不同的圆角半径，不改变原来的函数，新增两个函数 canvas\_fill\_rounded\_rect\_ex 和 canvas\_stroke\_rounded\_rect\_ex 函数来支持改功能（感谢智明提供补丁）。
+  * 修复了离线 canvas 在使用在线 vg 绘图的时候，保存和还原 vg 的数据堆栈信息不正确导致画面异常的问题，给 vg 新增了一个 vgcanvas\_reset\_curr\_state 来清除当前的 vg 状态数据（给 agge 模式下使用，清除 vg 堆栈对离线 canvas 的绘图产生影响）和在 nanovg 中新增了 nvgBeginFrameEx 函数（用于给绑定 fbo 时候使用，以免破坏 vg 的堆栈数据）（感谢智明提供补丁）。
 
 * 2020/08/25
   * 修复 nanovg 在解析部分字体的是有可能因为顶点过多导致缓冲区不够大产生中断问题（感谢智明提供补丁）。
