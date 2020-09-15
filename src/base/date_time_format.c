@@ -32,6 +32,28 @@ static uint32_t count_char(const wchar_t* p, wchar_t c) {
 
   return nr;
 }
+//hack by hantianheng
+static wchar_t* translate_day_suffix(wchar_t* str, uint32_t size, uint32_t day) {
+  return_value_if_fail(day <= 31, NULL);
+  const char* utf8;
+  static const char* const daySuffixs[] = {
+      "st","nd","rd","th",
+  };
+  if(day==1 || day==21 || day==31)
+  {
+    utf8=daySuffixs[0];
+  }else if(day==2 || day==22)
+  {
+    utf8=daySuffixs[1];
+  }else if(day==3 || day==23)
+  {
+      utf8=daySuffixs[2];
+  }else
+  {
+      utf8=daySuffixs[3];
+  }
+  return tk_utf8_to_utf16(utf8, str, size);
+}
 
 static wchar_t* translate_wday(wchar_t* str, uint32_t size, uint32_t wday) {
   return_value_if_fail(wday < 7, NULL);
@@ -91,6 +113,9 @@ ret_t wstr_format_date_time(wstr_t* str, const char* format, const date_time_t* 
       case 'D': {
         if (repeat == 2) {
           wstr_push_int(str, "%02d", dt->day);
+        } else if (repeat == 3){//hack by hantianheng
+          translate_day_suffix(temp,ARRAY_SIZE(temp),dt->day);
+          wstr_append(str, temp);
         } else {
           wstr_push_int(str, "%d", dt->day);
         }
