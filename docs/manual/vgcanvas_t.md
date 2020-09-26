@@ -70,7 +70,8 @@ vgcanvas_restore(vg);
 | <a href="#vgcanvas_t_vgcanvas_quad_to">vgcanvas\_quad\_to</a> | 生成一条二次贝塞尔曲线。 |
 | <a href="#vgcanvas_t_vgcanvas_rect">vgcanvas\_rect</a> | 生成一个矩形路径。 |
 | <a href="#vgcanvas_t_vgcanvas_reinit">vgcanvas\_reinit</a> | 重新初始化，系统内部调用。 |
-| <a href="#vgcanvas_t_vgcanvas_reset">vgcanvas\_reset</a> | 重置状态。 |
+| <a href="#vgcanvas_t_vgcanvas_reset">vgcanvas\_reset</a> | 重置所有状态。 |
+| <a href="#vgcanvas_t_vgcanvas_reset_curr_state">vgcanvas\_reset\_curr\_state</a> | 重置当前状态。 |
 | <a href="#vgcanvas_t_vgcanvas_restore">vgcanvas\_restore</a> | 恢复上次save的状态。 |
 | <a href="#vgcanvas_t_vgcanvas_rotate">vgcanvas\_rotate</a> | 旋转。 |
 | <a href="#vgcanvas_t_vgcanvas_rounded_rect">vgcanvas\_rounded\_rect</a> | 生成一个圆角矩形路径。 |
@@ -178,7 +179,7 @@ ret_t vgcanvas_arc_to (vgcanvas_t* vg, float_t x1, float_t y1, float_t x2, float
 * 函数原型：
 
 ```
-ret_t vgcanvas_begin_frame (vgcanvas_t* vg, rect_t* dirty_rect);
+ret_t vgcanvas_begin_frame (vgcanvas_t* vg, const rect_t* dirty_rect);
 ```
 
 * 参数说明：
@@ -187,7 +188,7 @@ ret_t vgcanvas_begin_frame (vgcanvas_t* vg, rect_t* dirty_rect);
 | -------- | ----- | --------- |
 | 返回值 | ret\_t | 返回RET\_OK表示成功，否则表示失败。 |
 | vg | vgcanvas\_t* | vgcanvas对象。 |
-| dirty\_rect | rect\_t* | 需要绘制的区域。 |
+| dirty\_rect | const rect\_t* | 需要绘制的区域。 |
 #### vgcanvas\_begin\_path 函数
 -----------------------
 
@@ -839,12 +840,31 @@ ret_t vgcanvas_reinit (vgcanvas_t* vg, uint32_t w, uint32_t h, uint32_t stride, 
 
 * 函数功能：
 
-> <p id="vgcanvas_t_vgcanvas_reset">重置状态。
+> <p id="vgcanvas_t_vgcanvas_reset">重置所有状态。
 
 * 函数原型：
 
 ```
 ret_t vgcanvas_reset (vgcanvas_t* vg);
+```
+
+* 参数说明：
+
+| 参数 | 类型 | 说明 |
+| -------- | ----- | --------- |
+| 返回值 | ret\_t | 返回RET\_OK表示成功，否则表示失败。 |
+| vg | vgcanvas\_t* | vgcanvas对象。 |
+#### vgcanvas\_reset\_curr\_state 函数
+-----------------------
+
+* 函数功能：
+
+> <p id="vgcanvas_t_vgcanvas_reset_curr_state">重置当前状态。
+
+* 函数原型：
+
+```
+ret_t vgcanvas_reset_curr_state (vgcanvas_t* vg);
 ```
 
 * 参数说明：

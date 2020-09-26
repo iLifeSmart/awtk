@@ -102,6 +102,7 @@ widget_on(button, EVT_CLICK, on_click, NULL);
 | <a href="#widget_t_widget_get_prop_str">widget\_get\_prop\_str</a> | 获取字符串格式的属性。 |
 | <a href="#widget_t_widget_get_state_for_style">widget\_get\_state\_for\_style</a> | 把控件的状态转成获取style选要的状态，一般只在子类中使用。 |
 | <a href="#widget_t_widget_get_text">widget\_get\_text</a> | 获取控件的文本。 |
+| <a href="#widget_t_widget_get_text_utf8">widget\_get\_text\_utf8</a> | 获取控件的文本。 |
 | <a href="#widget_t_widget_get_type">widget\_get\_type</a> | 获取当前控件的类型名称。 |
 | <a href="#widget_t_widget_get_value">widget\_get\_value</a> | 获取控件的值。只是对widget\_get\_prop的包装，值的意义由子类控件决定。 |
 | <a href="#widget_t_widget_get_window">widget\_get\_window</a> | 获取当前控件所在的窗口。 |
@@ -161,6 +162,7 @@ widget_on(button, EVT_CLICK, on_click, NULL);
 | <a href="#widget_t_widget_set_as_key_target">widget\_set\_as\_key\_target</a> | 递归的把父控件的key_target设置为自己。 |
 | <a href="#widget_t_widget_set_child_text_utf8">widget\_set\_child\_text\_utf8</a> | 设置子控件的文本。 |
 | <a href="#widget_t_widget_set_child_text_with_double">widget\_set\_child\_text\_with\_double</a> | 用一个浮点数去设置子控件的文本。 |
+| <a href="#widget_t_widget_set_child_text_with_int">widget\_set\_child\_text\_with\_int</a> | 用一个整数去设置子控件的文本。 |
 | <a href="#widget_t_widget_set_children_layout">widget\_set\_children\_layout</a> | 设置子控件的布局参数。 |
 | <a href="#widget_t_widget_set_dirty_rect_tolerance">widget\_set\_dirty\_rect\_tolerance</a> | 设置控件脏矩形超出控件本身大小的最大范围(一般不用指定)。 |
 | <a href="#widget_t_widget_set_enable">widget\_set\_enable</a> | 设置控件的可用性。 |
@@ -208,7 +210,7 @@ widget_on(button, EVT_CLICK, on_click, NULL);
 | <a href="#widget_t_widget_update_pointer_cursor">widget\_update\_pointer\_cursor</a> | 更新鼠标指针。 |
 | <a href="#widget_t_widget_update_style">widget\_update\_style</a> | 让控件根据自己当前状态更新style。 |
 | <a href="#widget_t_widget_update_style_recursive">widget\_update\_style\_recursive</a> | 让控件及子控件根据自己当前状态更新style。 |
-| <a href="#widget_t_widget_use_style">widget\_use\_style</a> | 启用指定的主题。 |
+| <a href="#widget_t_widget_use_style">widget\_use\_style</a> | 启用指定的style。 |
 ### 属性
 <p id="widget_t_properties">
 
@@ -842,7 +844,7 @@ ret_t widget_draw_background (widget_t* widget, canvas_t* c);
 * 函数原型：
 
 ```
-ret_t widget_draw_text_in_rect (widget_t* widget, canvas_t* c, const wchar_t* str, uint32_t size, rect_t* r, bool_t ellipses);
+ret_t widget_draw_text_in_rect (widget_t* widget, canvas_t* c, const wchar_t* str, uint32_t size, const rect_t* r, bool_t ellipses);
 ```
 
 * 参数说明：
@@ -854,7 +856,7 @@ ret_t widget_draw_text_in_rect (widget_t* widget, canvas_t* c, const wchar_t* st
 | c | canvas\_t* | 画布对象。 |
 | str | const wchar\_t* | 文本。 |
 | size | uint32\_t | 文本长度。 |
-| r | rect\_t* | 矩形区域。 |
+| r | const rect\_t* | 矩形区域。 |
 | ellipses | bool\_t | 宽度不够时是否显示省略号。 |
 #### widget\_end\_wait\_pointer\_cursor 函数
 -----------------------
@@ -924,7 +926,7 @@ bool_t widget_equal (widget_t* widget, widget_t* other);
 * 函数原型：
 
 ```
-ret_t widget_fill_bg_rect (widget_t* widget, canvas_t* c, rect_t* r, image_draw_type_t draw_type);
+ret_t widget_fill_bg_rect (widget_t* widget, canvas_t* c, const rect_t* r, image_draw_type_t draw_type);
 ```
 
 * 参数说明：
@@ -934,7 +936,7 @@ ret_t widget_fill_bg_rect (widget_t* widget, canvas_t* c, rect_t* r, image_draw_
 | 返回值 | ret\_t | 返回RET\_OK表示成功，否则表示失败。 |
 | widget | widget\_t* | 控件对象。 |
 | c | canvas\_t* | 画布对象。 |
-| r | rect\_t* | 矩形区域。 |
+| r | const rect\_t* | 矩形区域。 |
 | draw\_type | image\_draw\_type\_t | 图片缺省绘制方式。 |
 #### widget\_fill\_fg\_rect 函数
 -----------------------
@@ -946,7 +948,7 @@ ret_t widget_fill_bg_rect (widget_t* widget, canvas_t* c, rect_t* r, image_draw_
 * 函数原型：
 
 ```
-ret_t widget_fill_fg_rect (widget_t* widget, canvas_t* c, rect_t* r, image_draw_type_t draw_type);
+ret_t widget_fill_fg_rect (widget_t* widget, canvas_t* c, const rect_t* r, image_draw_type_t draw_type);
 ```
 
 * 参数说明：
@@ -956,7 +958,7 @@ ret_t widget_fill_fg_rect (widget_t* widget, canvas_t* c, rect_t* r, image_draw_
 | 返回值 | ret\_t | 返回RET\_OK表示成功，否则表示失败。 |
 | widget | widget\_t* | 控件对象。 |
 | c | canvas\_t* | 画布对象。 |
-| r | rect\_t* | 矩形区域。 |
+| r | const rect\_t* | 矩形区域。 |
 | draw\_type | image\_draw\_type\_t | 图片缺省绘制方式。 |
 #### widget\_find\_animator 函数
 -----------------------
@@ -1390,6 +1392,28 @@ const wchar_t* widget_get_text (widget_t* widget);
 | -------- | ----- | --------- |
 | 返回值 | const wchar\_t* | 返回文本。 |
 | widget | widget\_t* | 控件对象。 |
+#### widget\_get\_text\_utf8 函数
+-----------------------
+
+* 函数功能：
+
+> <p id="widget_t_widget_get_text_utf8">获取控件的文本。
+只是对widget\_get\_prop的包装，文本的意义由子类控件决定。
+
+* 函数原型：
+
+```
+ret_t widget_get_text_utf8 (widget_t* widget, char* text, uint32_t size);
+```
+
+* 参数说明：
+
+| 参数 | 类型 | 说明 |
+| -------- | ----- | --------- |
+| 返回值 | ret\_t | 返回RET\_OK表示成功，否则表示失败。 |
+| widget | widget\_t* | 控件对象。 |
+| text | char* | 用于返回文本。 |
+| size | uint32\_t | text内存长度。 |
 #### widget\_get\_type 函数
 -----------------------
 
@@ -1566,7 +1590,7 @@ ret_t widget_insert_child (widget_t* widget, uint32_t index, widget_t* child);
 * 函数原型：
 
 ```
-ret_t widget_invalidate (widget_t* widget, rect_t* r);
+ret_t widget_invalidate (widget_t* widget, const rect_t* r);
 ```
 
 * 参数说明：
@@ -1575,7 +1599,7 @@ ret_t widget_invalidate (widget_t* widget, rect_t* r);
 | -------- | ----- | --------- |
 | 返回值 | ret\_t | 返回RET\_OK表示成功，否则表示失败。 |
 | widget | widget\_t* | 控件对象。 |
-| r | rect\_t* | 矩形对象(widget本地坐标)。 |
+| r | const rect\_t* | 矩形对象(widget本地坐标)。 |
 #### widget\_invalidate\_force 函数
 -----------------------
 
@@ -1586,7 +1610,7 @@ ret_t widget_invalidate (widget_t* widget, rect_t* r);
 * 函数原型：
 
 ```
-ret_t widget_invalidate_force (widget_t* widget, rect_t* r);
+ret_t widget_invalidate_force (widget_t* widget, const rect_t* r);
 ```
 
 * 参数说明：
@@ -1595,7 +1619,7 @@ ret_t widget_invalidate_force (widget_t* widget, rect_t* r);
 | -------- | ----- | --------- |
 | 返回值 | ret\_t | 返回RET\_OK表示成功，否则表示失败。 |
 | widget | widget\_t* | 控件对象。 |
-| r | rect\_t* | 矩形对象(widget本地坐标)。 |
+| r | const rect\_t* | 矩形对象(widget本地坐标)。 |
 #### widget\_is\_designing\_window 函数
 -----------------------
 
@@ -1692,14 +1716,14 @@ widget_set_prop_bool(group, WIDGET_PROP_IS_KEYBOARD, TRUE);
 * 函数原型：
 
 ```
-ret_t widget_is_keyboard (widget_t* widget);
+bool_t widget_is_keyboard (widget_t* widget);
 ```
 
 * 参数说明：
 
 | 参数 | 类型 | 说明 |
 | -------- | ----- | --------- |
-| 返回值 | ret\_t | 返回RET\_OK表示成功，否则表示失败。 |
+| 返回值 | bool\_t | 返回FALSE表示不是，否则表示是。 |
 | widget | widget\_t* | 控件对象。 |
 #### widget\_is\_normal\_window 函数
 -----------------------
@@ -2633,6 +2657,29 @@ ret_t widget_set_child_text_with_double (widget_t* widget, const char* name, con
 | name | const char* | 子控件的名称。 |
 | format | const char* | 格式字符串(如："%2.2lf")。 |
 | value | double | 浮点数值。 |
+#### widget\_set\_child\_text\_with\_int 函数
+-----------------------
+
+* 函数功能：
+
+> <p id="widget_t_widget_set_child_text_with_int">用一个整数去设置子控件的文本。
+只是对widget\_set\_prop的包装，文本的意义由子类控件决定。
+
+* 函数原型：
+
+```
+ret_t widget_set_child_text_with_int (widget_t* widget, const char* name, const char* format, int value);
+```
+
+* 参数说明：
+
+| 参数 | 类型 | 说明 |
+| -------- | ----- | --------- |
+| 返回值 | ret\_t | 返回RET\_OK表示成功，否则表示失败。 |
+| widget | widget\_t* | 控件对象。 |
+| name | const char* | 子控件的名称。 |
+| format | const char* | 格式字符串(如："%d")。 |
+| value | int | 值。 |
 #### widget\_set\_children\_layout 函数
 -----------------------
 
@@ -3074,6 +3121,13 @@ ret_t widget_set_style (widget_t* widget, const char* state_and_name, const valu
 > * [state 的取值](https://github.com/zlgopen/awtk/blob/master/docs/manual/widget_state_t.md)
 > * [name 的取值](https://github.com/zlgopen/awtk/blob/master/docs/theme.md)
 
+
+在下面这个例子中，R=0x11 G=0x22 B=0x33 A=0xFF
+
+```c
+widget_set_style_color(label, "style:normal:bg_color", 0xFF332211);
+```
+
 * 函数原型：
 
 ```
@@ -3087,7 +3141,7 @@ ret_t widget_set_style_color (widget_t* widget, const char* state_and_name, uint
 | 返回值 | ret\_t | 返回RET\_OK表示成功，否则表示失败。 |
 | widget | widget\_t* | 控件对象。 |
 | state\_and\_name | const char* | 状态和名字，用英文的冒号分隔。 |
-| value | uint32\_t | 值。 |
+| value | uint32\_t | 值。颜色值一般用十六进制表示，每两个数字表示一个颜色通道，从高位到低位，依次是ABGR。 |
 #### widget\_set\_style\_int 函数
 -----------------------
 
@@ -3342,7 +3396,7 @@ ret_t widget_stop_animator (widget_t* widget, const char* name);
 * 函数原型：
 
 ```
-ret_t widget_stroke_border_rect (widget_t* widget, canvas_t* c, rect_t* r);
+ret_t widget_stroke_border_rect (widget_t* widget, canvas_t* c, const rect_t* r);
 ```
 
 * 参数说明：
@@ -3352,7 +3406,7 @@ ret_t widget_stroke_border_rect (widget_t* widget, canvas_t* c, rect_t* r);
 | 返回值 | ret\_t | 返回RET\_OK表示成功，否则表示失败。 |
 | widget | widget\_t* | 控件对象。 |
 | c | canvas\_t* | 画布对象。 |
-| r | rect\_t* | 矩形区域。 |
+| r | const rect\_t* | 矩形区域。 |
 #### widget\_take\_snapshot 函数
 -----------------------
 
@@ -3398,7 +3452,7 @@ bitmap_destroy(bitmap);
 * 函数原型：
 
 ```
-bitmap_t* widget_take_snapshot_rect (widget_t* widget, rect_t* r);
+bitmap_t* widget_take_snapshot_rect (widget_t* widget, const rect_t* r);
 ```
 
 * 参数说明：
@@ -3407,7 +3461,7 @@ bitmap_t* widget_take_snapshot_rect (widget_t* widget, rect_t* r);
 | -------- | ----- | --------- |
 | 返回值 | bitmap\_t* | 返回位图对象。 |
 | widget | widget\_t* | 控件对象。 |
-| r | rect\_t* | 截屏区域（输入NULL，则为控件全区域截屏）。 |
+| r | const rect\_t* | 截屏区域（输入NULL，则为控件全区域截屏）。 |
 #### widget\_to\_global 函数
 -----------------------
 
@@ -3639,7 +3693,7 @@ ret_t widget_update_style_recursive (widget_t* widget);
 
 * 函数功能：
 
-> <p id="widget_t_widget_use_style">启用指定的主题。
+> <p id="widget_t_widget_use_style">启用指定的style。
 
 * 函数原型：
 

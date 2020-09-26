@@ -23,6 +23,7 @@
 | EVT\_FOCUS | 得到焦点事件名(event\_t)。 |
 | EVT\_BLUR | 失去焦点事件名(event\_t)。 |
 | EVT\_KEY\_DOWN | 键按下事件名(key\_event\_t)。 |
+| EVT\_KEY\_LONG\_PRESS | 键长按事件名(key\_event\_t)。 |
 | EVT\_KEY\_DOWN\_BEFORE\_CHILDREN | 键按下事件名，在子控件处理之前触发(key\_event\_t)。 |
 | EVT\_KEY\_REPEAT | 按键repeat事件名(key\_event\_t)。 |
 | EVT\_KEY\_UP | 键抬起事件名(key\_event\_t)。 |
@@ -33,9 +34,9 @@
 | EVT\_RESIZE | 调整Widget大小的事件名(event\_t)。 |
 | EVT\_WILL\_MOVE\_RESIZE | 即将调整Widget大小/位置的事件名(event\_t)。 |
 | EVT\_MOVE\_RESIZE | 调整Widget大小/位置的事件名(event\_t)。 |
-| EVT\_VALUE\_WILL\_CHANGE | 控件的值即将改变的事件名(event\_t)。 |
-| EVT\_VALUE\_CHANGED | 控件的值改变的事件名(event\_t)。 |
-| EVT\_VALUE\_CHANGING | 控件的值持续改变(如编辑器正在编辑)的事件名(event\_t)。 |
+| EVT\_VALUE\_WILL\_CHANGE | 控件的值即将改变的事件名(value\_change\_event\_t)。 |
+| EVT\_VALUE\_CHANGED | 控件的值改变的事件名(value\_change\_event\_t)。 |
+| EVT\_VALUE\_CHANGING | 控件的值持续改变(如编辑器正在编辑)的事件名(value\_change\_event\_t)。 |
 | EVT\_PAINT | 绘制的事件名(paint\_event\_t)。 |
 | EVT\_BEFORE\_PAINT | 即将绘制的事件名(paint\_event\_t)。 |
 | EVT\_AFTER\_PAINT | 绘制完成的事件名(paint\_event\_t)。 |
@@ -83,6 +84,7 @@
 | EVT\_SCROLL\_START | scroll view开始滚动(event\_t)。 |
 | EVT\_SCROLL | scroll view滚动(event\_t)。 |
 | EVT\_SCROLL\_END | scroll view结束滚动(event\_t)。 |
+| EVT\_MULTI\_GESTURE | 多点触摸手势(multi\_gesture\_event\_t)。 |
 | EVT\_REQ\_START | event queue其它请求编号起始值。 |
 | EVT\_USER\_START | 用户定义事件起始值。 |
 | EVT\_NONE | 无效事件名称。 |

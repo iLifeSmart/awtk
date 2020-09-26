@@ -50,6 +50,8 @@ static ret_t button_on_repeat(const timer_info_t* info) {
   evt.x = 0;
   evt.y = 0;
   evt.e = event_init(EVT_CLICK, widget);
+  evt.e.size = sizeof(pointer_event_t);
+
   button->repeat_nr++;
   widget_dispatch(widget, (event_t*)&evt);
 
@@ -76,6 +78,7 @@ static ret_t button_on_long_press(const timer_info_t* info) {
   evt.x = 0;
   evt.y = 0;
   evt.e = event_init(EVT_LONG_PRESS, widget);
+  evt.e.size = sizeof(pointer_event_t);
 
   button_pointer_up_cleanup(widget);
   widget_dispatch(widget, (event_t*)&evt);
@@ -112,6 +115,7 @@ static ret_t button_on_event(widget_t* widget, event_t* e) {
       pointer_event_t evt = *(pointer_event_t*)e;
       if (button->pressed && widget_is_point_in(widget, evt.x, evt.y, FALSE)) {
         evt.e = event_init(EVT_CLICK, widget);
+        evt.e.size = sizeof(pointer_event_t);
         button_pointer_up_cleanup(widget);
         widget_dispatch(widget, (event_t*)&evt);
       } else {

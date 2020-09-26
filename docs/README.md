@@ -43,6 +43,7 @@
 * [如何绘制旋转文字](how_to_draw_rotate_text.md)
 * [如何修改 Windows 下应用程序的图标](https://github.com/zlgopen/awtk/blob/master/win32_res/README.md)
 * [项目描述文件 project.json 介绍](awtk_project_description_file.md)
+* [利用 app_helper 编写 SConstruct](app_helper_usage.md)
 
 ### 2.HowTos
 * [AWTK 调试技巧](debug_tips.md)
@@ -77,6 +78,8 @@
 * [如何支持 unicode bidirectional algorithm](how_to_enable_bidi.md)
 * [如何续期使用 AWTK Designer](how_to_renewal_awtk_designer.md)
 * [如何将生成的可执行文件和资源打包](how_to_release_app.md)
+
+* [如何使用 packed 图](how_to_use_packed_image.md)
 
 ### 3. 内部原理
 * [AWTK 脚本绑定原理](script_binding.md)

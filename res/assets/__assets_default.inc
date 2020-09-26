@@ -27,6 +27,7 @@
 #include "default/inc/styles/system_bar.data"
 #include "default/inc/styles/tab_bottom_compact.data"
 #include "default/inc/styles/dialog_warn.data"
+#include "default/inc/styles/image_packed.data"
 #include "default/inc/ui/menu_up_right.data"
 #include "default/inc/ui/kb_ascii.data"
 #include "default/inc/ui/vgcanvas.data"
@@ -159,6 +160,7 @@
 #include "default/inc/ui/color_picker_rgb.data"
 #include "default/inc/ui/tab_bottom_compact.data"
 #include "default/inc/ui/popup.data"
+#include "default/inc/ui/image_packed.data"
 #include "default/inc/ui/kb_uint.data"
 #include "default/inc/ui/scroll_view_v.data"
 #include "default/inc/xml/test.data"
@@ -174,7 +176,6 @@
 #include "default/inc/images/num_7.res"
 #include "default/inc/images/close_p.res"
 #include "default/inc/images/num_6.res"
-#include "default/inc/images/bg_landscape_1.res"
 #include "default/inc/images/shift.res"
 #include "default/inc/images/ani7.res"
 #include "default/inc/images/ania.res"
@@ -184,7 +185,6 @@
 #include "default/inc/images/flag_none.res"
 #include "default/inc/images/bee.res"
 #include "default/inc/images/contact.res"
-#include "default/inc/images/bg_landscape_3.res"
 #include "default/inc/images/battery_4.res"
 #include "default/inc/images/num_4.res"
 #include "default/inc/images/slider_fg.res"
@@ -193,7 +193,6 @@
 #include "default/inc/images/dialog_title.res"
 #include "default/inc/images/battery_5.res"
 #include "default/inc/images/num_5.res"
-#include "default/inc/images/bg_landscape_2.res"
 #include "default/inc/images/ani4.res"
 #include "default/inc/images/anib.res"
 #include "default/inc/images/me_active.res"
@@ -227,6 +226,7 @@
 #include "default/inc/images/arrow_left_n.res"
 #include "default/inc/images/middle_on.res"
 #include "default/inc/images/bricks.res"
+#include "default/inc/images/image_packed_bg.res"
 #include "default/inc/images/msg.res"
 #include "default/inc/images/play_o.res"
 #include "default/inc/images/play_n.res"
@@ -267,16 +267,13 @@
 #include "default/inc/images/progress_circle.res"
 #include "default/inc/images/red_btn_o.res"
 #include "default/inc/images/slider_drag.res"
-#include "default/inc/images/bg_portrait_1.res"
 #include "default/inc/images/cursor_text.res"
 #include "default/inc/images/unchecked.res"
 #include "default/inc/images/red_btn_n.res"
 #include "default/inc/images/arrow_down_p.res"
 #include "default/inc/images/slider_v_bg.res"
 #include "default/inc/images/warn.res"
-#include "default/inc/images/bg_portrait_3.res"
 #include "default/inc/images/green_btn_p.res"
-#include "default/inc/images/bg_portrait_2.res"
 #include "default/inc/images/flag_CN.res"
 #include "default/inc/images/switch.res"
 #include "default/inc/images/radio_unchecked.res"
@@ -286,6 +283,7 @@
 #include "default/inc/images/clock_minute.res"
 #include "default/inc/images/cross.res"
 #include "default/inc/images/clock.res"
+#include "default/inc/images/image_packed_fg.res"
 #include "default/inc/images/find.res"
 #include "default/inc/images/ani9.res"
 #include "default/inc/images/arrow_up_p.res"
@@ -316,9 +314,6 @@
 #include "default/inc/images/girl.bsvg"
 #endif /*WITH_VGCANVAS*/
 #ifdef WITH_TRUETYPE_FONT
-#include "default/inc/fonts/trado.res"
-#include "default/inc/fonts/ap.res"
-#include "default/inc/fonts/default_full.res"
 #include "default/inc/fonts/default.res"
 #else /*WITH_TRUETYPE_FONT*/
 #endif /*WITH_TRUETYPE_FONT*/
@@ -358,6 +353,7 @@ ret_t assets_init_default(void) {
   assets_manager_add(am, style_system_bar);
   assets_manager_add(am, style_tab_bottom_compact);
   assets_manager_add(am, style_dialog_warn);
+  assets_manager_add(am, style_image_packed);
   assets_manager_add(am, ui_menu_up_right);
   assets_manager_add(am, ui_kb_ascii);
   assets_manager_add(am, ui_vgcanvas);
@@ -490,6 +486,7 @@ ret_t assets_init_default(void) {
   assets_manager_add(am, ui_color_picker_rgb);
   assets_manager_add(am, ui_tab_bottom_compact);
   assets_manager_add(am, ui_popup);
+  assets_manager_add(am, ui_image_packed);
   assets_manager_add(am, ui_kb_uint);
   assets_manager_add(am, ui_scroll_view_v);
   assets_manager_add(am, xml_test);
@@ -504,7 +501,6 @@ ret_t assets_init_default(void) {
   assets_manager_add(am, image_num_7);
   assets_manager_add(am, image_close_p);
   assets_manager_add(am, image_num_6);
-  assets_manager_add(am, image_bg_landscape_1);
   assets_manager_add(am, image_shift);
   assets_manager_add(am, image_ani7);
   assets_manager_add(am, image_ania);
@@ -514,7 +510,6 @@ ret_t assets_init_default(void) {
   assets_manager_add(am, image_flag_none);
   assets_manager_add(am, image_bee);
   assets_manager_add(am, image_contact);
-  assets_manager_add(am, image_bg_landscape_3);
   assets_manager_add(am, image_battery_4);
   assets_manager_add(am, image_num_4);
   assets_manager_add(am, image_slider_fg);
@@ -523,7 +518,6 @@ ret_t assets_init_default(void) {
   assets_manager_add(am, image_dialog_title);
   assets_manager_add(am, image_battery_5);
   assets_manager_add(am, image_num_5);
-  assets_manager_add(am, image_bg_landscape_2);
   assets_manager_add(am, image_ani4);
   assets_manager_add(am, image_anib);
   assets_manager_add(am, image_me_active);
@@ -557,6 +551,7 @@ ret_t assets_init_default(void) {
   assets_manager_add(am, image_arrow_left_n);
   assets_manager_add(am, image_middle_on);
   assets_manager_add(am, image_bricks);
+  assets_manager_add(am, image_image_packed_bg);
   assets_manager_add(am, image_msg);
   assets_manager_add(am, image_play_o);
   assets_manager_add(am, image_play_n);
@@ -597,16 +592,13 @@ ret_t assets_init_default(void) {
   assets_manager_add(am, image_progress_circle);
   assets_manager_add(am, image_red_btn_o);
   assets_manager_add(am, image_slider_drag);
-  assets_manager_add(am, image_bg_portrait_1);
   assets_manager_add(am, image_cursor_text);
   assets_manager_add(am, image_unchecked);
   assets_manager_add(am, image_red_btn_n);
   assets_manager_add(am, image_arrow_down_p);
   assets_manager_add(am, image_slider_v_bg);
   assets_manager_add(am, image_warn);
-  assets_manager_add(am, image_bg_portrait_3);
   assets_manager_add(am, image_green_btn_p);
-  assets_manager_add(am, image_bg_portrait_2);
   assets_manager_add(am, image_flag_CN);
   assets_manager_add(am, image_switch);
   assets_manager_add(am, image_radio_unchecked);
@@ -616,6 +608,7 @@ ret_t assets_init_default(void) {
   assets_manager_add(am, image_clock_minute);
   assets_manager_add(am, image_cross);
   assets_manager_add(am, image_clock);
+  assets_manager_add(am, image_image_packed_fg);
   assets_manager_add(am, image_find);
   assets_manager_add(am, image_ani9);
   assets_manager_add(am, image_arrow_up_p);
@@ -644,9 +637,6 @@ ret_t assets_init_default(void) {
   assets_manager_add(am, image_girl);
 #endif /*WITH_VGCANVAS*/
 #ifdef WITH_TRUETYPE_FONT
-  assets_manager_add(am, font_trado);
-  assets_manager_add(am, font_ap);
-  assets_manager_add(am, font_default_full);
   assets_manager_add(am, font_default);
 #else /*WITH_TRUETYPE_FONT*/
 #endif /*WITH_TRUETYPE_FONT*/

@@ -180,6 +180,11 @@ typedef enum _icon_at_type_t {
    * 水平居中，垂直居中。
    */
   ICON_AT_CENTRE = 5,
+  /**
+   * @const ICON_AT_CENTER
+   * 水平居中，垂直居中。
+   */
+  ICON_AT_CENTER = ICON_AT_CENTRE
 } icon_at_type_t;
 
 /**
@@ -267,6 +272,9 @@ typedef struct _widget_animator_t widget_animator_t;
   }
 
 #define TK_LONG_PRESS_TIME 1000
+#ifndef TK_KEY_LONG_PRESS_TIME
+#define TK_KEY_LONG_PRESS_TIME TK_LONG_PRESS_TIME
+#endif/*TK_KEY_LONG_PRESS_TIME*/
 
 #ifdef WITH_WIDGET_TYPE_CHECK
 #define TK_REF_VTABLE(vt) &(g_##vt##_vtable)
