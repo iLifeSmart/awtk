@@ -114,11 +114,17 @@ static ret_t scroll_bar_desktop_on_click(widget_t* widget, pointer_event_t* e) {
     } else {
       delta = widget->w;
     }
+    if (scroll_bar->dragger->x <= p.y && p.x <= (scroll_bar->dragger->x + scroll_bar->dragger->w)) {
+      return RET_OK;
+    }
   } else {
     if (p.y < scroll_bar->dragger->y) {
       delta = -widget->h;
     } else {
       delta = widget->h;
+    }
+    if (scroll_bar->dragger->y <= p.y && p.y <= (scroll_bar->dragger->y + scroll_bar->dragger->h)) {
+      return RET_OK;
     }
   }
 
@@ -275,11 +281,20 @@ static ret_t scroll_bar_on_drag(void* ctx, event_t* e) {
   if (widget_w > widget_h) {
     int64_t x = scroll_bar->dragger->x;
     int64_t max_x = (widget_w - 2 * widget_h - dragger->w);
-    value = (x - widget_h) * scroll_bar->virtual_size / max_x;
+    if (max_x <= 0) {
+      value = 0;
+    } else {
+      value = (x - widget_h) * scroll_bar->virtual_size / max_x;
+    }
   } else {
     int64_t y = scroll_bar->dragger->y;
     int64_t max_y = (widget_h - 2 * widget_w - dragger->h);
-    value = (y - widget_w) * scroll_bar->virtual_size / max_y;
+
+    if (max_y <= 0) {
+      value = 0;
+    } else {
+      value = (y - widget_w) * scroll_bar->virtual_size / max_y;
+    }
   }
 
   scroll_bar_set_value(widget, value);
@@ -550,11 +565,17 @@ ret_t scroll_bar_set_value(widget_t* widget, int32_t value) {
   return_value_if_fail(scroll_bar != NULL, RET_BAD_PARAMS);
 
   if (scroll_bar->value != value) {
-    event_t e = event_init(EVT_VALUE_CHANGED, widget);
+    value_change_event_t evt;
+    value_change_event_init(&evt, EVT_VALUE_WILL_CHANGE, widget);
+    value_set_int(&(evt.old_value), scroll_bar->value);
+    value_set_int(&(evt.new_value), value);
 
-    scroll_bar_set_value_only(widget, value);
-    widget_dispatch(widget, &e);
-    widget_invalidate(widget, NULL);
+    if (widget_dispatch(widget, (event_t*)&evt) != RET_STOP) {
+      scroll_bar_set_value_only(widget, value);
+      evt.e.type = EVT_VALUE_CHANGED;
+      widget_dispatch(widget, (event_t*)&evt);
+      widget_invalidate(widget, NULL);
+    }
   }
 
   return RET_OK;

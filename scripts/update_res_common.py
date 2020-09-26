@@ -185,14 +185,14 @@ def is_packaged_of_default_theme():
 
 
 def getcwd():
-    if sys.version_info > (3, 0):
+    if sys.version_info >= (3, 0):
         return os.getcwd()
     else:
         return os.getcwdu()
 
 
 def to_file_system_coding(s):
-    if sys.version_info > (3, 0): return s
+    if sys.version_info >= (3, 0): return s
     coding = sys.getfilesystemencoding()
     return s.encode(coding)
 
@@ -262,7 +262,7 @@ def glob_asset_files(path):
 
 def read_file(filename):
     content = ''
-    if sys.version_info > (3, 0):
+    if sys.version_info >= (3, 0):
         with open(filename, 'r', encoding='utf8') as f:
             content = f.read()
     else:
@@ -272,7 +272,7 @@ def read_file(filename):
 
 
 def write_file(filename, s):
-    if sys.version_info > (3, 0):
+    if sys.version_info >= (3, 0):
         with open(filename, 'w', encoding='utf8') as f:
             f.write(s)
     else:
@@ -575,7 +575,10 @@ def gen_res_all_font():
                     gen_res_bitmap_font(input_dir, font_options, THEME)
 
             # 对default_full的特殊处理，兼容awtk的demos
-            IS_AWTK_DEMO = INPUT_DIR == join_path(AWTK_ROOT, 'demos/assets/default/raw')
+            IS_AWTK_DEMO = False
+            if os.path.exists('scripts/update_res_common.py'):
+                IS_AWTK_DEMO = True
+
             raw = join_path(INPUT_DIR, 'fonts/default_full.ttf')
             if IS_AWTK_DEMO and os.path.exists(raw):
                 text = join_path(INPUT_DIR, 'fonts/text.txt')

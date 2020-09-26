@@ -66,9 +66,12 @@ static ret_t mledit_commit_text(widget_t* widget) {
 }
 
 static ret_t mledit_dispatch_event(widget_t* widget, event_type_t type) {
-  event_t evt = event_init(type, widget);
-  widget_dispatch(widget, &evt);
+  value_change_event_t evt;
+  value_change_event_init(&evt, type, widget);
+  value_set_wstr(&(evt.old_value), widget->text.str);
+  value_set_wstr(&(evt.new_value), widget->text.str);
 
+  widget_dispatch(widget, (event_t*)&evt);
   return RET_OK;
 }
 
@@ -489,7 +492,10 @@ static ret_t mledit_on_event(widget_t* widget, event_t* e) {
   uint32_t type = e->type;
   mledit_t* mledit = MLEDIT(widget);
   return_value_if_fail(widget != NULL && mledit != NULL, RET_BAD_PARAMS);
-  return_value_if_fail(widget->visible, RET_OK);
+
+  if (!widget->visible) {
+    return RET_OK;
+  }
 
   switch (type) {
     case EVT_POINTER_DOWN: {
@@ -635,14 +641,14 @@ static ret_t mledit_on_event(widget_t* widget, event_t* e) {
       key_event_t kevt;
       wheel_event_t* evt = (wheel_event_t*)e;
       int32_t delta = evt->dy;
-      text_edit_t* text_edit = mledit->model;
       widget_t* vscroll_bar = widget_lookup_by_type(widget, WIDGET_TYPE_SCROLL_BAR_DESKTOP, TRUE);
 
       if (vscroll_bar != NULL) {
+        int32_t font_size = style_get_int(widget->astyle, STYLE_ID_FONT_SIZE, TK_DEFAULT_FONT_SIZE);
         if (delta > 0) {
-          scroll_bar_add_delta(vscroll_bar, -text_edit->c->font_size * mledit->scroll_line);
+          scroll_bar_add_delta(vscroll_bar, -font_size * mledit->scroll_line);
         } else if (delta < 0) {
-          scroll_bar_add_delta(vscroll_bar, text_edit->c->font_size * mledit->scroll_line);
+          scroll_bar_add_delta(vscroll_bar, font_size * mledit->scroll_line);
         }
       } else {
         if (delta > 0) {

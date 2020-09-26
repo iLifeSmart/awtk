@@ -1,5 +1,79 @@
 # 最新动态
 
+* 2020/09/25
+  * 修改image dither工具mac编译问题（感谢suzp1984提供补丁）。
+  * 完善canvas换行处理（感谢智明提供补丁）。
+  * 修复slider刷新的问题（感谢智明提供补丁）。
+
+* 2020/09/23
+  * 完善dll导出函数（感谢朝泽提供补丁）。
+  * 修复部分事情初始化的问题（感谢俊杰提供补丁）。
+  * 修复assets.c在RT1052上路径的问题（感谢俊杰提供补丁）。
+  * 将contre改为center(保留centre，兼容以前的代码)。
+
+* 2020/09/22
+  * 完善 scroll bar。
+  * 修复密码选中不居中的问题。
+  * rich text 增加 yslidable 属性。
+  * 完善 edit 的action事件。
+
+* 2020/09/21
+  * 更新 dll 导出函数列表。
+  * 增加 TK\_KEY\_LONG\_PRESS\_TIME，让触屏长按和键盘长按可以设置为不同的时间。
+  * 修复 demo 资源的问题，方便 designer 打开。
+  * 修复部分事情初始化的问题（感谢俊杰提供补丁）。
+  * 完善编译脚本（感谢朝泽提供补丁）。
+  * 修复 valgrind 发现的内存泄露。
+
+* 2020/09/18
+  * EVT\_VALUE\_WILL\_CHANGE、EVT\_VALUE\_CHANGING 和 EVT\_VALUE\_CHANGED 事件结构改为 value\_change\_event\_t，从中可以获得旧值和新值。
+  * EVT\_VALUE\_WILL\_CHANGE 事件返回 RET\_STOP 可以阻止修改值。
+  * event\_t 结构体增加 size，避免结构体用错导致内存越界访问。
+  * 修改 stm32 编译问题（感谢智明提供补丁）。
+  * 完善编译脚本（感谢朝泽提供补丁）。
+  * 在 application_init 之前设置默认语言。
+  
+* 2020/09/17
+  * 修复一些警告。
+  * 将一些参数改成常量指针。
+  * 修复快速点击有概率导致 scroll_bar 控件在同一个位置来回滑动（感谢智明提供补丁）。
+  * 增加了圆角矩形支持缺失边框的功能，同时修复了背景色为透明的颜色融合算法（感谢智明提供补丁）。
+
+* 2020/09/16
+  * 完善 API 注释。
+  * 将一些参数改成常量指针。
+  * 修改离线 canvas 的文档（感谢智明提供补丁）。
+  * 修复 edit 带格式编辑时，输入没有清除选中内容的 bug。
+  * 支持用户外部重载自定义离线 canvas 和统一窗口动画的代码（感谢智明提供补丁）。
+  * 统一窗口动画配合修改 awtk-web 的 fbo 和窗口动画的代码（感谢智明提供补丁）。
+  * 修复 dialog_toast 在 web 卡主的问题和修复同时插入导致动画异常的问题以及增加注释（感谢智明提供补丁）。
+
+* 2020/09/15
+  * 支持长按键事件
+  * edit 增加 closei\_im\_when\_blured 属性。
+
+* 2020/09/11
+  * 支持 packed 图片。
+  * 增加 [如何使用 packed 图](docs/how_to_use_packed_image.md)
+  * 修复 32 位 LCD 窗口动画截图的问题（感谢朝泽提供补丁）。
+  * 消除一些不必要的告警；
+  * 修正在 key\_down 事件销毁 grab\_keys 属性为 true 的控件会导致访问 NULL 指针的问题
+
+* 2020/09/10
+  * 重构 widget。
+  * 修复使用标准内存分配器同时启用内存泄漏检测时没有加锁的问题。
+
+* 2020/09/09
+  * istream 增加 eos/tell 接口。
+  * 增加函数 tk\_istream\_read\_line\_str
+  * 去掉一些不必要的警告信息（感谢福明提供补丁）。
+  * 完善 image_gen（感谢朝泽提供补丁）。
+
+* 2020/09/06
+  * 支持多点手势识别事件（旋转和缩放），目前对接 SDL 的多点手势事件，支持 Android、iOS、windows、linux(desktop) 和 MacOS。其它系统需要自己识别后上报事件。
+  * 增加函数 widget\_set\_child\_text\_with\_int
+  * 增加 [《利用 app_helper 编写 SConstruct》](docs/app_helper_usage.md)
+
 * 2020/09/04
   * 完善 ringbuffer（感谢网友 J, 提供补丁）
   * 完善窗口动画截图（感谢智明提供补丁）。

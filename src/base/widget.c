@@ -57,7 +57,10 @@ static ret_t widget_unref_async(widget_t* widget);
 static ret_t widget_destroy_sync(widget_t* widget);
 static ret_t widget_ensure_style_mutable(widget_t* widget);
 static ret_t widget_dispatch_blur_event(widget_t* widget);
+/*虚函数的包装*/
 static ret_t widget_on_paint_done(widget_t* widget, canvas_t* c);
+static ret_t widget_on_paint_begin(widget_t* widget, canvas_t* c);
+static ret_t widget_on_paint_end(widget_t* widget, canvas_t* c);
 
 typedef widget_t* (*widget_find_wanted_focus_widget_t)(widget_t* widget, darray_t* all_focusable);
 static ret_t widget_move_focus(widget_t* widget, widget_find_wanted_focus_widget_t find);
@@ -1286,7 +1289,7 @@ ret_t widget_draw_icon_text(widget_t* widget, canvas_t* c, const char* icon, wst
   return RET_OK;
 }
 
-ret_t widget_fill_rect(widget_t* widget, canvas_t* c, rect_t* r, bool_t bg,
+ret_t widget_fill_rect(widget_t* widget, canvas_t* c, const rect_t* r, bool_t bg,
                        image_draw_type_t draw_type) {
   bitmap_t img;
   ret_t ret = RET_OK;
@@ -1324,17 +1327,42 @@ ret_t widget_fill_rect(widget_t* widget, canvas_t* c, rect_t* r, bool_t bg,
   }
 
   if (image_name != NULL && *image_name && r->w > 0 && r->h > 0) {
+    char name[MAX_PATH + 1];
+    const char* region = strrchr(image_name, '#');
+    if (region != NULL) {
+      memset(name, 0x00, sizeof(name));
+      tk_strncpy(name, image_name, region - image_name);
+      image_name = name;
+    }
+
     if (widget_load_image(widget, image_name, &img) == RET_OK) {
       draw_type = (image_draw_type_t)style_get_int(style, draw_type_key, draw_type);
-      canvas_draw_image_ex(c, &img, draw_type, r);
+
+      if (region == NULL) {
+        canvas_draw_image_ex(c, &img, draw_type, r);
+      } else {
+        rect_t src;
+        rect_t dst = *r;
+        if (tk_str_eq(region, "#")) {
+          src = rect_init(widget->x, widget->y, widget->w, widget->h);
+        } else if (tk_str_eq(region, "#g")) {
+          point_t p = {widget->x, widget->y};
+          widget_to_global(widget, &p);
+          src = rect_init(p.x, p.y, widget->w, widget->h);
+        } else {
+          image_region_parse(img.w, img.h, region, &src);
+        }
+
+        canvas_draw_image_ex2(c, &img, draw_type, &src, &dst);
+      }
     }
   }
 
   return RET_OK;
 }
 
-static inline ret_t widget_stroke_border_rect_for_border_type(canvas_t* c, rect_t* r, color_t bd,
-                                                              int32_t border,
+static inline ret_t widget_stroke_border_rect_for_border_type(canvas_t* c, const rect_t* r,
+                                                              color_t bd, int32_t border,
                                                               uint32_t border_width) {
   wh_t w = r->w;
   wh_t h = r->h;
@@ -1370,7 +1398,7 @@ static inline ret_t widget_stroke_border_rect_for_border_type(canvas_t* c, rect_
   return RET_OK;
 }
 
-ret_t widget_stroke_border_rect(widget_t* widget, canvas_t* c, rect_t* r) {
+ret_t widget_stroke_border_rect(widget_t* widget, canvas_t* c, const rect_t* r) {
   style_t* style = widget->astyle;
   color_t trans = color_init(0, 0, 0, 0);
   color_t bd = style_get_color(style, STYLE_ID_BORDER_COLOR, trans);
@@ -1385,13 +1413,8 @@ ret_t widget_stroke_border_rect(widget_t* widget, canvas_t* c, rect_t* r) {
   if (bd.rgba.a) {
     canvas_set_stroke_color(c, bd);
     if (radius_tl > 3 || radius_tr > 3 || radius_bl > 3 || radius_br > 3) {
-      if (border == BORDER_ALL) {
-        if (canvas_stroke_rounded_rect_ex(c, r, NULL, &bd, radius_tl, radius_tr, radius_bl,
-                                          radius_br, border_width) != RET_OK) {
-          widget_stroke_border_rect_for_border_type(c, r, bd, border, border_width);
-        }
-      } else {
-        log_warn("border != BORDER_ALL, stroke border radius > 3 not supported !");
+      if (canvas_stroke_rounded_rect_ex(c, r, NULL, &bd, radius_tl, radius_tr, radius_bl, radius_br,
+                                        border_width, border) != RET_OK) {
         widget_stroke_border_rect_for_border_type(c, r, bd, border, border_width);
       }
     } else {
@@ -1411,11 +1434,13 @@ ret_t widget_draw_background(widget_t* widget, canvas_t* c) {
   return widget_fill_rect(widget, c, &r, TRUE, IMAGE_DRAW_CENTER);
 }
 
-ret_t widget_fill_bg_rect(widget_t* widget, canvas_t* c, rect_t* r, image_draw_type_t draw_type) {
+ret_t widget_fill_bg_rect(widget_t* widget, canvas_t* c, const rect_t* r,
+                          image_draw_type_t draw_type) {
   return widget_fill_rect(widget, c, r, TRUE, draw_type);
 }
 
-ret_t widget_fill_fg_rect(widget_t* widget, canvas_t* c, rect_t* r, image_draw_type_t draw_type) {
+ret_t widget_fill_fg_rect(widget_t* widget, canvas_t* c, const rect_t* r,
+                          image_draw_type_t draw_type) {
   return widget_fill_rect(widget, c, r, FALSE, draw_type);
 }
 
@@ -1535,13 +1560,16 @@ static ret_t widget_on_grabbed_keys(void* ctx, event_t* e) {
     ret_t ret = RET_OK;
     widget_t* widget = WIDGET(ctx);
     widget_t* win = widget_get_window(widget);
-    widget_t* top_win = window_manager_get_top_window(win->parent);
 
-    if (win == top_win) {
-      if (e->type == EVT_KEY_DOWN) {
-        ret = widget_on_keydown(widget, (key_event_t*)e);
-      } else {
-        ret = widget_on_keyup(widget, (key_event_t*)e);
+    if (win != NULL && widget_is_window_manager(win->parent)) {
+      widget_t* top_win = window_manager_get_top_window(win->parent);
+
+      if (win == top_win) {
+        if (e->type == EVT_KEY_DOWN) {
+          ret = widget_on_keydown(widget, key_event_cast(e));
+        } else {
+          ret = widget_on_keyup(widget, key_event_cast(e));
+        }
       }
     }
 
@@ -1773,9 +1801,11 @@ ret_t widget_set_prop_str(widget_t* widget, const char* name, const char* str) {
 
 const char* widget_get_prop_str(widget_t* widget, const char* name, const char* defval) {
   value_t v;
-  return_value_if_fail(widget_get_prop(widget, name, &v) == RET_OK, defval);
-
-  return value_str(&v);
+  if (widget_get_prop(widget, name, &v) == RET_OK) {
+    return value_str(&v);
+  } else {
+    return defval;
+  }
 }
 
 ret_t widget_set_prop_pointer(widget_t* widget, const char* name, void* pointer) {
@@ -1819,9 +1849,11 @@ ret_t widget_set_prop_bool(widget_t* widget, const char* name, bool_t num) {
 
 bool_t widget_get_prop_bool(widget_t* widget, const char* name, bool_t defval) {
   value_t v;
-  return_value_if_fail(widget_get_prop(widget, name, &v) == RET_OK, defval);
-
-  return value_bool(&v);
+  if (widget_get_prop(widget, name, &v) == RET_OK) {
+    return value_bool(&v);
+  } else {
+    return defval;
+  }
 }
 
 ret_t widget_on_paint_background(widget_t* widget, canvas_t* c) {
@@ -1885,7 +1917,7 @@ ret_t widget_on_paint_border(widget_t* widget, canvas_t* c) {
   return ret;
 }
 
-ret_t widget_on_paint_begin(widget_t* widget, canvas_t* c) {
+static ret_t widget_on_paint_begin(widget_t* widget, canvas_t* c) {
   paint_event_t e;
   ret_t ret = RET_OK;
   return_value_if_fail(widget != NULL && c != NULL, RET_BAD_PARAMS);
@@ -1911,7 +1943,7 @@ static ret_t widget_on_paint_done(widget_t* widget, canvas_t* c) {
   return ret;
 }
 
-ret_t widget_on_paint_end(widget_t* widget, canvas_t* c) {
+static ret_t widget_on_paint_end(widget_t* widget, canvas_t* c) {
   paint_event_t e;
   ret_t ret = RET_OK;
   return_value_if_fail(widget != NULL && c != NULL, RET_BAD_PARAMS);
@@ -2163,14 +2195,19 @@ ret_t widget_on_keydown(widget_t* widget, key_event_t* e) {
 
   widget_ref(widget);
   widget_map_key(widget, e);
-  ret = widget_on_keydown_impl(widget, e);
-  if (widget->feedback) {
-    ui_feedback_request(widget, (event_t*)e);
-  }
+  if (e->e.type == EVT_KEY_DOWN) {
+    ret = widget_on_keydown_impl(widget, e);
+    if (widget->feedback) {
+      ui_feedback_request(widget, (event_t*)e);
+    }
 
-  e->key = key;
-  if (ret != RET_STOP) {
-    ret = widget_on_keydown_general(widget, e);
+    e->key = key;
+    if (ret != RET_STOP) {
+      ret = widget_on_keydown_general(widget, e);
+    }
+  } else if (e->e.type == EVT_KEY_LONG_PRESS) {
+    return_if_equal(widget_on_keydown_children(widget, e), RET_STOP);
+    ret = widget_on_keydown_after_children(widget, e);
   }
   widget_unref(widget);
 
@@ -2330,6 +2367,25 @@ ret_t widget_on_wheel(widget_t* widget, wheel_event_t* e) {
 
   widget_ref(widget);
   ret = widget_on_wheel_impl(widget, e);
+  widget_unref(widget);
+
+  return ret;
+}
+
+ret_t widget_on_multi_gesture(widget_t* widget, multi_gesture_event_t* e) {
+  ret_t ret = RET_OK;
+  widget_t* target = NULL;
+  return_value_if_fail(widget != NULL && e != NULL, RET_BAD_PARAMS);
+
+  widget_ref(widget);
+  target = widget_find_target(widget, e->x, e->y);
+  if (target != NULL) {
+    ret = widget_dispatch(target, (event_t*)e);
+  }
+
+  if (ret != RET_STOP) {
+    ret = widget_dispatch(widget, (event_t*)e);
+  }
   widget_unref(widget);
 
   return ret;
@@ -2898,7 +2954,7 @@ static ret_t widget_set_parent_not_dirty(widget_t* widget) {
   return RET_OK;
 }
 
-ret_t widget_invalidate(widget_t* widget, rect_t* r) {
+ret_t widget_invalidate(widget_t* widget, const rect_t* r) {
   rect_t rself;
   return_value_if_fail(widget != NULL && widget->vt != NULL, RET_BAD_PARAMS);
 
@@ -2921,7 +2977,7 @@ ret_t widget_invalidate(widget_t* widget, rect_t* r) {
   }
 }
 
-ret_t widget_invalidate_force(widget_t* widget, rect_t* r) {
+ret_t widget_invalidate_force(widget_t* widget, const rect_t* r) {
   return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
 
   widget->dirty = FALSE;
@@ -4055,14 +4111,14 @@ ret_t widget_close_window(widget_t* widget) {
 }
 
 #if defined(FRAGMENT_FRAME_BUFFER_SIZE)
-bitmap_t* widget_take_snapshot_rect(widget_t* widget, rect_t* r) {
+bitmap_t* widget_take_snapshot_rect(widget_t* widget, const rect_t* r) {
   log_warn("not supported yet\n");
   return NULL;
 }
 
 #elif defined(WITH_NANOVG_GPU)
 
-bitmap_t* widget_take_snapshot_rect(widget_t* widget, rect_t* r) {
+bitmap_t* widget_take_snapshot_rect(widget_t* widget, const rect_t* r) {
   bitmap_t* img;
   uint32_t w = 0;
   uint32_t h = 0;
@@ -4102,7 +4158,7 @@ bitmap_t* widget_take_snapshot_rect(widget_t* widget, rect_t* r) {
 
 #else
 #include "lcd/lcd_mem_rgba8888.h"
-bitmap_t* widget_take_snapshot_rect(widget_t* widget, rect_t* r) {
+bitmap_t* widget_take_snapshot_rect(widget_t* widget, const rect_t* r) {
   wh_t w = 0;
   wh_t h = 0;
   canvas_t canvas;
@@ -4186,7 +4242,19 @@ ret_t widget_set_child_text_utf8(widget_t* widget, const char* name, const char*
 
 ret_t widget_set_child_text_with_double(widget_t* widget, const char* name, const char* format,
                                         double value) {
-  char text[64];
+  char text[128];
+  widget_t* child = widget_lookup(widget, name, TRUE);
+  return_value_if_fail(child != NULL && format != NULL, RET_BAD_PARAMS);
+
+  memset(text, 0x00, sizeof(text));
+  tk_snprintf(text, sizeof(text) - 1, format, value);
+
+  return widget_set_text_utf8(child, text);
+}
+
+ret_t widget_set_child_text_with_int(widget_t* widget, const char* name, const char* format,
+                                     int value) {
+  char text[128];
   widget_t* child = widget_lookup(widget, name, TRUE);
   return_value_if_fail(child != NULL && format != NULL, RET_BAD_PARAMS);
 
@@ -4209,7 +4277,7 @@ ret_t widget_end_wait_pointer_cursor(widget_t* widget) {
 }
 
 ret_t widget_draw_text_in_rect(widget_t* widget, canvas_t* c, const wchar_t* str, uint32_t size,
-                               rect_t* r, bool_t ellipses) {
+                               const rect_t* r, bool_t ellipses) {
   const char* bidi_type = widget_get_bidi(widget);
   return_value_if_fail(widget != NULL && c != NULL && str != NULL && r != NULL, RET_BAD_PARAMS);
 
