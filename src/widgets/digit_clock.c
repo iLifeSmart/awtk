@@ -83,7 +83,6 @@ static ret_t digit_clock_set_prop(widget_t* widget, const char* name, const valu
 static ret_t digit_clock_on_timer(const timer_info_t* info) {
   widget_t* widget = NULL;
   digit_clock_t* digit_clock = NULL;
-
   return_value_if_fail(info != NULL, RET_REMOVE);
 
   widget = WIDGET(info->ctx);
@@ -94,10 +93,7 @@ static ret_t digit_clock_on_timer(const timer_info_t* info) {
   digit_clock_update_time(widget);
 
   if (!wstr_equal(&(digit_clock->last_time), &(widget->text))) {
-  	//hack by lifesmart
-	event_t e = event_init(EVT_VALUE_CHANGED, widget);
-	widget_invalidate(widget, NULL);
-    widget_dispatch(widget, &e);
+    widget_invalidate(widget, NULL);
   }
 
   return RET_REPEAT;
