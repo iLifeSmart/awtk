@@ -385,7 +385,7 @@ static ret_t text_selector_on_pointer_up(text_selector_t* text_selector, pointer
   int32_t item_height = widget->h / text_selector->visible_nr;
 
   velocity_update(v, e->e.time, e->x, e->y);
-  yoffset_end = (text_selector->yoffset - v->yv);
+  yoffset_end = text_selector->yoffset - v->yv * text_selector->yspeed_scale;
 
   if (e->y == text_selector->ydown) {
     /*click*/
