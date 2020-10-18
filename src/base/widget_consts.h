@@ -144,6 +144,18 @@ BEGIN_C_DECLS
 #define WIDGET_PROP_MAX_W "max_w"
 
 /**
+ * @const WIDGET_PROP_AUTO_ADJUST_SIZE
+ * 根据子控件和文本自动调整大小。
+ */
+#define WIDGET_PROP_AUTO_ADJUST_SIZE "auto_adjust_size"
+
+/**
+ * @const WIDGET_PROP_SINGLE_INSTANCE
+ * 窗口是否保持单例。
+ */
+#define WIDGET_PROP_SINGLE_INSTANCE "single_instance"
+
+/**
  * @const WIDGET_PROP_CHILDREN_LAYOUT
  * 子控件布局参数。
  */
@@ -220,6 +232,12 @@ BEGIN_C_DECLS
  * 长度。
  */
 #define WIDGET_PROP_LENGTH "length"
+
+/**
+ * @const WIDGET_PROP_LINE_WRAP
+ * 自动换行。
+ */
+#define WIDGET_PROP_LINE_WRAP "line_wrap"
 
 /**
  * @const WIDGET_PROP_TEXT
@@ -1267,7 +1285,7 @@ typedef enum _window_closable_t {
 /**
  * @enum widget_state_t
  * @annotation ["scriptable", "string"]
- * @prefix WIDGET_
+ * @prefix WIDGET_STATE_
  * 控件状态常量定义。
  *
  * 这里指定常用的状态值，扩展控件可以在自己的头文件中定义私有的状态。

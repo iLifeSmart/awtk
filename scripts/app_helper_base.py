@@ -44,6 +44,14 @@ class AppHelperBase:
     def set_deps(self, DEPENDS_LIBS):
         self.DEPENDS_LIBS = DEPENDS_LIBS
         return self
+    def set_src_dir(self, SRC_DIR):
+        self.SRC_DIR = SRC_DIR
+        return self
+
+    def set_tkc_only(self):
+        self.AWTK_LIBS = ['tkc']
+
+        return self
 
     def set_libs(self, APP_LIBS):
         self.APP_LIBS = APP_LIBS
@@ -99,6 +107,10 @@ class AppHelperBase:
     def add_ccflags(self, APP_CCFLAGS):
         self.APP_CCFLAGS += APP_CCFLAGS
         return self
+    
+    def add_cflags(self, APP_CFLAGS):
+        self.APP_CFLAGS += APP_CFLAGS
+        return self
 
     def add_platform_ccflags(self, plat, APP_CCFLAGS):
         if plat == platform.system():
@@ -126,6 +138,7 @@ class AppHelperBase:
     def __init__(self, ARGUMENTS):
         APP_ROOT = os.path.normpath(os.getcwd())
 
+        self.SRC_DIR = 'src'
         self.ARGUMENTS = ARGUMENTS
         self.DEF_FILE = None
         self.DEF_FILE_PROCESSOR = None
@@ -136,6 +149,7 @@ class AppHelperBase:
         self.AWTK_ROOT = self.getAwtkRoot()
         self.awtk = self.getAwtkConfig()
         self.AWTK_LIBS = self.awtk.LIBS
+        self.AWTK_CFLAGS = self.awtk.CFLAGS
         self.AWTK_CCFLAGS = self.awtk.CCFLAGS
         self.APP_ROOT = APP_ROOT
         self.APP_BIN_DIR = os.path.join(APP_ROOT, 'bin')
@@ -155,6 +169,10 @@ class AppHelperBase:
         os.environ['APP_ROOT'] = self.APP_ROOT
         os.environ['BIN_DIR'] = self.APP_BIN_DIR
         os.environ['LIB_DIR'] = self.APP_LIB_DIR
+        os.environ['LINUX_FB'] = 'false'
+        if self.LINUX_FB:
+          os.environ['LINUX_FB'] = 'true'
+          
 
         self.parseArgs(self.awtk, ARGUMENTS)
 
@@ -218,7 +236,7 @@ class AppHelperBase:
         dll_def_gen_tools = os.path.join(
             self.AWTK_ROOT, 'tools/dll_def_gen/index.js')
 
-        cmd = 'node ' + '"' + idl_gen_tools + '"' + ' idl/idl.json ' + 'src'
+        cmd = 'node ' + '"' + idl_gen_tools + '"' + ' idl/idl.json ' + self.SRC_DIR
         if os.system(cmd) != 0:
             print('exe cmd: ' + cmd + ' failed.')
 
@@ -307,6 +325,7 @@ class AppHelperBase:
             APP_DEFAULT_COUNTRY + '\\\" '
         APP_CCFLAGS = APP_CCFLAGS + ' -DAPP_ROOT=\"\\\"' + \
             self.APP_ROOT + '\\\"\" '
+        self.APP_CFLAGS = '' 
         self.APP_CCFLAGS = APP_CCFLAGS
         self.APP_CXXFLAGS = self.APP_CCFLAGS
 
@@ -347,6 +366,7 @@ class AppHelperBase:
         LINKFLAGS = awtk.LINKFLAGS + self.APP_LINKFLAGS
         LIBS = self.APP_LIBS + self.AWTK_LIBS
         LIBPATH = self.APP_LIBPATH + awtk.LIBPATH
+        CFLAGS = self.APP_CFLAGS + self.AWTK_CFLAGS
         CCFLAGS = self.APP_CCFLAGS + self.AWTK_CCFLAGS
         TARGET_ARCH = awtk.TARGET_ARCH
         APP_TOOLS = self.APP_TOOLS
@@ -375,6 +395,7 @@ class AppHelperBase:
                 LIBS=LIBS,
                 LIBPATH=LIBPATH,
                 CCFLAGS=CCFLAGS,
+                CFLAGS=CFLAGS,
                 CXXFLAGS=CXXFLAGS,
                 TARGET_ARCH=awtk.TARGET_ARCH,
                 OS_SUBSYSTEM_CONSOLE=awtk.OS_SUBSYSTEM_CONSOLE,
@@ -386,6 +407,7 @@ class AppHelperBase:
                 LINKFLAGS=LINKFLAGS,
                 LIBS=LIBS,
                 LIBPATH=LIBPATH,
+                CFLAGS=CFLAGS,
                 CCFLAGS=CCFLAGS,
                 CXXFLAGS=CXXFLAGS,
                 TARGET_ARCH=awtk.TARGET_ARCH,

@@ -1,14 +1,12 @@
 {
   "name": "awtk-demos",
-  "appType": "APP_MOBILE",
-  "hardware": "RT1050",
   "entry": "main",
   "assets": {
     "activedTheme": "default",
     "outputDir": "res",
     "loadFrom": "any",
     "screenDPR": "x1",
-    "const": "resource_data",
+    "const": "all_data",
     "defaultLanguage": "zh",
     "defaultCountry": "CN",
     "themes": {
@@ -41,6 +39,7 @@
   },
   "creator": {
     "name": "AWTK Designer",
-    "version": "0.1.7"
-  }
+    "version": "1.0.0"
+  },
+  "awtkRoot": "."
 }

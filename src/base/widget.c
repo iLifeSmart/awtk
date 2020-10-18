@@ -117,6 +117,7 @@ static ret_t widget_real_destroy(widget_t* widget) {
   TKMEM_FREE(widget->style);
   TKMEM_FREE(widget->tr_text);
   TKMEM_FREE(widget->animation);
+  TKMEM_FREE(widget->pointer_cursor);
 
   memset(widget, 0x00, sizeof(widget_t));
   TKMEM_FREE(widget);
@@ -593,6 +594,14 @@ ret_t widget_set_feedback(widget_t* widget, bool_t feedback) {
   return RET_OK;
 }
 
+ret_t widget_set_auto_adjust_size(widget_t* widget, bool_t auto_adjust_size) {
+  return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
+
+  widget->auto_adjust_size = auto_adjust_size;
+  widget_layout(widget);
+  return RET_OK;
+}
+
 ret_t widget_set_floating(widget_t* widget, bool_t floating) {
   return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
 
@@ -974,19 +983,6 @@ ret_t widget_set_sensitive(widget_t* widget, bool_t sensitive) {
   return RET_OK;
 }
 
-static ret_t widget_set_visible_recursive(widget_t* widget, bool_t visible) {
-  return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
-
-  widget->visible = visible;
-  widget_set_need_relayout_children(widget->parent);
-
-  WIDGET_FOR_EACH_CHILD_BEGIN(widget, iter, i)
-  widget_set_visible_recursive(iter, visible);
-  WIDGET_FOR_EACH_CHILD_END()
-
-  return RET_OK;
-}
-
 ret_t widget_set_visible_only(widget_t* widget, bool_t visible) {
   return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
 
@@ -995,12 +991,8 @@ ret_t widget_set_visible_only(widget_t* widget, bool_t visible) {
   return RET_OK;
 }
 
-ret_t widget_set_visible(widget_t* widget, bool_t visible, bool_t recursive) {
-  if (recursive) {
-    widget_set_visible_recursive(widget, visible);
-  } else {
-    widget_set_visible_self(widget, visible);
-  }
+ret_t widget_set_visible(widget_t* widget, bool_t visible, ...) {
+  widget_set_visible_self(widget, visible);
 
   return widget_invalidate(widget, NULL);
 }
@@ -1517,10 +1509,11 @@ ret_t widget_paint(widget_t* widget, canvas_t* c) {
   return RET_OK;
 }
 
-static const widget_cmd_t s_widget_cmds[] = {{"start_animator", widget_start_animator},
-                                             {"stop_animator", widget_stop_animator},
-                                             {"pause_animator", widget_pause_animator},
-                                             {"destroy_animator", widget_destroy_animator}};
+static const widget_cmd_t s_widget_cmds[] = {
+    {WIDGET_EXEC_START_ANIMATOR, widget_start_animator},
+    {WIDGET_EXEC_STOP_ANIMATOR, widget_stop_animator},
+    {WIDGET_EXEC_PAUSE_ANIMATOR, widget_pause_animator},
+    {WIDGET_EXEC_DESTROY_ANIMATOR, widget_destroy_animator}};
 
 static ret_t widget_do_exec(widget_t* widget, const char* cmd, const char* args) {
   uint32_t i = 0;
@@ -1581,9 +1574,9 @@ static ret_t widget_on_grabbed_keys(void* ctx, event_t* e) {
 
 static ret_t widget_on_ungrab_keys(void* ctx, event_t* e) {
   widget_t* widget = WIDGET(ctx);
-  widget_t* wm = widget_get_window_manager(widget);
+  window_manager_t* wm = WINDOW_MANAGER(widget_get_window_manager(widget));
 
-  widget_off_by_tag(wm, tk_pointer_to_int(widget));
+  emitter_off_by_tag(wm->global_emitter, tk_pointer_to_int(widget));
 
   return RET_REMOVE;
 }
@@ -1595,7 +1588,10 @@ ret_t widget_set_prop(widget_t* widget, const char* name, const value_t* v) {
   return_value_if_fail(widget->vt != NULL, RET_BAD_PARAMS);
 
   if (tk_str_eq(name, WIDGET_PROP_EXEC)) {
-    return widget_exec(widget, value_str(v));
+    ret = widget_exec(widget, value_str(v));
+    if (ret != RET_NOT_FOUND) {
+      return ret;
+    }
   }
 
   e.value = v;
@@ -1632,6 +1628,8 @@ ret_t widget_set_prop(widget_t* widget, const char* name, const value_t* v) {
     widget_set_enable(widget, value_bool(v));
   } else if (tk_str_eq(name, WIDGET_PROP_FEEDBACK)) {
     widget->feedback = value_bool(v);
+  } else if (tk_str_eq(name, WIDGET_PROP_AUTO_ADJUST_SIZE)) {
+    widget_set_auto_adjust_size(widget, value_bool(v));
   } else if (tk_str_eq(name, WIDGET_PROP_NAME)) {
     widget_set_name(widget, value_str(v));
   } else if (tk_str_eq(name, WIDGET_PROP_TR_TEXT)) {
@@ -1662,6 +1660,8 @@ ret_t widget_set_prop(widget_t* widget, const char* name, const value_t* v) {
     } else if (tk_str_eq(name, WIDGET_PROP_TEXT)) {
       wstr_from_value(&(widget->text), v);
       ret = RET_OK;
+    } else if (tk_str_eq(name, WIDGET_PROP_EXEC)) {
+      ret = RET_NOT_FOUND;
     } else if (tk_str_start_with(name, "style:")) {
       return widget_set_style(widget, name + 6, v);
     } else {
@@ -1670,13 +1670,13 @@ ret_t widget_set_prop(widget_t* widget, const char* name, const value_t* v) {
       }
 
       if (tk_str_eq(name, WIDGET_PROP_GRAB_KEYS)) {
-        widget_t* wm = widget_get_window_manager(widget);
+        window_manager_t* wm = WINDOW_MANAGER(widget_get_window_manager(widget));
 
         if (value_bool(v)) {
           widget_on(widget, EVT_DESTROY, widget_on_ungrab_keys, widget);
-          widget_on_with_tag(wm, EVT_KEY_DOWN, widget_on_grabbed_keys, widget,
+          emitter_on_with_tag(wm->global_emitter, EVT_KEY_DOWN, widget_on_grabbed_keys, widget,
                              tk_pointer_to_int(widget));
-          widget_on_with_tag(wm, EVT_KEY_UP, widget_on_grabbed_keys, widget,
+          emitter_on_with_tag(wm->global_emitter, EVT_KEY_UP, widget_on_grabbed_keys, widget,
                              tk_pointer_to_int(widget));
         }
       }
@@ -1729,6 +1729,8 @@ ret_t widget_get_prop(widget_t* widget, const char* name, value_t* v) {
     value_set_bool(v, widget->enable);
   } else if (tk_str_eq(name, WIDGET_PROP_FEEDBACK)) {
     value_set_bool(v, widget->feedback);
+  } else if (tk_str_eq(name, WIDGET_PROP_AUTO_ADJUST_SIZE)) {
+    value_set_bool(v, widget->auto_adjust_size);
   } else if (tk_str_eq(name, WIDGET_PROP_NAME)) {
     value_set_str(v, widget->name);
   } else if (tk_str_eq(name, WIDGET_PROP_ANIMATION)) {
@@ -2999,6 +3001,7 @@ widget_t* widget_init(widget_t* widget, widget_t* parent, const widget_vtable_t*
   widget->enable = TRUE;
   widget->visible = TRUE;
   widget->feedback = FALSE;
+  widget->auto_adjust_size = FALSE;
   widget->sensitive = TRUE;
   widget->emitter = NULL;
   widget->children = NULL;
@@ -3084,6 +3087,8 @@ ret_t widget_get_prop_default_value(widget_t* widget, const char* name, value_t*
   } else if (tk_str_eq(name, WIDGET_PROP_FOCUSED)) {
     value_set_bool(v, FALSE);
   } else if (tk_str_eq(name, WIDGET_PROP_FEEDBACK)) {
+    value_set_bool(v, FALSE);
+  } else if (tk_str_eq(name, WIDGET_PROP_AUTO_ADJUST_SIZE)) {
     value_set_bool(v, FALSE);
   } else {
     if (widget->vt->get_prop_default_value) {
@@ -3218,6 +3223,7 @@ static const char* const s_widget_persistent_props[] = {WIDGET_PROP_NAME,
                                                         WIDGET_PROP_OPACITY,
                                                         WIDGET_PROP_FOCUSED,
                                                         WIDGET_PROP_FEEDBACK,
+                                                        WIDGET_PROP_AUTO_ADJUST_SIZE,
                                                         WIDGET_PROP_FOCUSABLE,
                                                         WIDGET_PROP_SENSITIVE,
                                                         WIDGET_PROP_WITH_FOCUS_STATE,
@@ -3242,6 +3248,7 @@ static ret_t widget_copy_base_props(widget_t* widget, widget_t* other) {
   widget->floating = other->floating;
   widget->opacity = other->opacity;
   widget->feedback = other->feedback;
+  widget->auto_adjust_size = other->auto_adjust_size;
   widget->focusable = other->focusable;
   widget->sensitive = other->sensitive;
   widget->auto_created = other->auto_created;
@@ -3602,6 +3609,9 @@ static ret_t widget_on_visit_focusable(void* ctx, const void* data) {
     darray_push(all_focusable, widget);
   }
 
+  if (widget->vt->disallow_children_focusable) {
+    return RET_SKIP;
+  }
   return RET_OK;
 }
 
@@ -4035,6 +4045,10 @@ bool_t widget_is_dialog(widget_t* widget) {
 
 bool_t widget_is_popup(widget_t* widget) {
   return tk_str_eq(widget->vt->type, WIDGET_TYPE_POPUP);
+}
+
+bool_t widget_is_overlay(widget_t* widget) {
+  return tk_str_eq(widget->vt->type, WIDGET_TYPE_OVERLAY);
 }
 
 bool_t widget_is_opened_popup(widget_t* widget) {
