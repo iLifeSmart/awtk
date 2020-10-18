@@ -57,7 +57,8 @@ def emit_generate_res_before(type):
             'theme': THEME,
             'imagegen_options': IMAGEGEN_OPTIONS,
             'input': INPUT_DIR,
-            'output': OUTPUT_DIR
+            'output': OUTPUT_DIR,
+            'awtk_root': AWTK_ROOT
         }
         ON_GENERATE_RES_BEFORE(ctx)
 
@@ -69,7 +70,8 @@ def emit_generate_res_after(type):
             'theme': THEME,
             'imagegen_options': IMAGEGEN_OPTIONS,
             'input': INPUT_DIR,
-            'output': OUTPUT_DIR
+            'output': OUTPUT_DIR,
+            'awtk_root': AWTK_ROOT
         }
         ON_GENERATE_RES_AFTER(ctx)
 
@@ -883,8 +885,8 @@ def gen_asset_c_entry_with_multi_theme():
     result += 'ret_t assets_init(void) {\n'
     result += '  return assets_init_internal(APP_THEME);\n}\n\n'
 
-    result += 'static ret_t widget_set_theme_without_file_system(widget_t* widget, const char* name) {\n'
     result += '#ifndef WITH_FS_RES\n'
+    result += 'static ret_t widget_set_theme_without_file_system(widget_t* widget, const char* name) {\n'
     result += '  const asset_info_t* info = NULL;\n'
     result += '  event_t e = event_init(EVT_THEME_CHANGED, NULL);\n'
     result += '  widget_t* wm = widget_get_window_manager(widget);\n'
@@ -907,10 +909,8 @@ def gen_asset_c_entry_with_multi_theme():
     result += '  widget_invalidate_force(wm, NULL);\n\n'
     result += '  log_debug("theme changed: %s\\n", name);\n\n'
     result += '  return RET_OK;\n'
-    result += '#else /*WITH_FS_RES*/\n'
-    result += '  return RET_NOT_IMPL;\n'
-    result += '#endif /*WITH_FS_RES*/\n'
-    result += '}\n\n'
+    result += '}\n'
+    result += '#endif /*WITH_FS_RES*/\n\n'
 
     result += 'ret_t assets_set_global_theme(const char* name) {\n'
     result += '#ifdef WITH_FS_RES\n'

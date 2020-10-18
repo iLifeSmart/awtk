@@ -307,7 +307,8 @@ typedef enum _ret_t {
 #define tk_abs(a) ((a) < (0) ? (-(a)) : (a))
 #define tk_max(a, b) ((a) > (b) ? (a) : (b))
 #define tk_roundi(a) (int32_t)(((a) >= 0) ? ((a) + 0.5f) : ((a)-0.5f))
-#define tk_clampi(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
+#define tk_clamp(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
+#define tk_clampi(a, mn, mx) (int32_t)((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
@@ -321,6 +322,7 @@ typedef bool_t (*tk_is_valid_t)(void* data);
 typedef bool_t (*tk_filter_t)(void* ctx, const void* data);
 typedef int (*tk_compare_t)(const void* a, const void* b);
 typedef ret_t (*tk_visit_t)(void* ctx, const void* data);
+typedef ret_t (*tk_callback_t)(void* ctx);
 
 /*TK_NAME_LEN+1 must aligned to 4*/
 enum { TK_NAME_LEN = 31 };

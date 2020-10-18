@@ -23,7 +23,10 @@
 #include "tkc/time_now.h"
 #include "base/keys.h"
 #include "base/system_info.h"
+#include "base/window_manager.h"
 #include "base/input_device_status.h"
+
+static ret_t input_device_status_init_key_event(input_device_status_t* ids, key_event_t* evt);
 
 input_device_status_t* input_device_status_init(input_device_status_t* ids) {
   return_value_if_fail(ids != NULL, NULL);
@@ -68,8 +71,15 @@ static ret_t input_device_status_dispatch_long_press(input_device_status_t* ids)
     if (iter->key && !iter->emitted) {
       uint64_t t = now - iter->time;
       if (t >= TK_KEY_LONG_PRESS_TIME) {
-        key_event_init(&evt, EVT_KEY_LONG_PRESS, widget, iter->key);
-        widget_on_keydown(widget, &evt);
+        window_manager_t* wm = WINDOW_MANAGER(window_manager());
+        event_t* e = key_event_init(&evt, EVT_KEY_LONG_PRESS, wm->global_emitter, iter->key);
+
+        input_device_status_init_key_event(ids, &evt);
+        if (emitter_dispatch(wm->global_emitter, e) != RET_STOP) {
+          e->target = widget;
+          widget_on_keydown(widget, &evt);
+        }
+
         log_debug("long press:%d\n", iter->key);
         iter->emitted = TRUE;
       }
@@ -105,7 +115,8 @@ static ret_t input_device_status_update_key_press_info(input_device_status_t* id
     }
 
     if (ids->long_press_check_timer == TK_INVALID_ID) {
-      ids->long_press_check_timer = timer_add(long_press_check_on_timer, ids, TK_KEY_LONG_PRESS_TIME);
+      ids->long_press_check_timer =
+          timer_add(long_press_check_on_timer, ids, TK_KEY_LONG_PRESS_TIME);
     }
   } else {
     return_value_if_fail(info != NULL, RET_BAD_PARAMS);

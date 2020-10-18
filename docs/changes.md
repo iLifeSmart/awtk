@@ -1,21 +1,100 @@
 # 最新动态
 
+2020/10/18
+  * 引入 wm->global\_emitter，避免 window manager 按键事件触发两次的问题。
+  * 修改 valgrind 发现的内存问题。
+  
+2020/10/16
+  * image\_animation 支持运行时修改 interval。
+  * image\_animation 支持 WIDGET\_PROP\_EXEC 控制动画的启动、暂停和停止。
+
+2020/10/15
+  * 完善脚本，支持同时生成。data/.res（感谢朝泽提供补丁）。
+  * 修复 mledit 的拉动条不能拖动的问题（感谢智明提供补丁）。
+  * text\_selector 增加 y 轴速度比例和支持本地翻译功能 （感谢智明提供补丁）。
+  * 修复 dialog\_toast 不支持文字长度自适应和修改字号的问题（感谢智明提供补丁）。
+  * 修改 widget 的 auto\_adjust\_size 为 true 的时候，也支持 xywh 为绝对值时自动调整（感谢智明提供补丁）。
+
+2020/10/13
+  * 增加 plugin\_manager。 
+  * label 的 line\_wrap 属性，缺省改为 FALSE。
+  * 将 tkc 编译成独立的动态库，给非 GUI 的库使用。
+  * 完善 label 的 line\_wrap 处理（感谢朝泽提供补丁）。 
+  * 增加属性 disallow\_children\_focusable（感谢智明提供补丁）。
+
+2020/10/12
+  * 完善 api 注释（感谢朝泽提供补丁）。
+  * 完善 fragment framebuffer（感谢智明提供补丁）。 
+  * 完善 label 对 line\_wrap 的处理。
+
+2020/10/11
+  * label 增加 line\_wrap 属性。
+  * 完善输入法。如果 keyboard 与 edit 没有重叠，不再上推窗口。
+
+2020/10/10
+  * window\_manager\_back 支持 overlay 和 popup。
+  * 完善 API 注释（感谢兆坤提供补丁）。
+  * canvas 增加了 clear\_rect 的函数，和 fill\_rect 函数公用一个颜色（感谢智明提供补丁）。
+  * 优化了 blend 函数的拷贝判断，当背景色为透明时候，把前景色拷贝到背景上面，不在做混合计算（感谢智明提供补丁）。
+
+2020/10/09
+  * 把 grab\_focus 和 return\_key\_to\_grab\_focus 属性移到 title\_value 自定义控件。
+
+2020/10/08
+  * 增加 auto\_adjust\_size 属性。为 true 时，根据子控件以及文本调整空间自身大小（此时最好不要使用 child\_layout，否则可能有冲突）。
+  * 窗口增加 single\_instance 属性。为 true 时，如果窗口已经打开，先关闭旧的，再打开新的。
+  * 增加 grab\_focus 和 return\_key\_to\_grab\_focus 属性，用于辅助实现只用方向键和 OK 键的硬件。
+
+2020/10/07
+  * label 支持自动换行。
+  
+2020/10/06
+  * 完善 README.md，增加 nodejs 和 glob 安装方法。
+  * 删除 design 目录中临时文件 (.bin)。
+  * 完善资源目录中的文档。
+  
+2020/10/05
+  * 增加用于生成智能提示数据的工具。
+  
+* 2020/10/03-04
+  * 解析时遇到没有注册的控件打印警告，并用 view 代替。
+  * 增加 [vscode 实时预览插件](https://github.com/zlgopen/awtk-vscode-plugin)。
+
+* 2020/10/02
+  * 更新文档。
+  * 修复 macos 编译问题（感谢提 [suzp1984t pu](https://github.com/suzp1984) 供补丁）
+
+* 2020/10/01
+  * mledit 增加 open\_im\_when\_focused 和 close\_im\_when\_blured 属性。
+  * 重构 label，把部分函数移动到 line_break 中。
+  * 增加 [垂直文本控件](https://github.com/zlgopen/awtk-widget-vlabel)
+* 2020/09/29
+  * 删除了 assets\_manager\_ref 函数的空字符串的警告信息（感谢智明提供补丁）。
+  * 修复 vgcanvas\_create 函数返回值的注释（感谢兆坤提供补丁）。
+  * 修改 sdl release mouse capture 的时机，缓解 Ubuntun 调试时鼠标僵死的问题（感谢商 YUN 涛提供建议）。
+  * 增加函数 tk\_run\_in\_ui\_thread，让后台线程在 UI 线程执行指定的函数，它是对 idle\_queue 的包装，支持等待调用完成。
+
+* 2020/09/28
+  * 完善自定义控件文档（感谢朝泽提供补丁）。
+  * 完善 project.json 和文档（感谢朝泽提供补丁）。
+  * 完善离线 canvas 对旋转的处理（感谢智明提供补丁）。
+  
 * 2020/09/25
-  * 修改image dither工具mac编译问题（感谢suzp1984提供补丁）。
-  * 完善canvas换行处理（感谢智明提供补丁）。
-  * 修复slider刷新的问题（感谢智明提供补丁）。
+  * 修改 image dither 工具 mac 编译问题（感谢 suzp1984 提供补丁）。
+  * 完善 canvas 换行处理（感谢智明提供补丁）。
+  * 修复 slider 刷新的问题（感谢智明提供补丁）。
 
 * 2020/09/23
-  * 完善dll导出函数（感谢朝泽提供补丁）。
+  * 完善 dll 导出函数（感谢朝泽提供补丁）。
   * 修复部分事情初始化的问题（感谢俊杰提供补丁）。
-  * 修复assets.c在RT1052上路径的问题（感谢俊杰提供补丁）。
-  * 将contre改为center(保留centre，兼容以前的代码)。
+  * 修复 assets.c 在 RT1052 上路径的问题（感谢俊杰提供补丁）。
+  * 将 contre 改为 center（保留 centre，兼容以前的代码）。
 
 * 2020/09/22
   * 完善 scroll bar。
   * 修复密码选中不居中的问题。
   * rich text 增加 yslidable 属性。
-  * 完善 edit 的action事件。
+  * 完善 edit 的 action 事件。
 
 * 2020/09/21
   * 更新 dll 导出函数列表。
@@ -50,7 +129,7 @@
 
 * 2020/09/15
   * 支持长按键事件
-  * edit 增加 closei\_im\_when\_blured 属性。
+  * edit 增加 close\_im\_when\_blured 属性。
 
 * 2020/09/11
   * 支持 packed 图片。
@@ -2980,7 +3059,7 @@
   * 完善 vgcanvas，增加 paint 接口。
 
 * 2018/09/25
-  * 完成 text\_selector 控件基本功能。
+  * 完成 text\_selector 控件基本��能。
 
 * 2018/09/24
   * 更新文档。
