@@ -50,6 +50,7 @@ class AppHelperBase:
 
     def set_tkc_only(self):
         self.AWTK_LIBS = ['tkc']
+        self.TKC_ONLY = True
 
         return self
 
@@ -81,9 +82,9 @@ class AppHelperBase:
         self.APP_LIBS += APP_LIBS
         return self
     
-    def add_platform_libs(self, plat, APP_LIBS):
-        if plat == platform.system():
-            self.APP_LIBS += APP_LIBS
+    def add_platform_libs(self, plat, PLATFORM_LIBS):
+        if plat == PLATFORM:
+            self.PLATFORM_LIBS += PLATFORM_LIBS
         return self
 
     def add_libpath(self, APP_LIBPATH):
@@ -91,7 +92,7 @@ class AppHelperBase:
         return self
     
     def add_platform_libpath(self, plat, APP_LIBPATH):
-        if plat == platform.system():
+        if plat == PLATFORM:
             self.APP_LIBPATH += APP_LIBPATH
         return self
 
@@ -100,7 +101,7 @@ class AppHelperBase:
         return self
     
     def add_platform_cpppath(self, plat, APP_CPPPATH):
-        if plat == platform.system():
+        if plat == PLATFORM:
             self.APP_CPPPATH += APP_CPPPATH
         return self
 
@@ -113,7 +114,7 @@ class AppHelperBase:
         return self
 
     def add_platform_ccflags(self, plat, APP_CCFLAGS):
-        if plat == platform.system():
+        if plat == PLATFORM:
             self.APP_CCFLAGS += APP_CCFLAGS
         return self
 
@@ -122,7 +123,7 @@ class AppHelperBase:
         return self
     
     def add_platform_cxxflags(self, plat, APP_CXXFLAGS):
-        if plat == platform.system():
+        if plat == PLATFORM:
             self.APP_CXXFLAGS += APP_CXXFLAGS
         return self
 
@@ -131,7 +132,7 @@ class AppHelperBase:
         return self
 
     def add_platform_linkflags(self, plat, APP_LINKFLAGS):
-        if plat == platform.system():
+        if plat == PLATFORM:
             self.APP_LINKFLAGS += APP_LINKFLAGS
         return self
 
@@ -139,6 +140,7 @@ class AppHelperBase:
         APP_ROOT = os.path.normpath(os.getcwd())
 
         self.SRC_DIR = 'src'
+        self.TKC_ONLY = False 
         self.ARGUMENTS = ARGUMENTS
         self.DEF_FILE = None
         self.DEF_FILE_PROCESSOR = None
@@ -160,6 +162,7 @@ class AppHelperBase:
         self.APP_LIBPATH = [self.APP_LIB_DIR]
         self.APP_LINKFLAGS = ''
         self.APP_CPPPATH = [self.APP_SRC, self.APP_RES]
+        self.PLATFORM_LIBS = []
         self.APP_TOOLS = None
 
         mkdir_if_not_exist(self.APP_BIN_DIR);
@@ -221,7 +224,11 @@ class AppHelperBase:
         return 'WITH_AWTK_SO' in os.environ and os.environ['WITH_AWTK_SO'] == 'true' and self.BUILD_SHARED
 
     def copyAwtkSharedLib(self):
-        self.awtk.copySharedLib(self.AWTK_ROOT, self.APP_BIN_DIR, 'awtk')
+        if self.TKC_ONLY:
+            self.awtk.copySharedLib(self.AWTK_ROOT, self.APP_BIN_DIR, 'tkc')
+        else:
+            self.awtk.copySharedLib(self.AWTK_ROOT, self.APP_BIN_DIR, 'awtk')
+
         for iter in self.DEPENDS_LIBS:
             for so in iter['shared_libs']:
                 self.awtk.copySharedLib(iter['root'], self.APP_BIN_DIR, so)
@@ -329,7 +336,7 @@ class AppHelperBase:
         self.APP_CCFLAGS = APP_CCFLAGS
         self.APP_CXXFLAGS = self.APP_CCFLAGS
 
-        if platform.system() == 'Linux':
+        if PLATFORM == 'Linux':
             self.APP_LINKFLAGS += ' -Wl,-rpath=' + self.APP_BIN_DIR + ' '
 
         if not self.isBuildShared() and hasattr(awtk, 'AWTK_CCFLAGS'):
@@ -364,7 +371,7 @@ class AppHelperBase:
         awtk = self.awtk
         CPPPATH = awtk.CPPPATH + self.APP_CPPPATH
         LINKFLAGS = awtk.LINKFLAGS + self.APP_LINKFLAGS
-        LIBS = self.APP_LIBS + self.AWTK_LIBS
+        LIBS = self.APP_LIBS + self.AWTK_LIBS + self.PLATFORM_LIBS
         LIBPATH = self.APP_LIBPATH + awtk.LIBPATH
         CFLAGS = self.APP_CFLAGS + self.AWTK_CFLAGS
         CCFLAGS = self.APP_CCFLAGS + self.AWTK_CCFLAGS
