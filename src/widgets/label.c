@@ -43,6 +43,7 @@ typedef struct _label_line_parser_t {
   bool_t line_wrap;
 } label_line_parser_t;
 
+static ret_t label_auto_adjust_size(widget_t* widget);
 static ret_t label_line_parser_next(label_line_parser_t* parser);
 static ret_t label_line_parser_init(label_line_parser_t* parser, canvas_t* c, const wchar_t* str,
                                     uint32_t size, uint32_t font_size, uint32_t width,
@@ -242,7 +243,7 @@ static wh_t label_get_text_line_max_w(widget_t* widget, canvas_t* c) {
     wchar_t chr = str[i];
     if (chr == '\r' || chr == '\n' || i == size - 1) {
       n = i - start;
-      line_w = canvas_measure_text(c, str + start, n);
+      line_w = canvas_measure_text(c, str + start, n + 1);
       line_max_w = tk_max(line_max_w, line_w);
       start = i;
       if (chr == '\r' && (i + 1) <= size && str[i + 1] == '\n') {
@@ -258,6 +259,7 @@ ret_t label_resize_to_content(widget_t* widget, uint32_t min_w, uint32_t max_w, 
                               uint32_t max_h) {
   wh_t w = 0;
   wh_t h = 0;
+  wh_t tmp_w = 0;
   int32_t margin = 0;
   int32_t spacer = 0;
   int32_t line_height = 0;
@@ -276,10 +278,19 @@ ret_t label_resize_to_content(widget_t* widget, uint32_t min_w, uint32_t max_w, 
   w = label_get_text_line_max_w(widget, c);
 
   w = tk_clampi(w, min_w, max_w);
-  return_value_if_fail(
-      label_line_parser_init(&p, c, widget->text.str, widget->text.size, c->font_size,
-                             w - 2 * margin, label->line_wrap) == RET_OK,
-      RET_BAD_PARAMS);
+  if (w >= max_w) {
+    tmp_w = max_w - 2 * margin;
+  } else {
+    w = w + 2 * margin;
+    tmp_w = w;
+    if (w >= max_w) {
+      w = max_w;
+      tmp_w = max_w - 2 * margin;
+    }
+  }
+  return_value_if_fail(label_line_parser_init(&p, c, widget->text.str, widget->text.size,
+                                              c->font_size, tmp_w, label->line_wrap) == RET_OK,
+                       RET_BAD_PARAMS);
 
   h = p.total_lines * line_height + 2 * margin;
   h = tk_clampi(h, min_h, max_h);
@@ -328,8 +339,12 @@ static ret_t label_get_prop(widget_t* widget, const char* name, value_t* v) {
 static ret_t label_set_prop(widget_t* widget, const char* name, const value_t* v) {
   return_value_if_fail(widget != NULL && name != NULL && v != NULL, RET_BAD_PARAMS);
 
-  if (tk_str_eq(name, WIDGET_PROP_VALUE)) {
-    return wstr_from_value(&(widget->text), v);
+  if (tk_str_eq(name, WIDGET_PROP_VALUE) || tk_str_eq(name, WIDGET_PROP_TEXT)) {
+    wstr_from_value(&(widget->text), v);
+    if (widget->auto_adjust_size) {
+      label_auto_adjust_size(widget);
+    }
+    return RET_OK;
   } else if (tk_str_eq(name, WIDGET_PROP_LENGTH)) {
     return label_set_length(widget, tk_roundi(value_float(v)));
   } else if (tk_str_eq(name, WIDGET_PROP_LINE_WRAP)) {
@@ -339,8 +354,9 @@ static ret_t label_set_prop(widget_t* widget, const char* name, const value_t* v
   return RET_NOT_FOUND;
 }
 
-static ret_t label_auto_adust_size(widget_t* widget) {
+static ret_t label_auto_adjust_size(widget_t* widget) {
   wh_t w = 0;
+  wh_t tmp_w = 0;
   int32_t margin = 0;
   int32_t spacer = 0;
   int32_t line_height = 0;
@@ -353,14 +369,22 @@ static ret_t label_auto_adust_size(widget_t* widget) {
   style = widget->astyle;
   margin = style_get_int(style, STYLE_ID_MARGIN, 2);
   spacer = style_get_int(style, STYLE_ID_SPACER, 2);
-
-  w = widget->w - 2 * margin;
   widget_prepare_text_style(widget, c);
   line_height = c->font_size + spacer;
+
+  if (label->line_wrap) {
+    w = widget->w;
+    tmp_w = w - 2 * margin;
+  } else {
+    tmp_w = label_get_text_line_max_w(widget, c);
+    w = tmp_w + 2 * margin;
+  }
+
   return_value_if_fail(label_line_parser_init(&p, c, widget->text.str, widget->text.size,
-                                              c->font_size, w, label->line_wrap) == RET_OK,
+                                              c->font_size, tmp_w, label->line_wrap) == RET_OK,
                        RET_BAD_PARAMS);
 
+  widget->w = w;
   widget->h = line_height * p.total_lines;
 
   return RET_OK;
@@ -375,7 +399,7 @@ static ret_t label_on_event(widget_t* widget, event_t* e) {
     case EVT_RESIZE:
     case EVT_MOVE_RESIZE: {
       if (widget->auto_adjust_size) {
-        label_auto_adust_size(widget);
+        label_auto_adjust_size(widget);
         break;
       }
       break;

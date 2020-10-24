@@ -1610,7 +1610,7 @@ ret_t widget_set_prop(widget_t* widget, const char* name, const value_t* v) {
   } else if (tk_str_eq(name, WIDGET_PROP_OPACITY)) {
     widget->opacity = (uint8_t)value_int(v);
   } else if (tk_str_eq(name, WIDGET_PROP_VISIBLE)) {
-    widget->visible = value_bool(v);
+    widget_set_visible(widget, value_bool(v));
   } else if (tk_str_eq(name, WIDGET_PROP_SENSITIVE)) {
     widget->sensitive = value_bool(v);
   } else if (tk_str_eq(name, WIDGET_PROP_FLOATING)) {
@@ -1675,9 +1675,9 @@ ret_t widget_set_prop(widget_t* widget, const char* name, const value_t* v) {
         if (value_bool(v)) {
           widget_on(widget, EVT_DESTROY, widget_on_ungrab_keys, widget);
           emitter_on_with_tag(wm->global_emitter, EVT_KEY_DOWN, widget_on_grabbed_keys, widget,
-                             tk_pointer_to_int(widget));
+                              tk_pointer_to_int(widget));
           emitter_on_with_tag(wm->global_emitter, EVT_KEY_UP, widget_on_grabbed_keys, widget,
-                             tk_pointer_to_int(widget));
+                              tk_pointer_to_int(widget));
         }
       }
 
