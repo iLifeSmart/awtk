@@ -161,6 +161,8 @@
 
 ### 10. 开放源码，免费商用 (LGPL)。
 
+> 欢迎对照 [《GUI 引擎评价指标》](https://github.com/zlgopen/gui-lib-evaluation) 进行评测。
+
 ## 四、模拟运行：
 
 ### 下载代码
@@ -211,7 +213,7 @@ scons
 如果没有安装 scons 和依赖的软件包，请在终端运行下面的命令：
 
 ```
-sudo apt-get install gcc g++ scons libsndio-dev libgtk-3-dev libglu1-mesa libglu1-mesa-dev libgl1-mesa-glx libgl1-mesa-dev libasound2-dev git vim clang-format libharfbuzz-dev nodejs
+sudo apt-get install gcc g++ scons libsndio-dev libgtk-3-dev libglu1-mesa libglu1-mesa-dev libgl1-mesa-glx libgl1-mesa-dev libasound2-dev libibus-1.0-dev fcitx-libs-dev git vim clang-format libharfbuzz-dev nodejs
 ```
 
 编译运行 （在终端下，进入 awtk 所在的目录，并运行下列命令）：
@@ -296,7 +298,15 @@ npm install -g glob
 
 * [MVVM 模板工程](https://github.com/zlgopen/awtk-mvvm-c-hello)
 
-* [awtk-restful-httpd](https://github.com/zlgopen/awtk-restful-httpd)
+* [CSV文件操作](https://github.com/zlgopen/awtk-csv-file)
+
+* [数据库Repository](https://github.com/zlgopen/awtk-database-repository)
+
+* [Sqlite 基于 AWTK 的移植](https://github.com/zlgopen/awtk-sqlite3)
+
+* [VSCode实时预览插件](https://github.com/zlgopen/awtk-vscode-plugin)
+
+* [为嵌入式平台开发的RESTful的Web服务](https://github.com/zlgopen/awtk-restful-httpd)
 
 * [自动测试引擎](https://github.com/zlgopen/awtk-ui-automation)
 

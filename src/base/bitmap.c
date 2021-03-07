@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  bitmap interface
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -32,6 +32,13 @@ bitmap_t* bitmap_create(void) {
   bitmap->should_free_handle = TRUE;
 
   return bitmap;
+}
+
+ret_t bitmap_destroy_with_self(bitmap_t* bitmap) {
+  return_value_if_fail(bitmap != NULL, RET_BAD_PARAMS);
+  bitmap->should_free_handle = TRUE;
+
+  return bitmap_destroy(bitmap);
 }
 
 ret_t bitmap_destroy(bitmap_t* bitmap) {
@@ -728,6 +735,8 @@ uint8_t* bitmap_lock_buffer_for_read(bitmap_t* bitmap) {
 }
 
 uint8_t* bitmap_lock_buffer_for_write(bitmap_t* bitmap) {
+  return_value_if_fail(bitmap != NULL, NULL);
+
   if (bitmap->buffer != NULL) {
     if (!graphic_buffer_is_valid_for(bitmap->buffer, bitmap)) {
       assert(!" graphic_buffer is not valid ");

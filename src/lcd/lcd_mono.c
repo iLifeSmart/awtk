@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  mono lcd
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * this program is distributed in the hope that it will be useful,
  * but without any warranty; without even the implied warranty of
@@ -23,6 +23,10 @@
 #include "base/pixel.h"
 #include "lcd/lcd_mono.h"
 #include "base/system_info.h"
+
+#ifdef WITH_LCD_MONO
+#include "lcd/lcd_sdl2_mono.h"
+#endif
 
 #undef color_to_pixel
 typedef uint8_t pixel_t;
@@ -155,6 +159,15 @@ static ret_t lcd_mono_end_frame(lcd_t* lcd) {
   return RET_OK;
 }
 
+#ifdef WITH_LCD_MONO
+static ret_t lcd_mono_resize(lcd_t* lcd, wh_t w, wh_t h, uint32_t line_length) {
+  lcd_mono_t* mono = (lcd_mono_t*)(lcd);
+  return_value_if_fail(mono != NULL, RET_BAD_PARAMS);
+
+  return lcd_sdl2_mono_reinit(lcd, w, h, line_length);
+}
+#endif
+
 static ret_t lcd_mono_destroy(lcd_t* lcd) {
   lcd_mono_t* mono = (lcd_mono_t*)(lcd);
   if (mono->on_destroy) {
@@ -187,6 +200,9 @@ lcd_t* lcd_mono_create(wh_t w, wh_t h, lcd_flush_t flush, lcd_destroy_t on_destr
   system_info_set_lcd_type(info, lcd->type);
   system_info_set_device_pixel_ratio(info, 1);
 
+#ifdef WITH_LCD_MONO
+  lcd->resize = lcd_mono_resize;
+#endif
   lcd->begin_frame = lcd_mono_begin_frame;
   lcd->draw_vline = lcd_mono_draw_vline;
   lcd->draw_hline = lcd_mono_draw_hline;

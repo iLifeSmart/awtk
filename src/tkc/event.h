@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  event
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -381,7 +381,7 @@ typedef struct _cmd_exec_event_t {
   /**
    * @property {bool_t} can_exec
    * @annotation ["readable", "scriptable"]
-   * 执行结果(适用于CAN_EXEC)。
+   * 标识命令是否可以执行(适用于CAN_EXEC)。
    */
   bool_t can_exec;
 } cmd_exec_event_t;

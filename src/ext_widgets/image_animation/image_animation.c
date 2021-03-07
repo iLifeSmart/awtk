@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  image_animation
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -94,7 +94,7 @@ static ret_t image_animation_on_paint_self(widget_t* widget, canvas_t* c) {
 
       if (image_animation->unload_after_paint) {
         image_animation->image_buffer = (bitmap.buffer);
-        idle_add(on_idle_unload_image, widget);
+        widget_add_idle(widget, on_idle_unload_image);
       }
     }
   }
@@ -413,9 +413,15 @@ ret_t image_animation_update(widget_t* widget) {
 }
 
 static ret_t image_animation_on_update(const timer_info_t* info) {
-  widget_t* widget = WIDGET(info->ctx);
-  image_animation_t* image_animation = IMAGE_ANIMATION(widget);
-  ret_t ret = image_animation_update(widget);
+  ret_t ret = RET_OK;
+  widget_t* widget = NULL;
+  image_animation_t* image_animation = NULL;
+  return_value_if_fail(info != NULL, RET_BAD_PARAMS);
+
+  widget = WIDGET(info->ctx);
+  ret = image_animation_update(widget);
+  image_animation = IMAGE_ANIMATION(widget);
+  return_value_if_fail(widget != NULL && image_animation != NULL, RET_BAD_PARAMS);
 
   if (info->duration != image_animation->interval) {
     timer_modify(info->id, image_animation->interval);

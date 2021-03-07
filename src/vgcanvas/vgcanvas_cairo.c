@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  vector graphics canvas base on cairo
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -423,7 +423,9 @@ static cairo_surface_t* create_surface(uint32_t w, uint32_t h, bitmap_format_t f
       cairo_format = CAIRO_FORMAT_RGB16_565;
       break;
     }
-    default: { return NULL; }
+    default: {
+      return NULL;
+    }
   }
 
   return cairo_image_surface_create_for_data(fbuff, cairo_format, w, h, w * bpp);
@@ -594,9 +596,12 @@ static ret_t vgcanvas_cairo_restore(vgcanvas_t* vgcanvas) {
 }
 
 static ret_t vgcanvas_cairo_create_fbo(vgcanvas_t* vgcanvas, uint32_t w, uint32_t h,
-                                       framebuffer_object_t* fbo) {
+                                       bool_t custom_draw_model, framebuffer_object_t* fbo) {
   (void)vgcanvas;
   (void)fbo;
+  (void)w;
+  (void)h;
+  (void)custom_draw_model;
   return RET_NOT_IMPL;
 }
 

@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  canvas provides basic drawings functions.
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -123,6 +123,9 @@ ret_t canvas_set_assets_manager(canvas_t* c, assets_manager_t* assets_manager) {
   c->assets_manager = assets_manager;
   if (vgcanvas != NULL) {
     vgcanvas_set_assets_manager(vgcanvas, assets_manager);
+  }
+  if (c->font_manager != NULL) {
+    font_manager_set_assets_manager(c->font_manager, assets_manager);
   }
 
   return RET_OK;
@@ -619,7 +622,7 @@ static ret_t canvas_draw_text_impl(canvas_t* c, const wchar_t* str, uint32_t nr,
   font_vmetrics_t vmetrics = font_get_vmetrics(c->font, c->font_size);
   font_size_t font_size = c->font_size;
   int32_t baseline = vmetrics.ascent;
-
+  return_value_if_fail(c->font != NULL, RET_BAD_PARAMS);
   for (i = 0; i < nr; i++) {
     wchar_t chr = str[i];
 
@@ -743,6 +746,8 @@ static ret_t canvas_draw_image_repeat_default(canvas_t* c, bitmap_t* img, const 
   wh_t dh = 0;
   rect_t r_fix;
   rect_t* dst = canvas_fix_rect(dst_in, &r_fix);
+  return_value_if_fail(c != NULL && img != NULL && dst != NULL && src_in != NULL && dst_in != NULL,
+                       RET_BAD_PARAMS);
 
   s.x = src_in->x;
   s.y = src_in->y;

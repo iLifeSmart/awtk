@@ -31,7 +31,7 @@
 #include "ui_loader/ui_builder_default.h"
 
 static ret_t input_method_default_on_edit_destroy(void* ctx, event_t* e);
-static ret_t input_method_default_on_keyboard_destroy(void* ctx, event_t* e);
+static ret_t input_method_default_on_keyboard_close(void* ctx, event_t* e);
 
 static const char* input_type_to_keyboard_name(int32_t input_type) {
   const char* keyboard = NULL;
@@ -184,6 +184,7 @@ static ret_t input_type_open_keyboard(input_method_t* im, const char* keyboard_n
   point_t p = {0, 0};
   widget_t* widget = im->widget;
   widget_t* win = widget_get_window(widget);
+  bool_t win_is_keyboard = widget_is_keyboard(win);
   const char* close_anim_hint = WINDOW_ANIMATOR_POPUP;
   const char* open_anim_hint = open_anim ? close_anim_hint : "";
 
@@ -201,7 +202,7 @@ static ret_t input_type_open_keyboard(input_method_t* im, const char* keyboard_n
 
   im->busy = TRUE;
   widget_on(im->keyboard, EVT_WINDOW_OPEN, input_method_default_on_keyboard_open, im);
-  widget_on(im->keyboard, EVT_DESTROY, input_method_default_on_keyboard_destroy, im);
+  widget_on(im->keyboard, EVT_DESTROY, input_method_default_on_keyboard_close, im);
 
   if ((p.y + widget->h) > im->keyboard->y) {
     im->win = win;
@@ -214,7 +215,7 @@ static ret_t input_type_open_keyboard(input_method_t* im, const char* keyboard_n
     }
     open_anim_hint = close_anim_hint;
     widget_on(im->keyboard, EVT_WINDOW_OPEN, on_push_window, im);
-  } else if ((win->y + win->h) < im->keyboard->y) {
+  } else if (win_is_keyboard && (win->y + win->h) < im->keyboard->y) {
     /*when new keyboard height is not eq old keyboard height*/
     close_anim_hint = "vtranslate";
     im->win_delta_y += win->y + win->h - im->keyboard->y;
@@ -316,7 +317,7 @@ static ret_t input_method_default_ensure_suggest_words(input_method_t* im) {
   return RET_OK;
 }
 
-static ret_t input_method_default_on_keyboard_destroy(void* ctx, event_t* e) {
+static ret_t input_method_default_on_keyboard_close(void* ctx, event_t* e) {
   widget_t* widget = WIDGET(e->target);
   input_method_t* im = (input_method_t*)ctx;
 
@@ -390,6 +391,7 @@ ret_t input_method_default_destroy(input_method_t* im) {
   return_value_if_fail(im != NULL, RET_BAD_PARAMS);
 
   emitter_deinit(&(im->emitter));
+  input_engine_deinit(im->engine);
   input_engine_destroy(im->engine);
   suggest_words_destroy(im->suggest_words);
   assets_manager_unref(assets_manager(), (const asset_info_t*)(im->data));
@@ -409,6 +411,7 @@ input_method_t* input_method_default_create(void) {
 
   emitter_init(&(im->emitter));
   im->engine = input_engine_create(im);
+  input_engine_init(im->engine);
 
   return im;
 }

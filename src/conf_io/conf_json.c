@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  json 
  *
- * Copyright (c) 2020 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2020 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -152,6 +152,12 @@ static ret_t conf_json_parse_array(json_parser_t* parser) {
   conf_node_t* node = NULL;
 
   parser->cursor++;
+  conf_json_skip_spaces(parser);
+  c = parser->data[parser->cursor];
+  if (c == ']') {
+    parser->cursor++;
+    return RET_OK;
+  }
 
   while (parser->cursor < parser->size) {
     tk_snprintf(name, TK_NAME_LEN, "%u", i++);
@@ -478,4 +484,8 @@ ret_t conf_json_save_as(object_t* obj, const char* url) {
   data_writer_destroy(writer);
 
   return RET_OK;
+}
+
+object_t* conf_json_create(void) {
+  return conf_json_load(NULL, TRUE);
 }

@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  hscroll_label
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -267,6 +267,7 @@ ret_t hscroll_label_step(widget_t* widget) {
 static ret_t hscroll_label_on_timer_start(const timer_info_t* info) {
   widget_t* widget = WIDGET(info->ctx);
   hscroll_label_t* hscroll_label = HSCROLL_LABEL(widget);
+  return_value_if_fail(hscroll_label != NULL, RET_BAD_PARAMS);
   hscroll_label->timer_id = TK_INVALID_ID;
 
   if (hscroll_label->only_focus) {
@@ -289,7 +290,7 @@ static ret_t hscroll_label_on_timer(const timer_info_t* info) {
   ret_t ret = RET_OK;
   widget_t* widget = WIDGET(info->ctx);
   hscroll_label_t* hscroll_label = HSCROLL_LABEL(widget);
-
+  return_value_if_fail(hscroll_label != NULL, RET_BAD_PARAMS);
   if (!hscroll_label->paused) {
     hscroll_label->elapsed += info->duration;
   } else {
@@ -393,6 +394,10 @@ static ret_t hscroll_label_on_event(widget_t* widget, event_t* e) {
       }
       break;
     }
+    case EVT_POINTER_UP: {
+      hscroll_label->paused = FALSE;
+      break;
+    }
     case EVT_POINTER_LEAVE: {
       if (!hscroll_label->only_focus && !hscroll_label->only_parent_focus) {
         hscroll_label->paused = FALSE;
@@ -409,6 +414,7 @@ static ret_t hscroll_label_on_event(widget_t* widget, event_t* e) {
 static ret_t hscroll_label_on_parent_focus_changed(void* ctx, event_t* e) {
   widget_t* widget = WIDGET(ctx);
   hscroll_label_t* hscroll_label = HSCROLL_LABEL(widget);
+  return_value_if_fail(hscroll_label != NULL, RET_BAD_PARAMS);
   if (hscroll_label->only_parent_focus) {
     if (e->type == EVT_FOCUS) {
       hscroll_label_start(widget);

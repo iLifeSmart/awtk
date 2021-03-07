@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  events structs
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -208,9 +208,8 @@ multi_gesture_event_t* multi_gesture_event_cast(event_t* event) {
   return (multi_gesture_event_t*)event;
 }
 
-event_t* multi_gesture_event_init(multi_gesture_event_t* event, void* target, int64_t touch_id,
-                                  int32_t x, int32_t y, float rotation, float distance,
-                                  uint32_t fingers) {
+event_t* multi_gesture_event_init(multi_gesture_event_t* event, void* target, int32_t x, int32_t y,
+                                  float rotation, float distance) {
   return_value_if_fail(event != NULL, NULL);
   memset(event, 0x00, sizeof(multi_gesture_event_t));
 
@@ -220,9 +219,104 @@ event_t* multi_gesture_event_init(multi_gesture_event_t* event, void* target, in
   event->x = x;
   event->y = y;
   event->rotation = rotation;
-  event->touch_id = touch_id;
   event->distance = distance;
-  event->fingers = fingers;
 
   return (event_t*)event;
+}
+
+event_t* assets_event_init(assets_event_t* event, assets_manager_t* am, uint32_t type,
+                           asset_type_t asset_type, asset_info_t* asset_info) {
+  return_value_if_fail(event != NULL, NULL);
+  memset(event, 0x00, sizeof(assets_event_t));
+
+  event->e = event_init(type, am);
+  event->e.size = sizeof(*event);
+
+  event->type = asset_type;
+  event->asset_info = asset_info;
+  return (event_t*)event;
+}
+
+int32_t event_from_name(const char* name) {
+  return_value_if_fail(name != NULL, EVT_NONE);
+
+  switch (*name) {
+    case 'f': {
+      if (tk_str_eq(name, "focus")) {
+        return EVT_FOCUS;
+      }
+    }
+    case 'b': {
+      if (tk_str_eq(name, "blur")) {
+        return EVT_BLUR;
+      }
+    }
+    case 'g': {
+      if (tk_str_eq(name, "global_key_up")) {
+        return EVT_KEY_UP;
+      } else if (tk_str_eq(name, "global_key_down")) {
+        return EVT_KEY_DOWN;
+      } else if (tk_str_eq(name, "global_key_long_press")) {
+        return EVT_KEY_LONG_PRESS;
+      }
+      break;
+    }
+    case 'k': {
+      if (tk_str_eq(name, "key_up")) {
+        return EVT_KEY_UP;
+      } else if (tk_str_eq(name, "key_down")) {
+        return EVT_KEY_DOWN;
+      } else if (tk_str_eq(name, "key_long_press")) {
+        return EVT_KEY_LONG_PRESS;
+      } else if (tk_str_eq(name, "key_down_before_children")) {
+        return EVT_KEY_DOWN_BEFORE_CHILDREN;
+      } else if (tk_str_eq(name, "key_up_before_children")) {
+        return EVT_KEY_UP_BEFORE_CHILDREN;
+      }
+      break;
+    }
+    case 'p': {
+      if (tk_str_eq(name, "pointer_up")) {
+        return EVT_POINTER_UP;
+      } else if (tk_str_eq(name, "pointer_down")) {
+        return EVT_POINTER_DOWN;
+      } else if (tk_str_eq(name, "pointer_move")) {
+        return EVT_POINTER_MOVE;
+      }
+      break;
+    }
+    case 'c': {
+      if (tk_str_eq(name, "click")) {
+        return EVT_CLICK;
+      }
+      break;
+    }
+    case 't': {
+      if (tk_str_eq(name, "timer")) {
+        return EVT_TIMER;
+      }
+      break;
+    }
+    case 'w': {
+      if (tk_str_eq(name, "window_close")) {
+        return EVT_WINDOW_CLOSE;
+      } else if (tk_str_eq(name, "window_open")) {
+        return EVT_WINDOW_OPEN;
+      } else if (tk_str_eq(name, "window_will_open")) {
+        return EVT_WINDOW_WILL_OPEN;
+      }
+      break;
+    }
+    case 'v': {
+      if (tk_str_eq(name, "value_changed")) {
+        return EVT_VALUE_CHANGED;
+      } else if (tk_str_eq(name, STR_VALUE_CHANGED_BY_UI)) {
+        return EVT_VALUE_CHANGED;
+      }
+      break;
+    }
+    default:
+      break;
+  }
+  return EVT_NONE;
 }

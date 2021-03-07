@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  emitter dispatcher
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -130,8 +130,8 @@ ret_t emitter_dispatch_simple_event(emitter_t* emitter, uint32_t type);
  * 注册指定事件的处理函数。
  * @annotation ["scriptable:custom"]
  * @param {emitter_t*} emitter emitter对象。
- * @param {event_type_t} type 事件类型。
- * @param {event_func_t} on_event 事件处理函数。
+ * @param {event_type_t} etype 事件类型。
+ * @param {event_func_t} handler 事件处理函数。
  * @param {void*} ctx 事件处理函数上下文。
  *
  * @return {uint32_t} 返回id，用于emitter_off。
@@ -256,7 +256,6 @@ ret_t emitter_disable(emitter_t* emitter);
 /**
  * @method emitter_size
  * 获取注册的回调函数个数，主要用于辅助测试。
- * @annotation ["scriptable"]
  * @param {emitter_t*} emitter emitter对象。
  *
  * @return {uint32_t} 回调函数个数。

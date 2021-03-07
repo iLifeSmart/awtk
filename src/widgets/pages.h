@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  pages
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -23,6 +23,7 @@
 #define TK_PAGES_H
 
 #include "base/widget.h"
+#include "tkc/str.h"
 
 BEGIN_C_DECLS
 
@@ -63,6 +64,10 @@ typedef struct _pages_t {
    * 当前活跃的page。
    */
   uint32_t active;
+  /* private */
+  str_t str_target;
+  uint32_t init_idle_id;
+  uint32_t focused_idle_id;
 } pages_t;
 
 /**

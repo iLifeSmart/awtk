@@ -1,6 +1,7 @@
 #include "awtk.h"
 #include "base/assets_manager.h"
 #include "assets/__assets_default.inc"
+#include "assets/__assets_dark.inc"
 
 #ifndef APP_THEME
 #define APP_THEME "default"
@@ -10,6 +11,8 @@ bool_t assets_has_theme(const char* name) {
   return_value_if_fail(name != NULL, FALSE);
 
   if (tk_str_eq(name, "default")) {
+    return TRUE;
+  } else if (tk_str_eq(name, "dark")) {
     return TRUE;
   } else {
     return FALSE;
@@ -24,6 +27,8 @@ static ret_t assets_init_internal(const char* theme) {
 
   if (tk_str_eq(theme, "default")) {
     return assets_init_default();
+  } else if (tk_str_eq(theme, "dark")) {
+    return assets_init_dark();
   } else {
     log_debug("%s not support.\n", theme);
     return RET_NOT_IMPL;
@@ -56,7 +61,7 @@ static ret_t widget_set_theme_without_file_system(widget_t* widget, const char* 
   locale_info_reload(locale_info);
 
   info = assets_manager_ref(am, ASSET_TYPE_STYLE, "default");
-  theme_init(theme(), info->data);
+  theme_set_theme_data(theme(), info->data);
   assets_manager_unref(assets_manager(), info);
 
   widget_dispatch(wm, &e);

@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  ini 
  *
- * Copyright (c) 2020 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2020 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -22,6 +22,7 @@
 #include "tkc/mem.h"
 #include "tkc/utils.h"
 #include "conf_io/conf_ini.h"
+#include "tkc/data_writer_factory.h"
 
 typedef enum _parser_state_t {
   STATE_NONE = 0,
@@ -125,9 +126,14 @@ conf_doc_t* conf_doc_load_ini(const char* data) {
         break;
       }
       case STATE_BEFORE_VALUE: {
-        if (!isspace(c)) {
+        if (c != ' ' && c != '\t') {
           state = STATE_VALUE;
-          str_set_with_len(s, &c, 1);
+          if (c == '\r' || c == '\n') {
+            str_set(s, "");
+            p -= 1;
+          } else {
+            str_set_with_len(s, &c, 1);
+          }
         }
 
         break;
@@ -301,4 +307,8 @@ ret_t conf_ini_save_as(object_t* obj, const char* url) {
   data_writer_destroy(writer);
 
   return RET_OK;
+}
+
+object_t* conf_ini_create(void) {
+  return conf_ini_load(NULL, TRUE);
 }
