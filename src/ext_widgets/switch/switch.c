@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  switch
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -378,6 +378,7 @@ static ret_t switch_get_prop(widget_t* widget, const char* name, value_t* v) {
     value_set_bool(v, aswitch->value);
     return RET_OK;
   } else if (tk_str_eq(name, WIDGET_PROP_YOFFSET)) {
+    value_set_int(v, 0);
     return RET_OK;
   } else if (tk_str_eq(name, WIDGET_PROP_XOFFSET)) {
     value_set_int(v, aswitch->xoffset);

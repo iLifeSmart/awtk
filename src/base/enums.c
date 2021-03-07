@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  enumerations
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -60,7 +60,8 @@ static const key_type_value_t asset_type_value[] = {
     {"font", 0, ASSET_TYPE_FONT},       {"image", 0, ASSET_TYPE_IMAGE},
     {"style", 0, ASSET_TYPE_STYLE},     {"ui", 0, ASSET_TYPE_UI},
     {"strings", 0, ASSET_TYPE_STRINGS}, {"xml", 0, ASSET_TYPE_XML},
-    {"data", 0, ASSET_TYPE_DATA},       {"script", 0, ASSET_TYPE_SCRIPT},
+    {"flow", 0, ASSET_TYPE_FLOW},       {"data", 0, ASSET_TYPE_DATA},
+    {"script", 0, ASSET_TYPE_SCRIPT},
 };
 
 static const key_type_value_t image_draw_type_name_value[] = {
@@ -214,7 +215,7 @@ static const key_type_value_t keys_type_name_value[] = {
     {"RIGHTBRACE", 0, TK_KEY_RIGHTBRACE},
     {"BACK", 0, TK_KEY_BACK},
     {"CANCEL", 0, TK_KEY_CANCEL},
-#ifdef SDL2
+#ifdef WITH_SDL
     {"PRINTSCREEN", 0, TK_KEY_PRINTSCREEN},
     {"SCROLLLOCK", 0, TK_KEY_SCROLLLOCK},
     {"PAUSE", 0, TK_KEY_PAUSE},
@@ -293,7 +294,7 @@ static const key_type_value_t keys_type_name_value[] = {
     {"APP1", 0, TK_KEY_APP1},
     {"APP2", 0, TK_KEY_APP2},
 
-#endif /*SDL2*/
+#endif /*WITH_SDL*/
     {"LCTRL", 0, TK_KEY_LCTRL},
     {"RCTRL", 0, TK_KEY_RCTRL},
     {"LSHIFT", 0, TK_KEY_LSHIFT},

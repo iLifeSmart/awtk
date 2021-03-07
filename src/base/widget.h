@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  basic class of all widget
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -347,7 +347,7 @@ struct _widget_t {
    * @property {bool_t} with_focus_state
    * @annotation ["set_prop","get_prop","readable","persitent","design","scriptable"]
    * 是否支持焦点状态。
-   * > 如果希望style支持焦点状态，但有不希望焦点停留，可用本属性。
+   * > 如果希望style支持焦点状态，但又不希望焦点停留，可用本属性。
    */
   uint8_t with_focus_state : 1;
 
@@ -774,6 +774,29 @@ ret_t widget_add_value(widget_t* widget, int32_t delta);
 ret_t widget_set_text(widget_t* widget, const wchar_t* text);
 
 /**
+ * @method widget_get_window_theme
+ * 获取控件的窗口主题
+ * @param {widget_t*} widget 控件对象。
+ * @param {theme_t**}  win_theme 返回窗口主题。
+ * @param {theme_t**}  default_theme 返回全局默认主题。
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
+ */
+ret_t widget_get_window_theme(widget_t* widget, theme_t** win_theme, theme_t** default_theme);
+
+/**
+ * @method widget_is_style_exist
+ * 查询指定的style是否存在。
+ * @annotation ["scriptable"]
+ * @param {widget_t*} widget 控件对象。
+ * @param {const char*}  style_name style的名称（如果为 NULL，则默认为 default）。
+ * @param {const char*}  state_name state的名称（如果为 NULL，则默认为 normal）。
+ *
+ * @return {bool_t} 存在返回 TRUE，不存在返回 FALSE。
+ */
+bool_t widget_is_style_exist(widget_t* widget, const char* style_name, const char* state_name);
+
+/**
  * @method widget_use_style
  * 启用指定的style。
  * @annotation ["scriptable"]
@@ -914,6 +937,18 @@ ret_t widget_to_local(widget_t* widget, point_t* p);
  * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
  */
 ret_t widget_to_global(widget_t* widget, point_t* p);
+
+/**
+ * @method widget_to_screen_ex
+ * 将控件内的本地坐标根据祖父级控件转换成相对于祖父级控件的屏幕相对坐标。
+ * 备注：如果 parent 不是 widget 控件的父级或者祖父级话，该函数会退化为 widget_to_screen 函数。
+ * @param {widget_t*} widget 控件对象。
+ * @param {widget_t*} parent 祖父级控。
+ * @param {point_t*} p 坐标点。
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
+ */
+ret_t widget_to_screen_ex(widget_t* widget, widget_t* parent, point_t* p);
 
 /**
  * @method widget_to_screen
@@ -1714,6 +1749,16 @@ bool_t widget_is_popup(widget_t* widget);
 bool_t widget_is_overlay(widget_t* widget);
 
 /**
+ * @method widget_is_opened_dialog
+ * 检查控件弹出对话框控件是否已经打开了（而非挂起状态）。
+ *
+ * @annotation ["scriptable"]
+ * @param {widget_t*} widget widget对象。
+ * @return {bool_t} 返回FALSE表示不是，否则表示是。
+ */
+bool_t widget_is_opened_dialog(widget_t* widget);
+
+/**
  * @method widget_is_opened_popup
  * 检查控件弹出窗口控件是否已经打开了（而非挂起状态）。
  *
@@ -1896,6 +1941,16 @@ ret_t widget_remove_timer(widget_t* widget, uint32_t timer_id);
 uint32_t widget_add_idle(widget_t* widget, idle_func_t on_idle);
 
 /**
+ * @method widget_remove_idle
+ * 删除指定的idle。
+ * @param {widget_t*} widget 控件对象。
+ * @param {uint32_t} idle_id idleID。
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
+ */
+ret_t widget_remove_idle(widget_t* widget, uint32_t idle_id);
+
+/**
  * @method widget_load_image
  * 加载图片。
  * 返回的bitmap对象只在当前调用有效，请不保存对bitmap对象的引用。
@@ -1947,6 +2002,27 @@ ret_t widget_unload_image(widget_t* widget, bitmap_t* bitmap);
  * @return {const asset_info_t*} 返回资源句柄。
  */
 const asset_info_t* widget_load_asset(widget_t* widget, asset_type_t type, const char* name);
+
+/**
+ * @method widget_load_asset_ex
+ * 加载资源。
+ * @param {widget_t*} widget 控件对象。
+ * @param {asset_type_t} type 资源类型。
+ * @param {uint16_t} subtype 资源子类型。
+ * @param {const char*}  name 资源名。
+ *
+ * 使用示例：
+ *
+ * ```c
+ * const asset_info_t* asset = widget_load_asset_ex(widget, ASSET_TYPE_IMAGE, ASSET_TYPE_IMAGE_BSVG, "mysvg");
+ * ...
+ * widget_unload_asset(widget, asset);
+ * ```
+ *
+ * @return {const asset_info_t*} 返回资源句柄。
+ */
+const asset_info_t* widget_load_asset_ex(widget_t* widget, asset_type_t type, uint16_t subtype,
+                                         const char* name);
 
 /**
  * @method widget_unload_asset
@@ -2229,6 +2305,16 @@ widget_t* widget_init(widget_t* widget, widget_t* parent, const widget_vtable_t*
  */
 widget_t* widget_create(widget_t* parent, const widget_vtable_t* vt, xy_t x, xy_t y, wh_t w,
                         wh_t h);
+
+/**
+ * @method widget_get_style_type
+ * 获取 widget 对应风格类型
+ * @annotation ["scriptable"]
+ * @param {widget_t*} widget widget对象。
+ *
+ * @return {const char*} 返回 widget 的对应风格类型。
+ */
+const char* widget_get_style_type(widget_t* widget);
 
 /**
  * @method widget_update_style
@@ -2660,6 +2746,10 @@ ret_t widget_on_context_menu(widget_t* widget, pointer_event_t* e);
 #define WIDGET_EXEC_STOP_ANIMATOR "stop_animator"
 #define WIDGET_EXEC_PAUSE_ANIMATOR "pause_animator"
 #define WIDGET_EXEC_DESTROY_ANIMATOR "destroy_animator"
+
+/* private */
+ret_t widget_stroke_border_rect_for_border_type(canvas_t* c, const rect_t* r, color_t bd,
+                                                int32_t border, uint32_t border_width);
 
 END_C_DECLS
 

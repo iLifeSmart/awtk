@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  input method interface.
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -22,6 +22,7 @@
 #include "base/keys.h"
 #include "tkc/utils.h"
 #include "base/input_method.h"
+#include "base/window_manager.h"
 
 ret_t input_method_dispatch(input_method_t* im, event_t* e) {
   return_value_if_fail(im != NULL && e != NULL, RET_BAD_PARAMS);
@@ -72,6 +73,12 @@ ret_t input_method_request(input_method_t* im, widget_t* widget) {
 
   if (im->widget == widget) {
     return RET_OK;
+  }
+
+  if (widget != NULL) {
+    widget_dispatch_simple_event(window_manager(), EVT_IM_START);
+  } else {
+    widget_dispatch_simple_event(window_manager(), EVT_IM_STOP);
   }
 
   return im->request(im, widget);

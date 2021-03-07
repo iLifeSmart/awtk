@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  line break and work break algorithm.
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -50,7 +50,9 @@ break_type_t line_break_check(wchar_t c1, wchar_t c2) {
     case LINEBREAK_NOBREAK: {
       return LINE_BREAK_NO;
     }
-    default: { return LINE_BREAK_ALLOW; }
+    default: {
+      return LINE_BREAK_ALLOW;
+    }
   }
 }
 

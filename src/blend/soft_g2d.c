@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  software implemented image operations
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -241,12 +241,12 @@ ret_t soft_blend_image(bitmap_t* dst, bitmap_t* src, const rect_t* dst_r, const 
         case BITMAP_FMT_RGBA8888: {
           return blend_image_bgr565_rgba8888(dst, src, dst_r, src_r, alpha);
         }
+        case BITMAP_FMT_BGRA8888: {
+          return blend_image_bgr565_bgra8888(dst, src, dst_r, src_r, alpha);
+        }
 #ifndef LCD_BGR565_LITE
         case BITMAP_FMT_RGB565: {
           return blend_image_bgr565_rgb565(dst, src, dst_r, src_r, alpha);
-        }
-        case BITMAP_FMT_BGRA8888: {
-          return blend_image_bgr565_bgra8888(dst, src, dst_r, src_r, alpha);
         }
 #endif /*LCD_BGR565_LITE*/
         default:

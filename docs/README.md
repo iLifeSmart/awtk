@@ -22,7 +22,6 @@
 * [AWTK 中的输入法](input_method.md)
 * [AWTK 硬件资源需求评估](hardware_req.md)
 * [AWTK 中的一些惯例](conventions.md)
-* [使用 Qt Designer 构建 AWTK 的界面](qt-designer.md)
 * [对话框高亮策略](dialog_highlight.md)
 * [控件焦点相关问题](widget_focus.md)
 * [AWTK 中的颜色格式](color_format.md)
@@ -44,6 +43,10 @@
 * [如何修改 Windows 下应用程序的图标](https://github.com/zlgopen/awtk/blob/master/win32_res/README.md)
 * [项目描述文件 project.json 介绍](awtk_project_description_file.md)
 * [利用 app_helper 编写 SConstruct](app_helper_usage.md)
+* [自定义控件支持脚本绑定](binding_custom_widget.md)
+* [编写跨平台的代码](cross_platform_programming.md)
+* [应用程序的类型](app_type.md)
+* [如何引用第三方库](how_to_use_3rd_libs.md)
 
 ### 2.HowTos
 * [AWTK 调试技巧](debug_tips.md)
@@ -67,7 +70,7 @@
 * [如何用 valgrind 查找内存相关问题](how_to_use_valgrind_detect_memory_bugs.md)
 * [如何定制 combo_box 控件中按钮的风格和大小](how_to_customize_combo_boxox_button.md)
 [如何访问控件的属性](how_to_access_widget_props.md)
-* [如何集成第三方库](https://github.com/zlgopen/awtk-hello/blob/master/docs/how_to_integrate_3rd_libs.md)
+* [如何集成第三方库](docs/how_to_use_3rd_libs.md)
 * [如何使用对话框](how_toto_use_dialog.md)
 * [如何使用软键盘上的 action 按钮](how_to_use_action_text.md)
 * [如何存取应用程序的配置信息](how_to_use_app_conf.md)
@@ -78,8 +81,11 @@
 * [如何支持 unicode bidirectional algorithm](how_to_enable_bidi.md)
 * [如何续期使用 AWTK Designer](how_to_renewal_awtk_designer.md)
 * [如何将生成的可执行文件和资源打包](how_to_release_app.md)
-
+* [如何使用多点触控手势算法](how_to_use_multi_gesture.md)
+* [如何隐藏滚动条的上下按钮](how_to_hide_up_down_button_of_scrollbar.md)
 * [如何使用 packed 图](how_to_use_packed_image.md)
+* [如何根据实际分辨率自动调整窗口中子控件的位置大小](how_to_auto_scale_children.md)
+* [如何修改 stb\_truetype 获取字模时申请的缓冲区大小](how_to_modify_stb_truetype_buffer_size.md)
 
 ### 3. 内部原理
 * [AWTK 脚本绑定原理](script_binding.md)

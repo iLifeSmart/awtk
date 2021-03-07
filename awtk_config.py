@@ -36,7 +36,7 @@ TK_3RD_ROOT   = joinPath(TK_ROOT, '3rd')
 TK_TOOLS_ROOT = joinPath(TK_ROOT, 'tools')
 TK_DEMO_ROOT  = joinPath(TK_ROOT, 'demos')
 GTEST_ROOT    = joinPath(TK_ROOT, '3rd/gtest/googletest')
-AWTK_STATIC_LIBS=['awtk_global', 'extwidgets', 'widgets', 'base', 'gpinyin', 'streams', 'conf_io', 'ubjson', 'compressors', 'fribidi', 'miniz', 'tkc_static', 'linebreak']
+AWTK_STATIC_LIBS=['awtk_global', 'extwidgets', 'widgets', 'base', 'gpinyin', 'streams', 'conf_io', 'hal', 'csv', 'ubjson', 'compressors', 'fribidi', 'miniz', 'tkc_static', 'linebreak']
 
 #INPUT_ENGINE='null'
 #INPUT_ENGINE='spinyin'
@@ -86,12 +86,13 @@ COMMON_CCFLAGS=' -DTK_ROOT=\"\\\"'+TK_ROOT+'\\\"\" '
 
 COMMON_CCFLAGS=COMMON_CCFLAGS+' -DENABLE_CURSOR=1 '
 COMMON_CCFLAGS=COMMON_CCFLAGS+' -DWITH_TEXT_BIDI=1 '
+#COMMON_CCFLAGS=COMMON_CCFLAGS+' -DLOAD_ASSET_WITH_MMAP=1 '
 COMMON_CCFLAGS=COMMON_CCFLAGS+' -DWITH_DATA_READER_WRITER=1 '
 COMMON_CCFLAGS=COMMON_CCFLAGS+' -DWITH_EVENT_RECORDER_PLAYER=1 '
 COMMON_CCFLAGS=COMMON_CCFLAGS+' -DWITH_ASSET_LOADER -DWITH_FS_RES -DWITH_ASSET_LOADER_ZIP ' 
 COMMON_CCFLAGS=COMMON_CCFLAGS+' -DSTBTT_STATIC -DSTB_IMAGE_STATIC -DWITH_STB_IMAGE '
 COMMON_CCFLAGS=COMMON_CCFLAGS+' -DWITH_VGCANVAS -DWITH_UNICODE_BREAK -DWITH_DESKTOP_STYLE '
-COMMON_CCFLAGS=COMMON_CCFLAGS+' -DSDL2 -DHAS_STD_MALLOC -DWITH_SDL -DHAS_STDIO -DHAVE_STDIO_H '
+COMMON_CCFLAGS=COMMON_CCFLAGS+' -DHAS_STD_MALLOC -DWITH_SDL -DHAS_STDIO -DHAVE_STDIO_H -DHAS_GET_TIME_US64 '
 
 GRAPHIC_BUFFER='default'
 
@@ -187,9 +188,9 @@ elif OS_NAME == 'Linux':
   else:
     OS_FLAGS = OS_FLAGS + ' -DWITH_64BIT_CPU '
 
-  OS_LINKFLAGS=' -Wl,-rpath=' + os.path.abspath(TK_LIB_DIR) + ' '
+  OS_LINKFLAGS=' -Wl,-rpath=./bin -Wl,-rpath=./ '
   AWTK_DLL_DEPS_LIBS = NANOVG_BACKEND_LIBS + ['SDL2', 'glad'] + OS_LIBS
-  OS_WHOLE_ARCHIVE =' -Wl,--whole-archive -lawtk_global -lextwidgets -lwidgets -lbase -lgpinyin -lstreams -lconf_io -lubjson -lcompressors -lfribidi -lminiz -ltkc_static -llinebreak -Wl,--no-whole-archive'
+  OS_WHOLE_ARCHIVE =' -Wl,--whole-archive -lawtk_global -lextwidgets -lwidgets -lbase -lgpinyin -lstreams -lconf_io -lhal -lcsv -lubjson -lcompressors -lfribidi -lminiz -ltkc_static -llinebreak -Wl,--no-whole-archive'
 
 elif OS_NAME == 'Windows':
   if not os.path.exists(os.path.abspath(TK_BIN_DIR)) :
@@ -210,16 +211,17 @@ elif OS_NAME == 'Windows':
       OS_SUBSYSTEM_CONSOLE='/SUBSYSTEM:CONSOLE  '
       OS_SUBSYSTEM_WINDOWS='/SUBSYSTEM:WINDOWS  '
       COMMON_CCFLAGS = COMMON_CCFLAGS + ' -D_WIN64 '
+    COMMON_CCFLAGS = COMMON_CCFLAGS + ' -DHAVE_LIBC '
     OS_WHOLE_ARCHIVE=' /DEF:"dllexports/awtk.def" '
     AWTK_DLL_DEPS_LIBS = AWTK_STATIC_LIBS + NANOVG_BACKEND_LIBS + ['SDL2', 'glad'] + OS_LIBS
 
   elif TOOLS_NAME == 'mingw' :
     OS_LIBS=['kernel32', 'gdi32', 'user32', 'winmm','imm32','version','shell32','ole32','Oleaut32','Advapi32','oleaut32','uuid','stdc++',"ws2_32"]
     OS_FLAGS='-DMINGW -DWINDOWS -D_CONSOLE -g -Wall'
-    OS_LINKFLAGS=' -Wl,-rpath=' + os.path.abspath(TK_LIB_DIR) + ' '
+    OS_LINKFLAGS=' -Wl,-rpath=./bin -Wl,-rpath=./ '
     COMMON_CFLAGS=COMMON_CFLAGS+' -std=gnu99 '
     COMMON_CCFLAGS=COMMON_CCFLAGS+' -U__FLT_EVAL_METHOD__ -D__FLT_EVAL_METHOD__=0 -DUNICODE -DDECLSPEC=  ' 
-    OS_WHOLE_ARCHIVE =' -Wl,--whole-archive -lawtk_global -lextwidgets -lwidgets -lbase -lgpinyin -lstreams -lconf_io -lubjson -lcompressors -lfribidi -lminiz -ltkc_static -llinebreak -Wl,--no-whole-archive'
+    OS_WHOLE_ARCHIVE =' -Wl,--whole-archive -lawtk_global -lextwidgets -lwidgets -lbase -lgpinyin -lstreams -lconf_io -lhal -lcsv -lubjson -lcompressors -lfribidi -lminiz -ltkc_static -llinebreak -Wl,--no-whole-archive'
     AWTK_DLL_DEPS_LIBS = AWTK_STATIC_LIBS + NANOVG_BACKEND_LIBS + ['SDL2', 'glad'] + OS_LIBS
     
   #OS_FLAGS='-DWIN32 -D_WIN32 -DWINDOWS /EHsc -D_CONSOLE  /DEBUG /Od  /FS /Z7 -D_DEBUG /MDd '
@@ -244,6 +246,7 @@ CPPPATH=[TK_ROOT,
   TK_SRC, 
   TK_3RD_ROOT, 
   joinPath(TK_SRC, 'ext_widgets'), 
+  joinPath(TK_SRC, 'custom_widgets'), 
   joinPath(TK_3RD_ROOT, 'fribidi'), 
   joinPath(TK_3RD_ROOT, 'pixman'), 
   joinPath(TK_3RD_ROOT, 'cairo'),
@@ -286,6 +289,9 @@ os.environ['STATIC_LIBS'] = ';'.join(STATIC_LIBS)
 os.environ['WITH_AWTK_SO'] = 'true'
 os.environ['AWTK_CCFLAGS'] = AWTK_CCFLAGS;
 
+os.environ['SDL_UBUNTU_USE_IME'] = str(False)
+# os.environ['SDL_UBUNTU_USE_IME'] = str(True)
+
 def has_custom_cc():
     return False
 
@@ -317,3 +323,15 @@ def copySharedLib(src, dst, name):
 def isBuildShared():
   return 'WITH_AWTK_SO' in os.environ and os.environ['WITH_AWTK_SO'] == 'true'
 
+def genIdlAndDef():
+    cmds = [
+            'node tools/idl_gen/tkc.js tools/idl_gen/tkc.json',
+            'node tools/idl_gen/index.js tools/idl_gen/idl.json',
+            'node tools/dll_def_gen/index.js tools/idl_gen/idl.json  dllexports/awtk.def false',
+            'node tools/dll_def_gen/index.js tools/idl_gen/tkc.json  dllexports/tkc.def false'
+    ];
+
+    for cmd in cmds:
+        print(cmd)
+        if os.system(cmd) != 0:
+            print('exe cmd: ' + cmd + ' failed.')

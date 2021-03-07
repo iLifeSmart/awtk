@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  tab_button
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -119,6 +119,7 @@ typedef struct _tab_button_t {
 
   /*private*/
   widget_t* ui;
+  bool_t pressed;
 } tab_button_t;
 
 /**

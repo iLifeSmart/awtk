@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  conf node
  *
- * Copyright (c) 2020 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2020 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -455,7 +455,9 @@ ret_t conf_node_set_value(conf_node_t* node, const value_t* v) {
       }
       break;
     }
-    default: { return RET_NOT_IMPL; }
+    default: {
+      return RET_NOT_IMPL;
+    }
   }
   node->node_type = CONF_NODE_SIMPLE;
 
@@ -519,7 +521,9 @@ ret_t conf_node_get_value(conf_node_t* node, value_t* v) {
       value_set_str(v, node->value.small_str);
       break;
     }
-    default: { return RET_NOT_IMPL; }
+    default: {
+      return RET_NOT_IMPL;
+    }
   }
 
   return RET_OK;
@@ -672,7 +676,7 @@ static conf_node_t* conf_node_get_prev(conf_node_t* node) {
   return_value_if_fail(node != NULL && node->parent != NULL, NULL);
   iter = conf_node_get_first_child(node->parent);
 
-  if (iter == node) {
+  if (iter == node || iter == NULL) {
     return NULL;
   }
 

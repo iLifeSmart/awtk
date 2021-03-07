@@ -302,6 +302,19 @@ TEST(Ini, last_first) {
   conf_doc_destroy(doc);
 }
 
+TEST(Ini, empty) {
+  value_t v;
+  conf_doc_t* doc = conf_doc_load_ini("[hello]\na=\nb=2\nc=3\n");
+  ASSERT_EQ(conf_doc_get(doc, "hello.a", &v), RET_OK);
+  ASSERT_STREQ(value_str(&v), "");
+  ASSERT_EQ(conf_doc_get(doc, "hello.b", &v), RET_OK);
+  ASSERT_STREQ(value_str(&v), "2");
+  ASSERT_EQ(conf_doc_get(doc, "hello.c", &v), RET_OK);
+  ASSERT_STREQ(value_str(&v), "3");
+
+  conf_doc_destroy(doc);
+}
+
 TEST(Ini, move_up) {
   value_t v;
   conf_doc_t* doc = conf_doc_load_ini("[hello]\n[ world ]\n[awtk]\nname=aaa\n");
@@ -365,5 +378,48 @@ TEST(Ini, readonly) {
   ASSERT_EQ(object_set_prop_str(conf, "tom.name", "tom"), RET_OK);
   ASSERT_EQ(object_remove_prop(conf, "tom.name"), RET_OK);
 
+  OBJECT_UNREF(conf);
+}
+
+TEST(Ini, load1) {
+  object_t* conf = conf_ini_load(NULL, FALSE);
+  ASSERT_EQ(conf, (object_t*)NULL);
+
+  conf = conf_ini_load(NULL, TRUE);
+  ASSERT_NE(conf, (object_t*)NULL);
+
+  OBJECT_UNREF(conf);
+}
+
+TEST(Ini, create) {
+  object_t* conf = conf_ini_create();
+  ASSERT_NE(conf, (object_t*)NULL);
+  ASSERT_EQ(object_set_prop_int(conf, "value", 123), RET_OK);
+  ASSERT_EQ(object_get_prop_int(conf, "value", 0), 123);
+  OBJECT_UNREF(conf);
+}
+
+#include "tkc/data_reader_mem.h"
+#include "tkc/data_writer_wbuffer.h"
+
+TEST(Ini, save_as) {
+  wbuffer_t wb;
+  char url[MAX_PATH + 1];
+  object_t* conf = conf_ini_create();
+  ASSERT_NE(conf, (object_t*)NULL);
+  ASSERT_EQ(object_set_prop_int(conf, "value", 123), RET_OK);
+  ASSERT_EQ(object_get_prop_int(conf, "value", 0), 123);
+  wbuffer_init_extendable(&wb);
+  data_writer_wbuffer_build_url(&wb, url);
+
+  ASSERT_EQ(conf_ini_save_as(conf, url), RET_OK);
+  OBJECT_UNREF(conf);
+
+  data_reader_mem_build_url(wb.data, wb.cursor, url);
+  conf = conf_ini_load(url, FALSE);
+  ASSERT_NE(conf, (object_t*)NULL);
+
+  ASSERT_EQ(object_get_prop_int(conf, "value", 0), 123);
+  wbuffer_deinit(&wb);
   OBJECT_UNREF(conf);
 }

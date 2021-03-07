@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  window manager
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -101,8 +101,11 @@ static ret_t window_manager_back_to_win_sync(widget_t* widget, widget_t* target)
   top = wins.size > 0 ? WIDGET(darray_pop(&wins)) : NULL;
   for (k = 0; k < wins.size; k++) {
     widget_t* iter = WIDGET(wins.elms[k]);
-    assert(!widget_is_dialog(iter));
-    window_manager_close_window_force(widget, iter);
+    if (widget_is_dialog(iter) && dialog_is_modal(iter)) { 
+      dialog_quit(iter, DIALOG_QUIT_NONE);
+    } else {
+      window_manager_close_window_force(widget, iter);
+    }
   }
   darray_deinit(&wins);
 
@@ -355,6 +358,31 @@ ret_t window_manager_back_to(widget_t* widget, const char* target) {
   }
 }
 
+ret_t window_manager_switch_to(widget_t* widget, widget_t* curr_win, widget_t* target_win,
+                               bool_t close) {
+  window_manager_t* wm = WINDOW_MANAGER(widget);
+  return_value_if_fail(wm != NULL && wm->vt != NULL, RET_BAD_PARAMS);
+
+  window_manager_close_keyboard(widget);
+
+  if (target_win == curr_win || target_win == NULL) {
+    return RET_OK;
+  }
+
+  if (wm->vt->switch_to != NULL) {
+    return wm->vt->switch_to(widget, curr_win, target_win, close);
+  } else {
+    widget_restack(target_win, 0xffffff);
+    if (close) {
+      window_manager_close_window_force(widget, curr_win);
+    } else {
+      window_manager_dispatch_window_event(curr_win, EVT_WINDOW_TO_BACKGROUND);
+    }
+    window_manager_dispatch_window_event(target_win, EVT_WINDOW_TO_FOREGROUND);
+    return RET_OK;
+  }
+}
+
 ret_t window_manager_back_to_home(widget_t* widget) {
   return window_manager_back_to(widget, NULL);
 }
@@ -507,9 +535,24 @@ widget_t* window_manager_find_target_by_win(widget_t* widget, void* win) {
   return NULL;
 }
 
+static bool_t window_manager_is_win_valid_target(widget_t* iter, void* win) {
+  if (win != NULL) {
+    native_window_t* nw =
+        (native_window_t*)widget_get_prop_pointer(iter, WIDGET_PROP_NATIVE_WINDOW);
+    if (nw == NULL || nw->handle != win) {
+      return FALSE;
+    }
+  }
+
+  if (!iter->visible || !iter->sensitive || !iter->enable) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
 widget_t* window_manager_find_target(widget_t* widget, void* win, xy_t x, xy_t y) {
   point_t p = {x, y};
-  native_window_t* nw = NULL;
   return_value_if_fail(widget != NULL, NULL);
 
   if (widget->grab_widget != NULL) {
@@ -518,14 +561,17 @@ widget_t* window_manager_find_target(widget_t* widget, void* win, xy_t x, xy_t y
 
   widget_to_local(widget, &p);
   WIDGET_FOR_EACH_CHILD_BEGIN_R(widget, iter, i)
-  if (win != NULL) {
-    nw = (native_window_t*)widget_get_prop_pointer(iter, WIDGET_PROP_NATIVE_WINDOW);
-    if (nw == NULL || nw->handle != win) {
-      continue;
-    }
+  if (!window_manager_is_win_valid_target(iter, win)) {
+    continue;
   }
+  if (widget_get_prop_bool(iter, WIDGET_PROP_ALWAYS_ON_TOP, FALSE) &&
+      widget_is_point_in(iter, x, y, FALSE)) {
+    return iter;
+  }
+  WIDGET_FOR_EACH_CHILD_END()
 
-  if (!iter->visible || !iter->sensitive || !iter->enable) {
+  WIDGET_FOR_EACH_CHILD_BEGIN_R(widget, iter, i)
+  if (!window_manager_is_win_valid_target(iter, win)) {
     continue;
   }
 
@@ -533,7 +579,8 @@ widget_t* window_manager_find_target(widget_t* widget, void* win, xy_t x, xy_t y
     return iter;
   }
 
-  if (widget_is_dialog(iter) || (widget_is_popup(iter) && widget_is_opened_popup(iter))) {
+  if ((widget_is_dialog(iter) && widget_is_opened_dialog(iter)) ||
+      (widget_is_popup(iter) && widget_is_opened_popup(iter))) {
     return iter;
   }
   WIDGET_FOR_EACH_CHILD_END()
@@ -641,4 +688,20 @@ ret_t window_manager_end_wait_pointer_cursor(widget_t* widget) {
   } else {
     return RET_NOT_IMPL;
   }
+}
+
+ret_t window_manager_close_all(widget_t* widget) {
+  return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
+
+  do {
+    uint32_t nr = widget_count_children(widget);
+    if (nr > 0) {
+      widget_t* win = widget_get_child(widget, nr - 1);
+      window_manager_close_window_force(widget, win);
+    } else {
+      break;
+    }
+  } while (TRUE);
+
+  return RET_OK;
 }

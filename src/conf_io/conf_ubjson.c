@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  ubjson 
  *
- * Copyright (c) 2020 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2020 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -51,6 +51,10 @@ static ret_t conf_ubjson_save_node_value_simple(conf_node_t* node, ubjson_writer
     }
   } else if (v.type == VALUE_TYPE_STRING) {
     return ubjson_writer_write_str(writer, value_str(&v));
+  } else if (v.type == VALUE_TYPE_FLOAT || v.type == VALUE_TYPE_FLOAT32) {
+    return ubjson_writer_write_float32(writer, value_float32(&v));
+  } else if (v.type == VALUE_TYPE_DOUBLE) {
+    return ubjson_writer_write_float64(writer, value_double(&v));
   } else {
     return ubjson_writer_write_int(writer, value_int(&v));
   }
@@ -245,4 +249,8 @@ ret_t conf_ubjson_save_as(object_t* obj, const char* url) {
   data_writer_destroy(writer);
 
   return RET_OK;
+}
+
+object_t* conf_ubjson_create(void) {
+  return conf_ubjson_load(NULL, TRUE);
 }

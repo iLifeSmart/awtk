@@ -13,6 +13,7 @@ TOOLS_NAME = os.environ['TOOLS_NAME']
 BASE_SOURCES=Glob('layouters/*.c') + \
   Glob('base/*.c') + \
   Glob('ui_loader/*.c') + \
+  Glob('fscript_ext/*.c') + \
   Glob('xml/*.c') + \
   Glob('svg/*.c') + \
   Glob('charset/*.c') + \
@@ -107,8 +108,8 @@ env.Library(os.path.join(LIB_DIR, 'tkc_static'), TK_SOURCES, LIBS=[])
 TKC_DEPS_LIBS=[]
 OS_NAME = platform.system()
 TKC_LINKFLAGS = env['LINKFLAGS'];
-TKC_STATIC_LIBS = ['conf_io', 'ubjson', 'streams', 'tkc_static', 'compressors', 'miniz']
-TKC_LINK_ALL=' -Wl,--whole-archive -lstreams -lconf_io -lubjson -ltkc_static -lcompressors -lminiz -Wl,--no-whole-archive'
+TKC_STATIC_LIBS = ['conf_io', 'hal', 'csv', 'ubjson', 'streams', 'tkc_static', 'compressors', 'miniz']
+TKC_LINK_ALL=' -Wl,--whole-archive -lstreams -lconf_io -lhal -lcsv -lubjson -ltkc_static -lcompressors -lminiz -Wl,--no-whole-archive'
 
 if OS_NAME == 'Windows':
   if TOOLS_NAME == '' :
@@ -127,7 +128,7 @@ env.SharedLibrary(os.path.join(BIN_DIR, 'tkc'), [], LIBS=TKC_DEPS_LIBS, LINKFLAG
 env.Library(os.path.join(LIB_DIR, 'base'), BASE_SOURCES, LIBS=[])
 WIDGETS_SOURCES=Glob('widgets/*.c')
 env.Library(os.path.join(LIB_DIR, 'widgets'), WIDGETS_SOURCES, LIBS=[])
-EXT_WIDGETS_SOURCES=Glob('ext_widgets/*.c') + Glob('ext_widgets/*/*.c') 
+EXT_WIDGETS_SOURCES=Glob('ext_widgets/*.c') + Glob('ext_widgets/*/*.c') +  Glob('custom_widgets/*.c') + Glob('custom_widgets/*/*.c')
 env.Library(os.path.join(LIB_DIR, 'extwidgets'), EXT_WIDGETS_SOURCES, LIBS=[])
 env.Library(os.path.join(LIB_DIR, 'awtk_global'), ['awtk_global.c'], LIBS=[])
 

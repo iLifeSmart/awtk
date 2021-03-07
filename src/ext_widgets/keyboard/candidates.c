@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  candidates
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -36,7 +36,7 @@ static ret_t candidates_on_button_focused(void* ctx, event_t* e) {
   input_method_t* im = input_method();
   wstr_t* text = &(button->text);
   candidates_t* candidates = CANDIDATES(ctx);
-  return_value_if_fail(im != NULL && text->size > 0, RET_FAIL);
+  return_value_if_fail(im != NULL && candidates != NULL && text->size > 0, RET_FAIL);
   tk_utf8_from_utf16(text->str, str, sizeof(str) - 1);
 
   if (candidates->pre) {
@@ -128,12 +128,12 @@ static ret_t candidates_relayout_children(widget_t* widget) {
   //hack by pulleyzzz
   xy_t spacer_w = 20;
   xy_t margin = 2;
+  uint32_t nr = 0;
   wh_t child_w = 0;
   xy_t child_x = margin;
   xy_t child_y = margin;
   widget_t* iter = NULL;
   widget_t* focused = NULL;
-  uint32_t nr = widget->children->size;
   wh_t child_h = widget->h - margin * 2;
   candidates_t* candidates = CANDIDATES(widget);
   widget_t** children = (widget_t**)(widget->children->elms);
@@ -143,14 +143,17 @@ static ret_t candidates_relayout_children(widget_t* widget) {
   int32_t child_margin = style_get_int(style, STYLE_ID_MARGIN, 0);
   uint16_t font_size = style_get_int(style, STYLE_ID_FONT_SIZE, TK_DEFAULT_FONT_SIZE);
 
+  nr = candidates->candidates_nr;
   canvas_set_font(c, font, font_size);
   for (i = 0; i < nr; i++) {
     iter = children[i];
     child_w = candidates_calc_child_width(c, iter) + child_margin * 2;
     if (iter->text.size) {
+      widget_set_enable(iter, TRUE);
       widget_set_visible(iter, TRUE, FALSE);
     } else {
       child_w = 0;
+      widget_set_enable(iter, FALSE);
       widget_set_visible(iter, FALSE, FALSE);
     }
     widget_move_resize(iter, child_x, child_y, child_w+spacer_w, child_h);
@@ -185,6 +188,7 @@ static ret_t candidates_update_candidates(widget_t* widget, const char* strs, ui
 
   for (i = 0; i < nr; i++) {
     iter = children[i];
+    widget_set_enable(iter, TRUE);
     widget_set_visible(iter, TRUE, FALSE);
     widget_set_text_utf8(iter, text);
     if (selected == i) {
@@ -198,6 +202,7 @@ static ret_t candidates_update_candidates(widget_t* widget, const char* strs, ui
   for (; i < widget->children->size; i++) {
     iter = children[i];
     widget_set_visible(iter, FALSE, FALSE);
+    widget_set_enable(iter, FALSE);
     widget_set_text_utf8(iter, "");
   }
 
@@ -301,10 +306,12 @@ static ret_t candidates_set_prop(widget_t* widget, const char* name, const value
 }
 
 static ret_t candidates_move_focus(widget_t* widget, bool_t next) {
+  uint32_t nr = 0;
   widget_t* focus = NULL;
   int32_t next_focus = 0;
   candidates_t* candidates = CANDIDATES(widget);
-  uint32_t nr = candidates->candidates_nr;
+  return_value_if_fail(candidates != NULL, RET_BAD_PARAMS);
+  nr = candidates->candidates_nr;
 
   WIDGET_FOR_EACH_CHILD_BEGIN(widget, iter, i)
   if (iter->focused) {
@@ -326,11 +333,12 @@ static ret_t candidates_move_focus(widget_t* widget, bool_t next) {
 }
 
 static ret_t candidates_on_keyup(widget_t* widget, key_event_t* e) {
+  uint32_t nr = 0;
   ret_t ret = RET_OK;
   widget_t* child = NULL;
   candidates_t* candidates = CANDIDATES(widget);
-  uint32_t nr = candidates->candidates_nr;
-  return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
+  return_value_if_fail(widget != NULL && candidates != NULL, RET_BAD_PARAMS);
+  nr = candidates->candidates_nr;
 
   if (nr > 1) {
     if (e->key >= TK_KEY_1 && e->key <= TK_KEY_9 && candidates->select_by_num) {
@@ -385,6 +393,7 @@ static ret_t candidates_on_im_candidates_event(void* ctx, event_t* e) {
   widget_t* widget = WIDGET(ctx);
   candidates_t* candidates = CANDIDATES(widget);
   im_candidates_event_t* evt = (im_candidates_event_t*)e;
+  return_value_if_fail(candidates != NULL && evt != NULL, RET_BAD_PARAMS);
 
   candidates->is_suggest = FALSE;
   if (candidates->pre) {

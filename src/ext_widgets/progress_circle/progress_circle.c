@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  progress_circle
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,6 +24,38 @@
 #include "base/widget_vtable.h"
 #include "base/image_manager.h"
 #include "progress_circle/progress_circle.h"
+
+static ret_t progress_circle_on_paint_background(widget_t* widget, canvas_t* c) {
+  bitmap_t img;
+  style_t* style = widget->astyle;
+  color_t trans = color_init(0, 0, 0, 0);
+  vgcanvas_t* vg = canvas_get_vgcanvas(c);
+  progress_circle_t* progress_circle = PROGRESS_CIRCLE(widget);
+  color_t color = style_get_color(style, STYLE_ID_BG_COLOR, trans);
+  const char* image_name = style_get_str(style, STYLE_ID_BG_IMAGE, NULL);
+  bool_t has_image = image_name && widget_load_image(widget, image_name, &img) == RET_OK;
+
+  if (vg != NULL && (has_image || color.rgba.a)) {
+    xy_t cx = widget->w / 2;
+    xy_t cy = widget->h / 2;
+    float_t r = tk_min(cx, cy) - progress_circle->line_width / 2;
+    vgcanvas_save(vg);
+    vgcanvas_translate(vg, c->ox, c->oy);
+    vgcanvas_set_stroke_color(vg, color);
+    vgcanvas_set_line_width(vg, progress_circle->line_width);
+    vgcanvas_begin_path(vg);
+    vgcanvas_arc(vg, cx, cy, r, 0, M_PI * 2, FALSE);
+    if (has_image) {
+      vgcanvas_paint(vg, TRUE, &img);
+    } else {
+      vgcanvas_stroke(vg);
+    }
+
+    vgcanvas_restore(vg);
+  }
+
+  return RET_OK;
+}
 
 static ret_t progress_circle_on_paint_self(widget_t* widget, canvas_t* c) {
   bitmap_t img;
@@ -62,9 +94,11 @@ static ret_t progress_circle_on_paint_self(widget_t* widget, canvas_t* c) {
     vgcanvas_set_stroke_color(vg, color);
     vgcanvas_set_line_width(vg, progress_circle->line_width);
     if (tk_str_eq(progress_circle->line_cap, VGCANVAS_LINE_CAP_ROUND)) {
-      vgcanvas_set_line_cap(vg, progress_circle->line_cap);
-    } else {
+      vgcanvas_set_line_cap(vg, VGCANVAS_LINE_CAP_ROUND);
+    } else if (tk_str_eq(progress_circle->line_cap, VGCANVAS_LINE_CAP_SQUARE)) {
       vgcanvas_set_line_cap(vg, VGCANVAS_LINE_CAP_SQUARE);
+    } else {
+      vgcanvas_set_line_cap(vg, VGCANVAS_LINE_CAP_BUTT);
     }
     vgcanvas_begin_path(vg);
     if (end_angle > start_angle) {
@@ -85,7 +119,7 @@ static ret_t progress_circle_on_paint_self(widget_t* widget, canvas_t* c) {
     const char* unit = progress_circle->unit != NULL ? progress_circle->unit : "";
     tk_snprintf(s, sizeof(s), "%u%s", (uint32_t)(progress_circle->value), unit);
 
-    widget_set_text_utf8(widget, s);
+    wstr_set_utf8(&(widget->text), s);
     widget_paint_helper(widget, c, NULL, NULL);
   }
 
@@ -257,6 +291,7 @@ TK_DECL_VTABLE(progress_circle) = {.size = sizeof(progress_circle_t),
                                    .parent = TK_PARENT_VTABLE(widget),
                                    .create = progress_circle_create,
                                    .on_paint_self = progress_circle_on_paint_self,
+                                   .on_paint_background = progress_circle_on_paint_background,
                                    .on_destroy = progress_circle_on_destroy,
                                    .get_prop = progress_circle_get_prop,
                                    .set_prop = progress_circle_set_prop};

@@ -140,7 +140,7 @@ canvas_t* canvas_offline_create(uint32_t w, uint32_t h, bitmap_format_t format) 
   canvas_init((canvas_t*)canvas, c->lcd, widget_get_font_manager(window_manager()));
   canvas_set_assets_manager((canvas_t*)canvas, widget_get_assets_manager(window_manager()));
   canvas_set_global_alpha((canvas_t*)canvas, 0xff);
-  vgcanvas_create_fbo(vg, w, h, fbo);
+  vgcanvas_create_fbo(vg, w, h, FALSE, fbo);
 
   return (canvas_t*)canvas;
 #else
@@ -451,6 +451,7 @@ ret_t canvas_offline_destroy(canvas_t* canvas) {
   fbo = ((canvas_offline_gpu_t*)canvas)->fbo;
   if (fbo != NULL) {
     vgcanvas_destroy_fbo(vg, fbo);
+    TKMEM_FREE(fbo);
   }
 #else
   system_info_set_lcd_w(info, ((canvas_offline_t*)canvas)->lcd_w);

@@ -266,6 +266,7 @@ static vgcanvas_t* lcd_mem_get_vgcanvas(lcd_t* lcd) {
 
   if (mem->vgcanvas == NULL) {
     mem->vgcanvas = vgcanvas_create(w, h, line_length, format, fbdata);
+    vgcanvas_clip_rect(mem->vgcanvas, 0, 0, w, h);
   } else {
     vgcanvas_reinit(mem->vgcanvas, w, h, line_length, format, fbdata);
   }
@@ -345,6 +346,7 @@ static ret_t lcd_mem_resize(lcd_t* lcd, wh_t w, wh_t h, uint32_t line_length) {
   lcd->w = w;
   lcd->h = h;
   mem->line_length = tk_max(mem->base.w * bpp, line_length);
+  vgcanvas_clip_rect(mem->vgcanvas, 0, 0, w, h);
 
   return RET_OK;
 }

@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  emitter dispatcher
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -129,8 +129,8 @@ ret_t emitter_dispatch(emitter_t* emitter, event_t* e) {
       if (iter->type == e->type) {
         ret = iter->handler(iter->ctx, e);
         if (ret == RET_STOP) {
+          emitter->curr_iter = NULL;
           if (emitter->remove_curr_iter) {
-            emitter->curr_iter = NULL;
             emitter->remove_curr_iter = FALSE;
             emitter_remove_item(emitter, iter);
           }

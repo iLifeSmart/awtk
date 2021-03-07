@@ -3,7 +3,7 @@
  * Author: AWTK Develop Team
  * Brief:  awtk
  *
- * Copyright (c) 2018 - 2020  Guangzhou ZHIYUAN Electronics Co.,Ltd.
+ * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,6 +21,7 @@
 
 #include "awtk.h"
 #include "tkc/mem.h"
+#include "tkc/fscript.h"
 #include "base/idle.h"
 #include "base/timer.h"
 #include "tkc/thread.h"
@@ -34,12 +35,15 @@
 #include "base/window_manager.h"
 #include "base/widget_factory.h"
 #include "base/assets_manager.h"
+#include "fscript_ext/fscript_ext.h"
 
 #ifdef WITH_DATA_READER_WRITER
 #include "tkc/data_reader_factory.h"
 #include "tkc/data_writer_factory.h"
 #include "tkc/data_writer_file.h"
+#include "tkc/data_writer_wbuffer.h"
 #include "tkc/data_reader_file.h"
+#include "tkc/data_reader_mem.h"
 #include "base/data_reader_asset.h"
 #endif /*WITH_DATA_READER_WRITER*/
 
@@ -117,7 +121,7 @@ ret_t tk_init_assets(void) {
         break;
       case ASSET_TYPE_STYLE:
         if (theme()->data == NULL && strcmp(iter->name, "default") == 0) {
-          theme_init(theme(), iter->data);
+          theme_set_theme_data(theme(), iter->data);
         }
         break;
     }
@@ -149,12 +153,19 @@ ret_t tk_init_internal(void) {
   font_loader_t* font_loader = NULL;
 
   s_ui_thread_id = tk_thread_self();
+  fscript_global_init();
+#ifdef WITH_FSCRIPT_EXT
+  fscript_ext_init();
+#endif /*WITH_FSCRIPT_EXT*/
+
 #ifdef WITH_DATA_READER_WRITER
   data_writer_factory_set(data_writer_factory_create());
   data_reader_factory_set(data_reader_factory_create());
   data_writer_factory_register(data_writer_factory(), "file", data_writer_file_create);
   data_reader_factory_register(data_reader_factory(), "file", data_reader_file_create);
   data_reader_factory_register(data_reader_factory(), "asset", data_reader_asset_create);
+  data_reader_factory_register(data_reader_factory(), "mem", data_reader_mem_create);
+  data_writer_factory_register(data_writer_factory(), "wbuffer", data_writer_wbuffer_create);
 #endif /*WITH_DATA_READER_WRITER*/
 
 #ifdef WITH_STB_IMAGE
@@ -174,13 +185,15 @@ ret_t tk_init_internal(void) {
   return_value_if_fail(timer_prepare(time_now_ms) == RET_OK, RET_FAIL);
   return_value_if_fail(idle_manager_set(idle_manager_create()) == RET_OK, RET_FAIL);
   return_value_if_fail(widget_factory_set(widget_factory_create()) == RET_OK, RET_FAIL);
-  return_value_if_fail(theme_set(theme_create(NULL)) == RET_OK, RET_FAIL);
+  return_value_if_fail(theme_set(theme_default_create(NULL)) == RET_OK, RET_FAIL);
   return_value_if_fail(assets_manager_set(assets_manager_create(30)) == RET_OK, RET_FAIL);
 #ifndef WITHOUT_INPUT_METHOD
   return_value_if_fail(input_method_set(input_method_create()) == RET_OK, RET_FAIL);
 #endif /*WITHOUT_INPUT_METHOD*/
   return_value_if_fail(locale_info_set(locale_info_create(NULL, NULL)) == RET_OK, RET_FAIL);
   return_value_if_fail(font_manager_set(font_manager_create(font_loader)) == RET_OK, RET_FAIL);
+  return_value_if_fail(font_manager_set_assets_manager(font_manager(), assets_manager()) == RET_OK,
+                       RET_FAIL);
   return_value_if_fail(image_manager_set(image_manager_create()) == RET_OK, RET_FAIL);
 #ifndef WITHOUT_WINDOW_ANIMATORS
   return_value_if_fail(window_animator_factory_set(window_animator_factory_create()) == RET_OK,
@@ -255,13 +268,14 @@ ret_t tk_deinit_internal(void) {
   image_manager_destroy(image_manager());
   image_manager_set(NULL);
 
+  window_manager_close_all(window_manager());
   widget_destroy(window_manager());
-  window_manager_set(NULL);
 
   widget_factory_destroy(widget_factory());
   widget_factory_set(NULL);
 
   idle_manager_dispatch(idle_manager());
+  window_manager_set(NULL);
 #ifndef WITHOUT_INPUT_METHOD
   input_method_destroy(input_method());
   input_method_set(NULL);
@@ -308,6 +322,7 @@ ret_t tk_deinit_internal(void) {
 #endif /*WITH_DATA_READER_WRITER*/
 
   system_info_deinit();
+  fscript_global_deinit();
 
   return RET_OK;
 }
