@@ -22,6 +22,7 @@
 #include "tkc/utils.h"
 #include "base/types_def.h"
 #include "font_loader/font_loader_stb.h"
+#include "base/font_manager.h"
 
 #ifdef WITH_STB_FONT
 
@@ -63,6 +64,50 @@ static font_vmetrics_t font_stb_get_vmetrics(font_t* f, font_size_t font_size) {
   return vmetrics;
 }
 
+//hack by pulleyzzz
+static ret_t font_stb_get_glyph(font_t* f, wchar_t c, font_size_t font_size, glyph_t* g);
+char* g_font_find[32]={NULL};
+ret_t ls_add_font_find_list(int idx, const char* name)
+{
+  return_value_if_fail(name != NULL&&idx<sizeof(g_font_find), RET_FAIL);
+  if (g_font_find[idx])
+  {
+    free(g_font_find[idx]);
+    g_font_find[idx]=NULL;
+  }
+  g_font_find[idx]=strdup(name);
+  printf("add font find %d %s\n",idx,g_font_find[idx]);
+  return RET_OK;
+}
+
+ret_t ls_font_glyph_find(font_t* f, wchar_t c, font_size_t font_size, glyph_t* g)
+{
+  int i;
+  font_manager_t* fm=font_manager();
+  for (i=0;i<sizeof(g_font_find);i++)
+  {
+    if (g_font_find[i])
+    {
+      if (strcmp(f->name,g_font_find[i]))
+      {
+        font_t* df=font_manager_lookup(fm,g_font_find[i],font_size);
+        font_stb_t* stbdf=(font_stb_t*)df;
+        if (df&&df->get_glyph==font_stb_get_glyph&&stbtt_FindGlyphIndex(&(stbdf->stb_font),c))
+        {
+          //printf("???????fallback to %s\n",df->name);
+          log_debug("font[%s][x%x] fallback to font[%s]\n",f->name,c,df->name);
+          return font_stb_get_glyph(df,c,font_size,g);
+        }
+      }
+    }
+    else
+    {
+      break;
+    }
+  }
+  return RET_NOT_FOUND;
+}
+
 static ret_t font_stb_get_glyph(font_t* f, wchar_t c, font_size_t font_size, glyph_t* g) {
   int x = 0;
   int y = 0;
@@ -77,9 +122,18 @@ static ret_t font_stb_get_glyph(font_t* f, wchar_t c, font_size_t font_size, gly
   if (glyph_cache_lookup(&(font->cache), c, font_size, g) == RET_OK) {
     return RET_OK;
   }
-
-  g->data = stbtt_GetCodepointBitmap(sf, 0, scale, c, &w, &h, &x, &y);
-  stbtt_GetCodepointHMetrics(sf, c, &advance, &lsb);
+  int gidx=stbtt_FindGlyphIndex(sf,c);
+  if (gidx==0&&c!=' ')
+  {
+    if (RET_OK==ls_font_glyph_find(f,c,font_size,g))
+    {
+      return RET_OK;
+    }
+  }
+  //g->data = stbtt_GetCodepointBitmap(sf, 0, scale, c, &w, &h, &x, &y);
+  g->data=stbtt_GetGlyphBitmapSubpixel(sf, 0, scale, 0.0f,0.0f, gidx, &w, &h, &x, &y);
+  //stbtt_GetCodepointHMetrics(sf, c, &advance, &lsb);
+  stbtt_GetGlyphHMetrics(sf, gidx, &advance, &lsb);
 
   g->x = x;
   g->y = y;
@@ -131,29 +185,12 @@ static ret_t destroy_glyph(void* data) {
   return RET_OK;
 }
 
-//hack by pulleyzzz
-font_t* font_stb_create(const char* name, const uint8_t* buff_r, uint32_t buff_size_r) {
+font_t* font_stb_create(const char* name, const uint8_t* buff, uint32_t buff_size) {
   font_stb_t* f = NULL;
-  return_value_if_fail(buff_r != NULL && name != NULL, NULL);
+  return_value_if_fail(buff != NULL && name != NULL, NULL);
 
   f = TKMEM_ZALLOC(font_stb_t);
   return_value_if_fail(f != NULL, NULL);
-
-  uint8_t* buff=NULL;
-  uint32_t buff_size=0;
-  printf("font_stb_create %s %p:%d\n",name,buff_r,buff_size_r);
-  if (buff_size_r>=8&&buff_size_r<=32)
-  {
-    printf("font %s : use mmmap %s\n",name,buff_r);
-    buff=((uint8_t**)buff_r)[0];
-    buff_size=((uint8_t**)buff_r)[1];
-    printf("mmmap %p:%d\n",buff,buff_size);
-  }
-  else
-  {
-    buff=buff_r;
-    buff_size=buff_size_r;
-  }
 
   f->base.match = font_stb_match;
   f->base.destroy = font_stb_destroy;
