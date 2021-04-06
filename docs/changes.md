@@ -1,63 +1,99 @@
 # 最新动态
 
-2020/03/19
- * 修复list view layout内存泄漏（感谢兆坤提供补丁）
+2021/04/06
+  * add idle\_queue\_ex/timer\_queue\_ex for script binding.
+
+2021/04/04
+  * 增加 gui\_app\_start\_ex，方便嵌入式系统指定资源路径。
+  * 增加 WITH\_MBEDTLS控制是否编译stream\_mbedtls。
+
+2021/04/03
+  * 修复T9 测试失败的问题（感谢智明提供补丁）
+  * 完善image animation（感谢hantianheng提供补丁，感谢智明验证）
+
+2021/04/01
+  * 修复T9编译问题（感谢智明提供补丁）
+
+2021/03/29
+ * 修复 slider 控件的 bar\_size 属性过大画面不正常的问题（感谢智明提供补丁）
+ * 修改 mutable\_image 支持在 desiger 界面上面不刷新的功能（感谢智明提供补丁）
+ * 修复WHEEL\_BEFORE\_CHILDREN事件无法通过wheel\_event\_cast转换的问题（感谢福明提供补丁）
+ * 修改调用edit\_set\_text等函数后没有重绘的问题。
+
+2021/03/28
+  * 修改一些注释错误。
+  * 修改部分代码，方便在 Go 语言中调用 (Go 不支持位域，无法访问 union 成员，type 是关键字）。
+
+2021/03/26
+ * 完善文档 how\_to\_use\_action\_text.md。
+
+2021/03/25
+ * 合并 mbedtls 分支，增加基于 mbedtls 的 io stream
+ * 增加文档 [优化 freetype 解析矢量字体的显示效果](optimation_freetype_gray_font.md) （感谢雨欣提供）
+ * 增加文档 [优化 stb\_truetype 在 mono 模式下的字体显示效果](optimation_stb_truetype_mono_font.md) （感谢雨欣提供）
+
+2021/03/24
+ * 修复 file\_browser\_view 控件返回上级目录时将文件夹显示为文件的问题（感谢雨欣提供补丁）
+ * 优化 freetype 获取灰度图字模型的效果，添加 stb 二值化字模的功能并在 mono 模式下默认使用 stb（感谢雨欣提供补丁）
+
+2021/03/19
+ * 修复 list view layout 内存泄漏（感谢兆坤提供补丁）
  * 增加 tk\_utf8\_from\_utf16\_ex 和 wstr\_set\_utf8\_with\_len。
 
-2020/03/18
- * 修复在linux64位平台下，因为long和int长度不同 而导致字符串转整形错误的问题（感谢兆坤提供补丁）
+2021/03/18
+ * 修复在 linux64 位平台下，因为 long 和 int 长度不同 而导致字符串转整形错误的问题（感谢兆坤提供补丁）
 
-2020/03/17
+2021/03/17
  * 完善 linux-fb 的 egl 适配（感谢智明提供补丁）
  * 增加文档 [在 windows 下使用 gcc 编译 AWTK](mingw.md)
  * 为 progress\_bar 控件和 progress\_circle 控件添加 format 属性，方便用户可以自行格式化显示文本（感谢雨欣提供补丁）
 
-2020/03/16
+2021/03/16
  * hal 网络接口增加 windows 实现（感谢忠吉提供）
 
-2020/03/14
+2021/03/14
  * 增加 [HTML View](https://github.com/zlgopen/awtk-widget-html-view)
 
-2020/03/13
+2021/03/13
  * 修复 label\_get\_text\_line\_max\_w 接口在 tr\_text 属性为空调用失败的问题（感谢雨欣提供补丁）
 
-2020/03/10
+2021/03/10
  * 增加输入类型 INPUT\_ASCII，用于输入纯英文字符。
  * 修复 font\_manager\_unload\_font 在 OpenGL 模式下不能卸载字体的问题。
  * 修复 dialog\_info 等内置对话框显示翻译文本时 label 大小异常的问题（感谢雨欣提供补丁）
 
-2020/03/07
+2021/03/07
  * 用 WITH\_SDL 代替 SDL2，没有必要同时使用两个宏。
  * 完善 window\_manager\_back\_to\_home\_async，处理遇到模态对话框时触发 assert 的问题。
  * 修复 window\_manager\_default vtable 初始化顺序。
 
-2020/03/06
+2021/03/06
  * 完善 build.json，支持多主题。
  * 完善编译脚本，支持 rpath。
 
-2020/03/04
+2021/03/04
  * 修复在 mac 上面的 OpenGL 模式下 lcd 旋转窗口动画的问题 （感谢智明提供补丁）
  * 修改 list\_view 设置 scroll\_bar\_mobile 的虚拟高最低为 widget 高度（感谢智明提供补丁） 
  * 增加右键和中键的触发事件（在 demoui 中加入了点击中键会打印信息出来测试，右键的话还会触发 EVT\_CONTEXT\_MENU 事件，中键会触发 EVT\_KEY\_UP/DOWN 事件） （感谢智明提供补丁）
  * 修改 stb\_truetype 缓冲机制避免由于内存不足导致程序崩溃的现象并添加相关文档（感谢雨欣提供补丁）
  * 修复 demoui 在 VS 中编译报错的问题（感谢雨欣提供补丁）
 
-2020/03/03
+2021/03/03
  * 修复 slide indicator 没有更新的问题（感谢智明提供补丁）
 
-2020/03/02
+2021/03/02
  * 删除将 QT XML 生成 AWTK UI 的转换工具（感谢陈谭提供补丁）。
  * 修复 widget\_clone 处理 tr\_text 的 BUG（感谢网友 Eagle 提供补丁）。
  * 增加函数 fs\_copy\_file、fs\_copy\_dir 和 dir\_exist。
 
-2020/03/01
+2021/03/01
  * 修复 slide\_view 通过 indicator 快速切换 page 的时候导致有概 率出现播放动画异常（感谢智明提供补丁）
  * 修复 text\_selector 在播放动画的时候调用 text\_selector\_reset\_options 会导致崩溃的问题（感谢智明提供补丁）
 
-2020/02/27
+2021/02/27
  * 修复缺省输入法改用 CLOSE 事件造成崩溃的问题（感谢智明提供补丁）
 
-2020/02/26
+2021/02/26
  * 修复 SD L 内存泄露的问题（感谢智明提供补丁）
  * 修复 csv\_row\_to\_str（感谢林福提供补丁）
  * 修改退出 gpinyin 的时候释放缓存句柄，以免出现内存泄露的问题（感谢智明提供补丁）
