@@ -21,11 +21,11 @@
 
 #include "ext_widgets.h"
 #include "switch/switch.h"
-#include "guage/guage.h"
+#include "gauge/gauge.h"
 #include "mledit/mledit.h"
 #include "features/draggable.h"
 #include "mledit/line_number.h"
-#include "guage/guage_pointer.h"
+#include "gauge/gauge_pointer.h"
 #include "gif_image/gif_image.h"
 #include "svg_image/svg_image.h"
 #include "keyboard/keyboard.h"
@@ -94,8 +94,8 @@ ret_t tk_ext_widgets_init(void) {
   widget_factory_register(f, WIDGET_TYPE_LANG_INDICATOR, lang_indicator_create);
   widget_factory_register(f, WIDGET_TYPE_CANDIDATES, candidates_create);
   widget_factory_register(f, WIDGET_TYPE_TIME_CLOCK, time_clock_create);
-  widget_factory_register(f, WIDGET_TYPE_GUAGE, guage_create);
-  widget_factory_register(f, WIDGET_TYPE_GUAGE_POINTER, guage_pointer_create);
+  widget_factory_register(f, WIDGET_TYPE_GAUGE, gauge_create);
+  widget_factory_register(f, WIDGET_TYPE_GAUGE_POINTER, gauge_pointer_create);
   widget_factory_register(f, WIDGET_TYPE_TEXT_SELECTOR, text_selector_create);
   widget_factory_register(f, WIDGET_TYPE_SWITCH, switch_create);
   widget_factory_register(f, WIDGET_TYPE_IMAGE_ANIMATION, image_animation_create);
@@ -111,6 +111,9 @@ ret_t tk_ext_widgets_init(void) {
   widget_factory_register(f, WIDGET_TYPE_HSCROLL_LABEL, hscroll_label_create);
   widget_factory_register(f, WIDGET_TYPE_COMBO_BOX_EX, combo_box_ex_create);
   widget_factory_register(f, WIDGET_TYPE_DRAGGABLE, draggable_create);
+
+  widget_factory_register(f, "guage", gauge_create);
+  widget_factory_register(f, "guage_pointer", gauge_pointer_create);
 
   widget_factory_register(widget_factory(), WIDGET_TYPE_GUAGE_HOUR_POINTER,
                           guage_hour_pointer_create);
