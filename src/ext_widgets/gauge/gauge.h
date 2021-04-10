@@ -1,7 +1,7 @@
 ﻿/**
- * File:   guage.h
+ * File:   gauge.h
  * Author: AWTK Develop Team
- * Brief:  guage
+ * Brief:  gauge
  *
  * Copyright (c) 2018 - 2021  Guangzhou ZHIYUAN Electronics Co.,Ltd.
  *
@@ -19,47 +19,47 @@
  *
  */
 
-#ifndef TK_GUAGE_H
-#define TK_GUAGE_H
+#ifndef TK_GAUGE_H
+#define TK_GAUGE_H
 
 #include "base/widget.h"
 
 BEGIN_C_DECLS
 
 /**
- * @class guage_t
+ * @class gauge_t
  * @parent widget_t
  * @annotation ["scriptable","design","widget"]
  * 表盘控件。
  *
  * 表盘控件就是一张图片。
  *
- * guage\_t是[widget\_t](widget_t.md)的子类控件，widget\_t的函数均适用于guage\_t控件。
+ * gauge\_t是[widget\_t](widget_t.md)的子类控件，widget\_t的函数均适用于gauge\_t控件。
  *
- * 在xml中使用"guage"标签创建表盘控件。如：
+ * 在xml中使用"gauge"标签创建表盘控件。如：
  *
  * ```xml
- * <guage x="c" y="10" w="240" h="240" image="guage_bg" >
+ * <gauge x="c" y="10" w="240" h="240" image="gauge_bg" >
  * ```
  *
  * > 更多用法请参考：
- * [guage.xml](https://github.com/zlgopen/awtk/blob/master/design/default/ui/guage.xml)
+ * [gauge.xml](https://github.com/zlgopen/awtk/blob/master/design/default/ui/gauge.xml)
  *
- * 在c代码中使用函数guage\_create创建表盘控件。如：
+ * 在c代码中使用函数gauge\_create创建表盘控件。如：
  *
  * ```c
- *  widget_t* guage = guage_create(win, 10, 10, 200, 200);
- *  guage_set_image(guage, "guage_bg");
+ *  widget_t* gauge = gauge_create(win, 10, 10, 200, 200);
+ *  gauge_set_image(gauge, "gauge_bg");
  * ```
  *
  * 可用通过style来设置控件的显示风格，如背景和边框等。如：
  *
  * ```xml
- * <guage>
+ * <gauge>
  *  <style name="border">
  *   <normal border_color="#000000" bg_color="#e0e0e0" text_color="black"/>
  *  </style>
- * </guage>
+ * </gauge>
  * ```
  *
  * > 更多用法请参考：
@@ -67,7 +67,7 @@ BEGIN_C_DECLS
  * default](https://github.com/zlgopen/awtk/blob/master/design/default/styles/default.xml)
  *
  */
-typedef struct _guage_t {
+typedef struct _gauge_t {
   widget_t widget;
 
   /**
@@ -83,11 +83,11 @@ typedef struct _guage_t {
    * 图片的绘制方式。
    */
   image_draw_type_t draw_type;
-} guage_t;
+} gauge_t;
 
 /**
- * @method guage_create
- * 创建guage对象
+ * @method gauge_create
+ * 创建gauge对象
  * @annotation ["constructor", "scriptable"]
  * @param {widget_t*} parent 父控件
  * @param {xy_t} x x坐标
@@ -97,20 +97,20 @@ typedef struct _guage_t {
  *
  * @return {widget_t*} 对象。
  */
-widget_t* guage_create(widget_t* parent, xy_t x, xy_t y, wh_t w, wh_t h);
+widget_t* gauge_create(widget_t* parent, xy_t x, xy_t y, wh_t w, wh_t h);
 
 /**
- * @method guage_cast
- * 转换为guage对象(供脚本语言使用)。
+ * @method gauge_cast
+ * 转换为gauge对象(供脚本语言使用)。
  * @annotation ["cast", "scriptable"]
- * @param {widget_t*} widget guage对象。
+ * @param {widget_t*} widget gauge对象。
  *
- * @return {widget_t*} guage对象。
+ * @return {widget_t*} gauge对象。
  */
-widget_t* guage_cast(widget_t* widget);
+widget_t* gauge_cast(widget_t* widget);
 
 /**
- * @method guage_set_image
+ * @method gauge_set_image
  * 设置背景图片的名称。
  * @annotation ["scriptable"]
  * @param {widget_t*} widget image对象。
@@ -118,10 +118,10 @@ widget_t* guage_cast(widget_t* widget);
  *
  * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
  */
-ret_t guage_set_image(widget_t* widget, const char* name);
+ret_t gauge_set_image(widget_t* widget, const char* name);
 
 /**
- * @method guage_set_draw_type
+ * @method gauge_set_draw_type
  * 设置图片的显示方式。
  *
  * > 绘制方式的属性值和枚举值:
@@ -133,14 +133,18 @@ ret_t guage_set_image(widget_t* widget, const char* name);
  *
  * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
  */
-ret_t guage_set_draw_type(widget_t* widget, image_draw_type_t draw_type);
+ret_t gauge_set_draw_type(widget_t* widget, image_draw_type_t draw_type);
 
-#define WIDGET_TYPE_GUAGE "guage"
-#define GUAGE(widget) ((guage_t*)(guage_cast(WIDGET(widget))))
+#define WIDGET_TYPE_GAUGE "gauge"
+#define GAUGE(widget) ((gauge_t*)(gauge_cast(WIDGET(widget))))
 
 /*public for subclass and runtime type check*/
-TK_EXTERN_VTABLE(guage);
+TK_EXTERN_VTABLE(gauge);
+
+#define GUAGE GAUGE
+#define guage_set_image gauge_set_image
+#define guage_set_draw_type gauge_set_draw_type
 
 END_C_DECLS
 
-#endif /*TK_GUAGE_H*/
+#endif /*TK_GAUGE_H*/

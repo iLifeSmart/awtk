@@ -1,7 +1,19 @@
 # 最新动态
 
+2021/04/09
+  * 修复combox一开始没有text的时候不显示选项的问题（感谢智明提供补丁）
+
+2021/04/08
+  * 修复mutex\_nest中的BUG。
+  * mutable\_image增加mutable\_image\_set\_need\_redraw。
+
+2021/04/07
+  * 完善控件API注释中的事件（感谢培煌提供补丁)。
+  * gauge拼写错误为guage，修改成正确拼写。XML和API做了兼容处理，两种写法都可以，新写的代码请用正确的拼写。
+
 2021/04/06
-  * add idle\_queue\_ex/timer\_queue\_ex for script binding.
+  * 增加 idle\_queue\_ex/timer\_queue\_ex 方便脚本绑定时使用。
+  * 增加 hscroll\_label检测焦点状态下长度变化重新播放动画的机制（感谢智明提供补丁）
 
 2021/04/04
   * 增加 gui\_app\_start\_ex，方便嵌入式系统指定资源路径。
