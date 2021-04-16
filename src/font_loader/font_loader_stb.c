@@ -124,7 +124,7 @@ ret_t ls_font_glyph_find(font_t* f, wchar_t c, font_size_t font_size, glyph_t* g
     {
       if (strcmp(f->name,g_font_find[i]))
       {
-        font_t* df=font_manager_lookup(fm,g_font_find[i],font_size);
+        font_t* df=font_manager_get_font(fm,g_font_find[i],font_size);
         font_stb_t* stbdf=(font_stb_t*)df;
         if (df&&df->get_glyph==font_stb_get_glyph&&stbtt_FindGlyphIndex(&(stbdf->stb_font),c))
         {
