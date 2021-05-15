@@ -260,6 +260,18 @@ bool_t widget_is_window_opened(widget_t* widget) {
   }
 }
 
+bool_t widget_is_window_created(widget_t* widget) {
+  widget_t* win = widget_get_window(widget);
+
+  if (win != NULL) {
+    int32_t stage = widget_get_prop_int(win, WIDGET_PROP_STAGE, WINDOW_STAGE_NONE);
+    return WINDOW_STAGE_OPENED == stage || WINDOW_STAGE_SUSPEND == stage ||
+           WINDOW_STAGE_LOADED == stage || WINDOW_STAGE_CREATED == stage;
+  } else {
+    return FALSE;
+  }
+}
+
 ret_t widget_get_window_theme(widget_t* widget, theme_t** win_theme, theme_t** default_theme) {
   value_t v;
   widget_t* win = widget_get_window(widget);
@@ -656,7 +668,9 @@ ret_t widget_set_auto_adjust_size(widget_t* widget, bool_t auto_adjust_size) {
   return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
 
   widget->auto_adjust_size = auto_adjust_size;
-  widget_layout(widget);
+  if (widget_is_window_created(widget)) {
+    widget_layout(widget);
+  }
   return RET_OK;
 }
 
@@ -1602,7 +1616,9 @@ ret_t widget_paint(widget_t* widget, canvas_t* c) {
     return RET_OK;
   }
 
-  if (widget->need_relayout_children) {
+  if (widget->need_relayout) {
+    widget_layout(widget);
+  } else if (widget->need_relayout_children) {
     widget_layout_children(widget);
   }
 
@@ -3179,6 +3195,7 @@ widget_t* widget_init(widget_t* widget, widget_t* parent, const widget_vtable_t*
   widget->focusable = FALSE;
   widget->with_focus_state = FALSE;
   widget->dirty_rect_tolerance = 4;
+  widget->need_relayout = FALSE;
   widget->need_relayout_children = TRUE;
   widget->need_update_style = TRUE;
 
@@ -4117,6 +4134,19 @@ bool_t widget_is_window_manager(widget_t* widget) {
   return widget->vt->is_window_manager;
 }
 
+ret_t widget_set_need_relayout(widget_t* widget) {
+  return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
+
+  widget->need_relayout = TRUE;
+  if (widget->parent != NULL) {
+    if (widget->parent->auto_adjust_size || widget->parent->children_layout != NULL) {
+      widget_set_need_relayout(widget->parent);
+    }
+  }
+
+  return RET_OK;
+}
+
 ret_t widget_set_need_relayout_children(widget_t* widget) {
   return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
 
@@ -4311,6 +4341,20 @@ ret_t widget_close_window(widget_t* widget) {
   return_value_if_fail(win != NULL, RET_BAD_PARAMS);
 
   return window_manager_close_window(win->parent, win);
+}
+
+ret_t widget_back(widget_t* widget) {
+  widget_t* wm = widget_get_window_manager(widget);
+  return_value_if_fail(wm != NULL, RET_BAD_PARAMS);
+
+  return window_manager_back(wm);
+}
+
+ret_t widget_back_to_home(widget_t* widget) {
+  widget_t* wm = widget_get_window_manager(widget);
+  return_value_if_fail(wm != NULL, RET_BAD_PARAMS);
+
+  return window_manager_back_to_home(wm);
 }
 
 #if defined(FRAGMENT_FRAME_BUFFER_SIZE)
@@ -4554,4 +4598,25 @@ bool_t widget_get_feedback(widget_t* widget) {
   return_value_if_fail(widget != NULL, FALSE);
 
   return widget->feedback;
+}
+
+rect_t widget_get_content_area(widget_t* widget) {
+  if (widget != NULL && widget->astyle != NULL) {
+    style_t* style = widget->astyle;
+    int32_t margin = style_get_int(style, STYLE_ID_MARGIN, 2);
+    int32_t margin_top = style_get_int(style, STYLE_ID_MARGIN_TOP, margin);
+    int32_t margin_left = style_get_int(style, STYLE_ID_MARGIN_LEFT, margin);
+    int32_t margin_right = style_get_int(style, STYLE_ID_MARGIN_RIGHT, margin);
+    int32_t margin_bottom = style_get_int(style, STYLE_ID_MARGIN_BOTTOM, margin);
+    int32_t w = widget->w - margin_left - margin_right;
+    int32_t h = widget->h - margin_top - margin_bottom;
+
+    return rect_init(margin_left, margin_top, w, h);
+  } else {
+    if (widget != NULL) {
+      return rect_init(0, 0, widget->w, widget->h);
+    } else {
+      return rect_init(0, 0, 0, 0);
+    }
+  }
 }

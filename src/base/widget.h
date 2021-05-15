@@ -73,6 +73,7 @@ typedef ret_t (*widget_on_remove_child_t)(widget_t* widget, widget_t* child);
 typedef ret_t (*widget_on_attach_parent_t)(widget_t* widget, widget_t* parent);
 typedef ret_t (*widget_on_detach_parent_t)(widget_t* widget, widget_t* parent);
 typedef ret_t (*widget_on_layout_children_t)(widget_t* widget);
+typedef ret_t (*widget_auto_adjust_size_t)(widget_t* widget);
 typedef ret_t (*widget_get_prop_t)(widget_t* widget, const char* name, value_t* v);
 typedef ret_t (*widget_get_prop_default_value_t)(widget_t* widget, const char* name, value_t* v);
 typedef ret_t (*widget_set_prop_t)(widget_t* widget, const char* name, const value_t* v);
@@ -166,6 +167,7 @@ struct _widget_vtable_t {
   widget_invalidate_t invalidate;
   widget_find_target_t find_target;
   widget_is_point_in_t is_point_in;
+  widget_auto_adjust_size_t auto_adjust_size;
   widget_get_prop_default_value_t get_prop_default_value;
 
   widget_on_copy_t on_copy;
@@ -391,6 +393,12 @@ struct _widget_t {
    * 标识控件是否需要重新layout子控件。
    */
   uint8_t need_relayout_children : 1;
+  /**
+   * @property {bool_t} need_relayout
+   * @annotation ["readable"]
+   * 标识控件是否需要重新layout控件。
+   */
+  uint8_t need_relayout : 1;
   /**
    * @property {bool_t} need_update_style
    * @annotation ["readable"]
@@ -743,6 +751,26 @@ int32_t widget_index_of(widget_t* widget);
 ret_t widget_close_window(widget_t* widget);
 
 /**
+ * @method widget_back
+ * 请求返回到前一个窗口。
+ * @annotation ["scriptable"]
+ * @param {widget_t*} widget widget对象。
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
+ */
+ret_t widget_back(widget_t* widget);
+
+/**
+ * @method widget_back_to_home
+ * 请求返回到home窗口。
+ * @annotation ["scriptable"]
+ * @param {widget_t*} widget widget对象。
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
+ */
+ret_t widget_back_to_home(widget_t* widget);
+
+/**
  * @method widget_move
  * 移动控件。
  * @annotation ["scriptable"]
@@ -830,10 +858,10 @@ ret_t widget_set_text(widget_t* widget, const wchar_t* text);
 
 /**
  * @method widget_get_window_theme
- * 获取控件的窗口主题
+ * 获取控件的窗体样式。
  * @param {widget_t*} widget 控件对象。
- * @param {theme_t**}  win_theme 返回窗口主题。
- * @param {theme_t**}  default_theme 返回全局默认主题。
+ * @param {theme_t**}  win_theme 返回窗体样式。
+ * @param {theme_t**}  default_theme 返回全局默认窗体样式。
  *
  * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
  */
@@ -1806,6 +1834,16 @@ bool_t widget_get_prop_bool(widget_t* widget, const char* name, bool_t defval);
 bool_t widget_is_window_opened(widget_t* widget);
 
 /**
+ * @method widget_is_window_created
+ * 判断窗口及子控件创建或加载是否完成。
+ * @annotation ["scriptable"]
+ * @param {widget_t*} widget 控件对象。
+ *
+ * @return {bool_t} 返回创建或加载是否完成。
+ */
+bool_t widget_is_window_created(widget_t* widget);
+
+/**
  * @method widget_is_parent_of
  * 判断当前控件是否是指定控件的父控件(包括非直系)。
  * @annotation ["scriptable"]
@@ -2743,6 +2781,15 @@ bool_t widget_is_instance_of(widget_t* widget, const widget_vtable_t* vt);
 ret_t widget_set_need_relayout_children(widget_t* widget);
 
 /**
+ * @method widget_set_need_relayout
+ * 设置控件需要relayout标识。
+ * @param {widget_t*} widget 控件对象。
+ *
+ *  @return {ret_t} 返回。
+ */
+ret_t widget_set_need_relayout(widget_t* widget);
+
+/**
  * @method widget_ensure_visible_in_viewport
  * 使控件滚动到可见区域。
  * @param {widget_t*} widget 控件对象。
@@ -2834,6 +2881,15 @@ ret_t widget_end_wait_pointer_cursor(widget_t* widget);
  * @return {ret_t} 返回RET_OK表示成功，否则表示失败。。
  */
 ret_t widget_set_style(widget_t* widget, const char* state_and_name, const value_t* value);
+
+/**
+ * @method widget_get_content_area
+ * 获取widget去掉margin之外的区域。
+ * @param {widget_t*} widget 控件对象。
+ *
+ * @return {rect_t} 返回去掉margin之外的区域。
+ */
+rect_t widget_get_content_area(widget_t* widget);
 
 /**
  * @method widget_calc_icon_text_rect
