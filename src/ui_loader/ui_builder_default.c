@@ -89,9 +89,7 @@ static ret_t ui_builder_default_on_end(ui_builder_t* b) {
 
     if (widget->vt->is_window) {
       event_t e = event_init(EVT_WINDOW_LOAD, widget);
-
-      widget_layout(widget);
-      widget_dispatch(widget, &e);
+      widget_dispatch_recursive(widget, &e);
     }
   }
 

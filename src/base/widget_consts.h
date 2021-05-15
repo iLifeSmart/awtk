@@ -66,6 +66,12 @@ BEGIN_C_DECLS
 #define WIDGET_PROP_H "h"
 
 /**
+ * @const WIDGET_PROP_MAX_H
+ * 最大高度。
+ */
+#define WIDGET_PROP_MAX_H "max_h"
+
+/**
  * @const WIDGET_PROP_DESIGN_W
  * 窗口设计时宽度。
  */
@@ -619,7 +625,7 @@ BEGIN_C_DECLS
 
 /**
  * @const WIDGET_PROP_THEME
- * 窗口主题名称。
+ * 窗体样式名称。
  */
 #define WIDGET_PROP_THEME "theme"
 
@@ -655,13 +661,13 @@ BEGIN_C_DECLS
 
 /**
  * @const WIDGET_PROP_THEME_OBJ
- * 窗口的主题对象。
+ * 窗口的窗体样式对象。
  */
 #define WIDGET_PROP_THEME_OBJ "theme_obj"
 
 /**
  * @const WIDGET_PROP_DEFAULT_THEME_OBJ
- * 缺省的主题对象。
+ * 缺省的窗体样式对象。
  */
 #define WIDGET_PROP_DEFAULT_THEME_OBJ "default_theme_obj"
 
@@ -1308,6 +1314,11 @@ typedef enum _window_stage_t {
    * 初始状态。
    */
   WINDOW_STAGE_NONE = 0,
+  /**
+   * @const WINDOW_STAGE_LOADED
+   * 从UI资源加载完成。
+   */
+  WINDOW_STAGE_LOADED,
   /**
    * @const WINDOW_STAGE_CREATED
    * 创建完成。

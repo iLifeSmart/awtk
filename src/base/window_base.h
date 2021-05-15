@@ -53,10 +53,10 @@ typedef struct _window_base_t {
   /**
    * @property {char*} theme
    * @annotation ["set_prop","get_prop","readable","persitent","design","scriptable"]
-   * 主题资源的名称。
-   * 每个窗口都可以有独立的主题文件，如果没指定，则使用系统缺省的主题文件。
-   * 主题是一个XML文件，放在assets/raw/styles目录下。
-   * 请参考[主题](https://github.com/zlgopen/awtk/blob/master/docs/theme.md)
+   * 窗体样式资源的名称。
+   * 每个窗口都可以有独立的窗体样式文件，如果没指定，则使用系统缺省的窗体样式文件。
+   * 窗体样式是一个XML文件，放在assets/raw/styles目录下。
+   * 请参考[窗体样式](https://github.com/zlgopen/awtk/blob/master/docs/theme.md)
    */
   char* theme;
 
@@ -145,10 +145,10 @@ typedef struct _window_base_t {
   /**
    * @property {theme_t*} theme_obj
    * @annotation ["get_prop"]
-   * 窗口的常量主题数据。
+   * 窗口的常量窗体样式数据。
    *
    *>
-   *把主题管理器对象与窗口关联起来，是为了解决UI设计器与被设计的窗口需要从不同的位置加载主题资源的问题。
+   *把窗体样式管理器对象与窗口关联起来，是为了解决UI设计器与被设计的窗口需要从不同的位置加载窗体样式资源的问题。
    */
   theme_t* theme_obj;
 
@@ -399,6 +399,16 @@ widget_t* window_base_cast(widget_t* widget);
 
 /*public for subclass and runtime type check*/
 TK_EXTERN_VTABLE(window_base);
+
+/*public for test*/
+/**
+ * @method window_base_auto_scale_children 
+ * 根据参数自动缩放子控件。 
+ * @param {widget_t*} widget window_base对象。
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
+ */
+ret_t window_base_auto_scale_children(widget_t* widget);
 
 END_C_DECLS
 
