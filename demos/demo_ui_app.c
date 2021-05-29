@@ -132,6 +132,8 @@ static void open_window(const char* name, widget_t* to_close) {
       window_manager_back_to_home(window_manager());
     }
   }
+
+  tk_mem_dump();
 }
 
 static ret_t on_paint_linear_gradient(void* ctx, event_t* e) {
@@ -344,6 +346,12 @@ static ret_t on_fullscreen(void* ctx, event_t* e) {
     window_set_fullscreen(WIDGET(win), TRUE);
     widget_set_text_utf8(btn, "Unfullscreen");
   }
+
+  return RET_OK;
+}
+
+static ret_t on_unload_image(void* ctx, event_t* e) {
+  image_manager_unload_unused(image_manager(), 0);
 
   return RET_OK;
 }
@@ -673,6 +681,8 @@ static ret_t install_one(void* ctx, const void* iter) {
       widget_on(widget, EVT_CLICK, on_close, win);
     } else if (tk_str_eq(name, "fullscreen")) {
       widget_on(widget, EVT_CLICK, on_fullscreen, widget);
+    } else if (tk_str_eq(name, "unload_image")) {
+      widget_on(widget, EVT_CLICK, on_unload_image, widget);
     } else if (tk_str_eq(name, "start")) {
       widget_on(widget, EVT_CLICK, on_start, win);
     } else if (tk_str_eq(name, "pause")) {

@@ -43,6 +43,7 @@
 #include "base/style_factory.h"
 #include "base/widget_animator_manager.h"
 #include "base/widget_animator_factory.h"
+#include "base/window_base.h"
 #include "blend/image_g2d.h"
 
 #define return_if_equal(p, value) \
@@ -65,6 +66,15 @@ static ret_t widget_on_paint_end(widget_t* widget, canvas_t* c);
 
 typedef widget_t* (*widget_find_wanted_focus_widget_t)(widget_t* widget, darray_t* all_focusable);
 static ret_t widget_move_focus(widget_t* widget, widget_find_wanted_focus_widget_t find);
+
+static bool_t widget_is_strongly_focus(widget_t* widget) {
+  widget_t* win = widget_get_window(widget);
+  if (win != NULL) {
+    return WINDOW_BASE(win)->strongly_focus;
+  } else {
+    return FALSE;
+  }
+}
 
 ret_t widget_set_need_update_style(widget_t* widget) {
   return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
@@ -153,10 +163,10 @@ static bool_t widget_with_focus_state(widget_t* widget) {
   return value_bool(&v);
 }
 
-static bool_t widget_is_focusable(widget_t* widget) {
+bool_t widget_is_focusable(widget_t* widget) {
   return_value_if_fail(widget != NULL && widget->vt != NULL, FALSE);
 
-  if (!widget->visible || !widget->sensitive) {
+  if (!widget->visible || !widget->sensitive || !widget->enable) {
     return FALSE;
   }
 
@@ -1020,8 +1030,26 @@ static widget_t* widget_lookup_child(widget_t* widget, const char* name) {
 }
 
 widget_t* widget_child(widget_t* widget, const char* path) {
-  /*TODO*/
   return widget_lookup_child(widget, path);
+}
+
+widget_t* widget_get_focused_widget(widget_t* widget) {
+  widget_t* iter = NULL;
+  widget_t* win = widget_get_window(widget);
+  return_value_if_fail(win != NULL, NULL);
+
+  iter = win->key_target;
+  for (iter = win->key_target; iter != NULL; iter = iter->key_target) {
+    if (iter->focusable && iter->focused) {
+      return iter;
+    }
+
+    if (iter->key_target == NULL) {
+      return iter;
+    }
+  }
+
+  return NULL;
 }
 
 static widget_t* widget_lookup_all(widget_t* widget, const char* name) {
@@ -1190,6 +1218,31 @@ ret_t widget_dispatch(widget_t* widget, event_t* e) {
   widget_unref(widget);
 
   return ret;
+}
+
+static ret_t dispatch_in_idle(const idle_info_t* info) {
+  event_t* e = (event_t*)(info->ctx);
+  widget_t* widget = WIDGET(e->target);
+
+  widget_dispatch(widget, e);
+  widget_unref(widget);
+  event_destroy(e);
+
+  return RET_REMOVE;
+}
+
+ret_t widget_dispatch_async(widget_t* widget, event_t* e) {
+  event_t* evt = NULL;
+  return_value_if_fail(widget != NULL && e != NULL, RET_BAD_PARAMS);
+  return_value_if_fail(e->target == widget, RET_BAD_PARAMS);
+
+  evt = event_clone(e);
+  return_value_if_fail(evt != NULL, RET_OOM);
+
+  widget_ref(widget);
+  idle_add(dispatch_in_idle, evt);
+
+  return RET_OK;
 }
 
 static ret_t widget_dispatch_callback(void* ctx, const void* data) {
@@ -1616,12 +1669,6 @@ ret_t widget_paint(widget_t* widget, canvas_t* c) {
     return RET_OK;
   }
 
-  if (widget->need_relayout) {
-    widget_layout(widget);
-  } else if (widget->need_relayout_children) {
-    widget_layout_children(widget);
-  }
-
   if (widget->need_update_style) {
     widget_update_style(widget);
   }
@@ -1700,6 +1747,7 @@ static ret_t widget_on_ungrab_keys(void* ctx, event_t* e) {
 }
 
 static ret_t widget_exec_code(void* ctx, event_t* evt) {
+#ifndef AWTK_LITE
   value_t v;
   value_t result;
   ret_t ret = RET_OK;
@@ -1764,6 +1812,9 @@ static ret_t widget_exec_code(void* ctx, event_t* evt) {
   OBJECT_UNREF(obj);
 
   return ret;
+#else
+  return RET_OK;
+#endif
 }
 
 static ret_t widget_free_code(void* ctx, event_t* evt) {
@@ -2476,7 +2527,7 @@ static ret_t widget_on_keyup_impl(widget_t* widget, key_event_t* e) {
     } else {
       widget_set_state(widget, WIDGET_STATE_NORMAL);
     }
-    widget_dispatch(widget, pointer_event_init(&click, EVT_CLICK, widget, 0, 0));
+    widget_dispatch_async(widget, pointer_event_init(&click, EVT_CLICK, widget, 0, 0));
 
     ret = RET_STOP;
   } else if (widget_is_move_focus_next_key(widget, e)) {
@@ -2670,19 +2721,21 @@ static ret_t widget_on_pointer_down_before_children(widget_t* widget, pointer_ev
   return widget_on_event_before_children(widget, (event_t*)e);
 }
 
-static ret_t widget_on_pointer_down_children(widget_t* widget, pointer_event_t* e) {
+ret_t widget_on_pointer_down_children(widget_t* widget, pointer_event_t* e) {
   ret_t ret = RET_OK;
   widget_t* target = widget_find_target(widget, e->x, e->y);
 
-  if (target != NULL && target->enable) {
+  if (target != NULL && target->enable && target->sensitive) {
     if (!(widget_is_keyboard(target))) {
-      if (!target->focused) {
-        widget_set_focused_internal(target, TRUE);
-      } else {
-        widget->key_target = target;
+      if (widget_is_focusable(target) || !widget_is_strongly_focus(widget)) {
+        if (!target->focused) {
+          widget_set_focused_internal(target, TRUE);
+        } else {
+          widget->key_target = target;
+        }
       }
     }
-  } else if (widget->key_target) {
+  } else if (widget->key_target && !widget_is_strongly_focus(widget)) {
     widget_set_focused_internal(widget->key_target, FALSE);
   }
   return_if_equal(ret, RET_STOP);
@@ -2751,7 +2804,7 @@ static ret_t widget_on_pointer_move_before_children(widget_t* widget, pointer_ev
   return widget_on_event_before_children(widget, (event_t*)e);
 }
 
-static ret_t widget_on_pointer_move_children(widget_t* widget, pointer_event_t* e) {
+ret_t widget_on_pointer_move_children(widget_t* widget, pointer_event_t* e) {
   ret_t ret = RET_OK;
   widget_t* target = widget_find_target(widget, e->x, e->y);
 
@@ -2832,7 +2885,7 @@ static ret_t widget_on_pointer_up_before_children(widget_t* widget, pointer_even
   return widget_on_event_before_children(widget, (event_t*)e);
 }
 
-static ret_t widget_on_pointer_up_children(widget_t* widget, pointer_event_t* e) {
+ret_t widget_on_pointer_up_children(widget_t* widget, pointer_event_t* e) {
   ret_t ret = RET_OK;
 
   widget_t* target = widget_find_target(widget, e->x, e->y);
@@ -3195,8 +3248,6 @@ widget_t* widget_init(widget_t* widget, widget_t* parent, const widget_vtable_t*
   widget->focusable = FALSE;
   widget->with_focus_state = FALSE;
   widget->dirty_rect_tolerance = 4;
-  widget->need_relayout = FALSE;
-  widget->need_relayout_children = TRUE;
   widget->need_update_style = TRUE;
 
   if (parent) {
@@ -4135,26 +4186,15 @@ bool_t widget_is_window_manager(widget_t* widget) {
 }
 
 ret_t widget_set_need_relayout(widget_t* widget) {
-  return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
-
-  widget->need_relayout = TRUE;
-  if (widget->parent != NULL) {
-    if (widget->parent->auto_adjust_size || widget->parent->children_layout != NULL) {
-      widget_set_need_relayout(widget->parent);
-    }
+  widget_t* win = widget_get_window(widget);
+  if (win != NULL) {
+    return window_base_set_need_relayout(win, TRUE);
   }
-
   return RET_OK;
 }
 
 ret_t widget_set_need_relayout_children(widget_t* widget) {
-  return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
-
-  if (!widget->destroying && widget->children != NULL && widget->children->size > 0) {
-    widget->need_relayout_children = TRUE;
-  }
-
-  return RET_OK;
+  return widget_set_need_relayout(widget);
 }
 
 static ret_t widget_ensure_style_mutable(widget_t* widget) {
@@ -4280,7 +4320,7 @@ ret_t widget_reset_canvas(widget_t* widget) {
   rect_t rect;
   canvas_t* c = widget_get_canvas(widget);
   return_value_if_fail(c != NULL, RET_BAD_PARAMS);
-  rect = rect_init(0, 0, c->lcd->w, c->lcd->h);
+  rect = rect_init(0, 0, canvas_get_width(c), canvas_get_height(c));
   canvas_set_clip_rect(c, &rect);
 
   c->font = NULL;
@@ -4619,4 +4659,57 @@ rect_t widget_get_content_area(widget_t* widget) {
       return rect_init(0, 0, 0, 0);
     }
   }
+}
+
+typedef struct _auto_resize_info_t {
+  float hscale;
+  float vscale;
+  widget_t* widget;
+  bool_t auto_scale_children_x;
+  bool_t auto_scale_children_y;
+  bool_t auto_scale_children_w;
+  bool_t auto_scale_children_h;
+} auto_resize_info_t;
+
+static ret_t widget_auto_scale_children_child(void* ctx, const void* data) {
+  auto_resize_info_t* info = (auto_resize_info_t*)ctx;
+  widget_t* widget = WIDGET(data);
+
+  if (widget != info->widget) {
+    if (widget->parent->children_layout == NULL && widget->self_layout == NULL) {
+      if (info->auto_scale_children_x) {
+        widget->x *= info->hscale;
+      }
+      if (info->auto_scale_children_w) {
+        widget->w *= info->hscale;
+      }
+      if (info->auto_scale_children_y) {
+        widget->y *= info->vscale;
+      }
+      if (info->auto_scale_children_h) {
+        widget->h *= info->vscale;
+      }
+    }
+  }
+
+  return RET_OK;
+}
+
+ret_t widget_auto_scale_children(widget_t* widget, int32_t design_w, int32_t design_h,
+                                 bool_t auto_scale_children_x, bool_t auto_scale_children_y,
+                                 bool_t auto_scale_children_w, bool_t auto_scale_children_h) {
+  auto_resize_info_t info;
+  return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
+
+  info.widget = widget;
+  info.hscale = (float)(widget->w) / (float)(design_w);
+  info.vscale = (float)(widget->h) / (float)(design_h);
+  info.auto_scale_children_x = auto_scale_children_x;
+  info.auto_scale_children_y = auto_scale_children_y;
+  info.auto_scale_children_w = auto_scale_children_w;
+  info.auto_scale_children_h = auto_scale_children_h;
+
+  widget_foreach(widget, widget_auto_scale_children_child, &info);
+
+  return RET_OK;
 }

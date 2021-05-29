@@ -49,7 +49,7 @@ bool_t tk_mem_is_valid_addr(void* addr) {
 }
 
 static mem_allocator_t* mem_allocator_get(void) {
-  static mem_allocator_t std;
+  static mem_allocator_std_t std;
   if (s_allocator != NULL) {
     return s_allocator;
   }
@@ -119,7 +119,11 @@ static mem_allocator_t* mem_allocator_get(void) {
   return s_allocator;
 }
 
-#ifndef WITH_SDL
+#if (!defined(WITH_SDL) && !defined(LINUX))
+#define EXPORT_STD_MALLOC 1
+#endif
+
+#if defined(EXPORT_STD_MALLOC)
 /*export std malloc*/
 void* calloc(size_t count, size_t size) {
   return tk_calloc(count, size, __FUNCTION__, __LINE__);

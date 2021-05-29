@@ -33,10 +33,14 @@
 ret_t window_close(widget_t* widget);
 
 ret_t window_base_on_paint_self(widget_t* widget, canvas_t* c) {
+  paint_event_t e;
+  widget_dispatch(widget, paint_event_init(&e, EVT_PAINT, widget, c));
+
   return RET_OK;
 }
 
 ret_t window_base_on_paint_begin(widget_t* widget, canvas_t* c) {
+  window_base_t* win = WINDOW_BASE(widget);
   font_manager_t* fm = widget_get_font_manager(widget);
   image_manager_t* imm = widget_get_image_manager(widget);
   assets_manager_t* am = widget_get_assets_manager(widget);
@@ -45,12 +49,17 @@ ret_t window_base_on_paint_begin(widget_t* widget, canvas_t* c) {
   canvas_set_assets_manager(c, am);
   image_manager_set_assets_manager(imm, am);
 
+  if (win->need_relayout) {
+    widget_layout(widget);
+  }
+
   return RET_OK;
 }
 
 ret_t window_base_on_paint_end(widget_t* widget, canvas_t* c) {
-  (void)widget;
-  (void)c;
+  window_base_t* win = WINDOW_BASE(widget);
+  win->need_relayout = FALSE;
+
   return RET_OK;
 }
 
@@ -186,6 +195,9 @@ ret_t window_base_get_prop(widget_t* widget, const char* name, value_t* v) {
   } else if (tk_str_eq(name, WIDGET_PROP_SINGLE_INSTANCE)) {
     value_set_bool(v, window_base->single_instance);
     return RET_OK;
+  } else if (tk_str_eq(name, WIDGET_PROP_STRONGLY_FOCUS)) {
+    value_set_bool(v, window_base->strongly_focus);
+    return RET_OK;
   } else if (tk_str_eq(name, WIDGET_PROP_DESIGN_W)) {
     value_set_uint32(v, window_base->design_w);
     return RET_OK;
@@ -254,6 +266,9 @@ ret_t window_base_set_prop(widget_t* widget, const char* name, const value_t* v)
     return RET_OK;
   } else if (tk_str_eq(name, WIDGET_PROP_SINGLE_INSTANCE)) {
     window_base->single_instance = value_bool(v);
+    return RET_OK;
+  } else if (tk_str_eq(name, WIDGET_PROP_STRONGLY_FOCUS)) {
+    window_base->strongly_focus = value_bool(v);
     return RET_OK;
   } else if (tk_str_eq(name, WIDGET_PROP_DESIGN_W)) {
     window_base->design_w = value_uint32(v);
@@ -340,56 +355,13 @@ static widget_t* window_base_get_key_target_leaf(widget_t* widget) {
   return iter;
 }
 
-typedef struct _auto_resize_info_t {
-  widget_t* window;
-  float hscale;
-  float vscale;
-  bool_t auto_scale_children_x;
-  bool_t auto_scale_children_y;
-  bool_t auto_scale_children_w;
-  bool_t auto_scale_children_h;
-} auto_resize_info_t;
-
-static ret_t window_base_auto_scale_children_child(void* ctx, const void* data) {
-  auto_resize_info_t* info = (auto_resize_info_t*)ctx;
-  widget_t* widget = WIDGET(data);
-
-  if (widget != info->window) {
-    if (widget->parent->children_layout == NULL && widget->self_layout == NULL) {
-      if (info->auto_scale_children_x) {
-        widget->x *= info->hscale;
-      }
-      if (info->auto_scale_children_w) {
-        widget->w *= info->hscale;
-      }
-      if (info->auto_scale_children_y) {
-        widget->y *= info->vscale;
-      }
-      if (info->auto_scale_children_h) {
-        widget->h *= info->vscale;
-      }
-    }
-  }
-
-  return RET_OK;
-}
-
 ret_t window_base_auto_scale_children(widget_t* widget) {
-  auto_resize_info_t info;
   window_base_t* win = WINDOW_BASE(widget);
   return_value_if_fail(win->design_w > 0 && win->design_h > 0, RET_BAD_PARAMS);
 
-  info.window = widget;
-  info.hscale = (float)(win->widget.w) / (float)(win->design_w);
-  info.vscale = (float)(win->widget.h) / (float)(win->design_h);
-  info.auto_scale_children_x = win->auto_scale_children_x;
-  info.auto_scale_children_y = win->auto_scale_children_y;
-  info.auto_scale_children_w = win->auto_scale_children_w;
-  info.auto_scale_children_h = win->auto_scale_children_h;
-
-  widget_foreach(widget, window_base_auto_scale_children_child, &info);
-
-  return RET_OK;
+  return widget_auto_scale_children(widget, win->design_w, win->design_h,
+                                    win->auto_scale_children_x, win->auto_scale_children_y,
+                                    win->auto_scale_children_w, win->auto_scale_children_h);
 }
 
 ret_t window_set_auto_scale_children(widget_t* widget, uint32_t design_w, uint32_t design_h) {
@@ -424,6 +396,8 @@ ret_t window_base_on_event(widget_t* widget, event_t* e) {
   } else if (e->type == EVT_WINDOW_LOAD) {
     win->stage = WINDOW_STAGE_LOADED;
     window_base_load_theme_obj(widget);
+    widget_layout(widget);
+
     if (win->design_w && win->design_h) {
       if (win->auto_scale_children_x || win->auto_scale_children_y || win->auto_scale_children_w ||
           win->auto_scale_children_h) {
@@ -432,6 +406,7 @@ ret_t window_base_on_event(widget_t* widget, event_t* e) {
     }
   } else if (e->type == EVT_WINDOW_CLOSE) {
     win->stage = WINDOW_STAGE_CLOSED;
+    widget_off_by_ctx(window_manager(), widget);
   } else if (e->type == EVT_THEME_CHANGED) {
     window_base_reload_theme_obj(widget);
   } else if (e->type == EVT_REQUEST_CLOSE_WINDOW) {
@@ -506,6 +481,15 @@ widget_t* window_base_create(widget_t* parent, const widget_vtable_t* vt, xy_t x
   return widget;
 }
 
+ret_t window_base_set_need_relayout(widget_t* widget, bool_t need_relayout) {
+  window_base_t* win = WINDOW_BASE(widget);
+  return_value_if_fail(win != NULL, RET_BAD_PARAMS);
+
+  win->need_relayout = need_relayout;
+
+  return RET_OK;
+}
+
 ret_t window_close_force(widget_t* widget) {
   widget = widget_get_window(widget);
   return_value_if_fail(widget != NULL, RET_BAD_PARAMS);
@@ -533,6 +517,7 @@ static const char* s_window_base_properties[] = {WIDGET_PROP_ANIM_HINT,
                                                  WIDGET_PROP_MOVE_FOCUS_LEFT_KEY,
                                                  WIDGET_PROP_MOVE_FOCUS_RIGHT_KEY,
                                                  WIDGET_PROP_SINGLE_INSTANCE,
+                                                 WIDGET_PROP_STRONGLY_FOCUS,
                                                  WIDGET_PROP_DESIGN_W,
                                                  WIDGET_PROP_DESIGN_H,
                                                  WIDGET_PROP_AUTO_SCALE_CHILDREN_X,

@@ -1,9 +1,70 @@
 # 最新动态
 
+2021/05/28
+	* 增加log\_dummy函数，方便在没有真正的log函数时设置断点调试。
+	* 由于mem.c中导出了malloc等函数，没有必要重载new/delete等操作符，所以去掉misc/new.cpp|.hpp中的代码，但为了兼容保留文件。
+	* 完善文档。
+
+2021/05/28
+  * 修改scroll view/scroll bar/text selector/switch/slide view，在不启用控件动画时也可以使用。
+  * 增加EXPORT\_STD\_MALLOC，用于在没有定义HAS\_STD\_MALLOC时，是否将AWTK内存分配函数封装成标准C的内存分配函数。
+  * 修复在win7平台下由于SDL_Init和SDL_OpenAudioDevice不在同一线程中调用导致音频设备打开失败的问题。(感谢兆坤提供补丁)
+
+2021/05/27
+  * 完善std mem alloctor，增加内存使用统计。
+  * 完善自定义控件文档。
+  
+2021/05/26
+  * 修复 gauge\_pointer 控件旋转角度为浮点型（感谢智明提供补丁）。
+  * 增加宏 WITHOUT\_WINDOW\_ANIMATOR\_CACHE 用于控制窗口动画是否使用缓存。如果内存紧缺，又希望启用窗口动画，可以打开本宏。
+
+2021/05/25
+  * 完善edit。
+  * 增加ui\_feedback\_deinit。
+
+2021/05/23
+  * style支持feedback/focusable。
+
+2021/05/22
+  * 完善图片解码器，优先使用用户自定义的解码器（感谢智明提供补丁）。
+  * stb支持外部硬件加速yuv转rgb的宏和函数（感谢智明提供补丁）。
+
+2021/05/21
+  * 窗口增加属性strongly_focus。点击非focusable控件时，用于控制是否让当前焦点控件失去焦点。
+
+2021/05/20
+  * Window支持EVT\_PAINT事件。
+  * 完善widget\_to\_xml。
+  * 完善后台线程OOM的处理和测试。
+
+2021/05/19
+  * 增加宏NATIVE\_WINDOW\_NOT\_RESIZABLE，用于禁止用户调整desktop应用程序的窗口大小。
+  * 修复设置屏保时间为0时候不能马上退出屏保的问题（感谢智明提供补丁）
+
+2021/05/18
+  * 完善image事件处理和测试。
+  * 增加函数widget\_get\_focused\_widget。
+  * 为AWTK\_LITE优化大小（感谢智明提供补丁）
+  * 增加禁止在mmap模式下增加外部include的资源（感谢智明提供补丁）
+  * 完善gif，增加gif\_image\_play/gif\_image\_stop/gif\_image\_pause。
+
+2021/05/17
+  * 完善文档。
+  * 增加widget\_auto\_scale\_children。
+  * 将widget\_on\_pointer\_xxx\_children公开。
+  * 为AWTK\_LITE优化大小（感谢智明提供补丁）
+
+2021/05/16
+  * 完善layout处理流程。
+  * 重构封装获取lcd大小的代码。
+
 2021/05/15
   * 完善圆角矩形（感谢智明提供补丁）
   * 修改label高度的限制条件。
   * 完善widget\_set\_need\_relayout。
+  * 增加函数event\_clone
+  * 增加函数widget\_dispatch\_async
+  * 异步分发space/return触发的click事件。
 
 2021/05/14
   * switch支持click事件，支持space/return触发。

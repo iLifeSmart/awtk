@@ -354,7 +354,12 @@ typedef struct _system_info_t system_info_t;
 #define WITHOUT_WINDOW_ANIMATORS 1
 #define WITHOUT_WIDGET_ANIMATORS 1
 #define WITHOUT_DIALOG_HIGHLIGHTER 1
+#undef WITH_UNICODE_BREAK
 #endif /*AWTK_LITE*/
+
+#ifdef WITHOUT_WINDOW_ANIMATOR_CACHE
+#define WITHOUT_DIALOG_HIGHLIGHTER 1
+#endif /*WITHOUT_WINDOW_ANIMATOR_CACHE*/
 
 /**
  * @enum bitmap_format_t

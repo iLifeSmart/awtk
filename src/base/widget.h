@@ -388,18 +388,6 @@ struct _widget_t {
    */
   uint8_t floating : 1;
   /**
-   * @property {bool_t} need_relayout_children
-   * @annotation ["readable"]
-   * 标识控件是否需要重新layout子控件。
-   */
-  uint8_t need_relayout_children : 1;
-  /**
-   * @property {bool_t} need_relayout
-   * @annotation ["readable"]
-   * 标识控件是否需要重新layout控件。
-   */
-  uint8_t need_relayout : 1;
-  /**
    * @property {bool_t} need_update_style
    * @annotation ["readable"]
    * 标识控件是否需要update style。
@@ -719,6 +707,16 @@ int32_t widget_count_children(widget_t* widget);
  * @return {widget_t*} 子控件。
  */
 widget_t* widget_get_child(widget_t* widget, int32_t index);
+
+/**
+ * @method widget_get_focused_widget
+ * 获取当前窗口中的焦点控件。
+ * @annotation ["scriptable"]
+ * @param {widget_t*} widget 控件对象。
+ *
+ * @return {widget_t*} 焦点控件。
+ */
+widget_t* widget_get_focused_widget(widget_t* widget);
 
 /**
  * @method widget_get_native_window
@@ -1674,6 +1672,16 @@ ret_t widget_draw_text_in_rect(widget_t* widget, canvas_t* c, const wchar_t* str
  * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
  */
 ret_t widget_dispatch(widget_t* widget, event_t* e);
+
+/**
+ * @method widget_dispatch_async
+ * 异步分发一个事件。
+ * @param {widget_t*} widget 控件对象。
+ * @param {event_t*} e 事件。
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
+ */
+ret_t widget_dispatch_async(widget_t* widget, event_t* e);
 
 /**
  * @method widget_dispatch_simple_event
@@ -2848,7 +2856,7 @@ font_manager_t* widget_get_font_manager(widget_t* widget);
  * 更新鼠标指针。
  * @param {widget_t*} widget 控件对象。
  *
- * @return {ret_t} 返回RET_OK表示成功，否则表示失败。。
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
  */
 ret_t widget_update_pointer_cursor(widget_t* widget);
 
@@ -2858,7 +2866,7 @@ ret_t widget_update_pointer_cursor(widget_t* widget);
  * @param {widget_t*} widget 控件对象。
  * @param {bool_t} ignore_user_input 是否忽略用户输入。
  *
- * @return {ret_t} 返回RET_OK表示成功，否则表示失败。。
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
  */
 ret_t widget_begin_wait_pointer_cursor(widget_t* widget, bool_t ignore_user_input);
 
@@ -2867,7 +2875,7 @@ ret_t widget_begin_wait_pointer_cursor(widget_t* widget, bool_t ignore_user_inpu
  * 结束等待鼠标指针。
  * @param {widget_t*} widget 控件对象。
  *
- * @return {ret_t} 返回RET_OK表示成功，否则表示失败。。
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
  */
 ret_t widget_end_wait_pointer_cursor(widget_t* widget);
 
@@ -2878,7 +2886,7 @@ ret_t widget_end_wait_pointer_cursor(widget_t* widget);
  * @param {const char*} state_and_name 样式对应类型与名字。
  * @param {const value_t*} value 值。
  *
- * @return {ret_t} 返回RET_OK表示成功，否则表示失败。。
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
  */
 ret_t widget_set_style(widget_t* widget, const char* state_and_name, const value_t* value);
 
@@ -2895,20 +2903,67 @@ rect_t widget_get_content_area(widget_t* widget);
  * @method widget_calc_icon_text_rect
  * 计算icon text的位置。
  * 
- * @return {ret_t} 返回RET_OK表示成功，否则表示失败。。
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
  */
 ret_t widget_calc_icon_text_rect(const rect_t* ir, int32_t font_size, float_t text_size,
                                  int32_t icon_at, uint32_t img_w, uint32_t img_h, int32_t spacer,
                                  rect_t* r_text, rect_t* r_icon);
 
 /**
+ * @method widget_auto_scale_children
+ * 根据缩放子控件的位置和大小。
+ * @param {widget_t*} widget 控件对象。
+ * @param {int32_t} design_w 设置时的宽度。
+ * @param {int32_t} design_h 设置时的高度。
+ * @param {bool_t} auto_scale_children_x 缩放子控件的x坐标。
+ * @param {bool_t} auto_scale_children_y 缩放子控件的y坐标。
+ * @param {bool_t} auto_scale_children_w 缩放子控件的宽度。
+ * @param {bool_t} auto_scale_children_h 缩放子控件的高度。
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
+ */
+ret_t widget_auto_scale_children(widget_t* widget, int32_t design_w, int32_t design_h,
+                                 bool_t auto_scale_children_x, bool_t auto_scale_children_y,
+                                 bool_t auto_scale_children_w, bool_t auto_scale_children_h);
+
+/**
  * @method widget_set_need_update_style
  * 设置需要更新Style。
  * @param {widget_t*} widget 控件对象。
  * 
- * @return {ret_t} 返回RET_OK表示成功，否则表示失败。。
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
  */
 ret_t widget_set_need_update_style(widget_t* widget);
+
+/**
+ * @method widget_on_pointer_down_children
+ * 处理子控件的pointer down事件。
+ * @param {widget_t*} widget 控件对象。
+ * @param {pointer_event_t*} e 事件对象。
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
+ */
+ret_t widget_on_pointer_down_children(widget_t* widget, pointer_event_t* e);
+
+/**
+ * @method widget_on_pointer_move_children
+ * 处理子控件的pointer move事件。
+ * @param {widget_t*} widget 控件对象。
+ * @param {pointer_event_t*} e 事件对象。
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
+ */
+ret_t widget_on_pointer_move_children(widget_t* widget, pointer_event_t* e);
+
+/**
+ * @method widget_on_pointer_up_children
+ * 处理子控件的pointer up事件。
+ * @param {widget_t*} widget 控件对象。
+ * @param {pointer_event_t*} e 事件对象。
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
+ */
+ret_t widget_on_pointer_up_children(widget_t* widget, pointer_event_t* e);
 
 /*public for subclass*/
 TK_EXTERN_VTABLE(widget);
@@ -2928,14 +2983,33 @@ ret_t widget_set_focused_internal(widget_t* widget, bool_t focused);
 ret_t widget_remove_child_prepare(widget_t* widget, widget_t* child);
 
 /*public for input_device_status*/
+/**
+ * @method widget_on_keydown
+ * 处理key down事件。
+ * @param {widget_t*} widget 控件对象。
+ * @param {key_event_t*} e 事件对象。
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
+ */
 ret_t widget_on_keydown(widget_t* widget, key_event_t* e);
+
+/**
+ * @method widget_on_keyup
+ * 处理key up事件。
+ * @param {widget_t*} widget 控件对象。
+ * @param {key_event_t*} e 事件对象。
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
+ */
+ret_t widget_on_keyup(widget_t* widget, key_event_t* e);
+
 ret_t widget_on_wheel(widget_t* widget, wheel_event_t* e);
 ret_t widget_on_multi_gesture(widget_t* widget, multi_gesture_event_t* e);
-ret_t widget_on_keyup(widget_t* widget, key_event_t* e);
 ret_t widget_on_pointer_down(widget_t* widget, pointer_event_t* e);
 ret_t widget_on_pointer_move(widget_t* widget, pointer_event_t* e);
 ret_t widget_on_pointer_up(widget_t* widget, pointer_event_t* e);
 ret_t widget_on_context_menu(widget_t* widget, pointer_event_t* e);
+bool_t widget_is_focusable(widget_t* widget);
 
 #define WIDGET_EXEC_START_ANIMATOR "start_animator"
 #define WIDGET_EXEC_STOP_ANIMATOR "stop_animator"
