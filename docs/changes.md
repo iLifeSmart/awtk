@@ -1,5 +1,12 @@
 # 最新动态
 
+2021/06/01
+  * 修复text selector通过widget\_get\_text返回NULL的问题。
+  * 完善控件EVT\_VALUE\_CHANGED/EVT\_VALUE\_WILL\_CHANGE事件的文档。
+
+2021/05/31
+  * 完善vgcanvas\_null/vgcanvas\_nanovg\_soft的编译宏，方便制作keil的pack(感谢静儒提供补丁)
+
 2021/05/28
 	* 增加log\_dummy函数，方便在没有真正的log函数时设置断点调试。
 	* 由于mem.c中导出了malloc等函数，没有必要重载new/delete等操作符，所以去掉misc/new.cpp|.hpp中的代码，但为了兼容保留文件。
