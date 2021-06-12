@@ -277,8 +277,6 @@ ret_t window_manager_dispatch_input_event(widget_t* widget, event_t* e) {
   return_value_if_fail(wm->vt->dispatch_input_event != NULL, RET_BAD_PARAMS);
 
   if (wm->ignore_input_events) {
-    log_debug("waiting cursort, ignore input events");
-
     return RET_STOP;
   }
 
@@ -695,6 +693,14 @@ ret_t window_manager_close_all(widget_t* widget) {
       break;
     }
   } while (TRUE);
+
+  return RET_OK;
+}
+
+ret_t window_manager_set_ignore_input_events(widget_t* widget, bool_t ignore_input_events) {
+  window_manager_t* wm = WINDOW_MANAGER(widget);
+  return_value_if_fail(wm != NULL && wm->vt != NULL, RET_BAD_PARAMS);
+  wm->ignore_input_events = ignore_input_events;
 
   return RET_OK;
 }

@@ -588,8 +588,11 @@ static ret_t edit_on_key_down(widget_t* widget, key_event_t* e) {
   uint32_t key = e->key;
   edit_t* edit = EDIT(widget);
   return_value_if_fail(edit != NULL, RET_BAD_PARAMS);
-  if (edit_pre_input(widget, key) == RET_STOP) {
-    return RET_STOP;
+
+  if (!e->cmd && !e->ctrl) {
+    if (edit_pre_input(widget, key) == RET_STOP) {
+      return RET_STOP;
+    }
   }
 
   if (key == TK_KEY_TAB) {
@@ -597,14 +600,20 @@ static ret_t edit_on_key_down(widget_t* widget, key_event_t* e) {
   } else if (key == TK_KEY_LEFT || key == TK_KEY_RIGHT) {
     uint32_t cursor = text_edit_get_cursor(edit->model);
     if (key == TK_KEY_LEFT && cursor == 0) {
-      return RET_OK;
+      widget_focus_left(widget);
+      return RET_STOP;
     }
 
     if (key == TK_KEY_RIGHT && cursor == widget->text.size) {
-      return RET_OK;
+      widget_focus_right(widget);
+      return RET_STOP;
     }
 
   } else if (key == TK_KEY_DOWN) {
+    if(widget_is_change_focus_key(widget, e)) {
+      return RET_OK;
+    }
+
     if (edit_is_number(widget) || edit->inc_value != NULL) {
       edit_dec(edit);
     } else {
@@ -612,6 +621,10 @@ static ret_t edit_on_key_down(widget_t* widget, key_event_t* e) {
     }
     return RET_STOP;
   } else if (key == TK_KEY_UP) {
+    if(widget_is_change_focus_key(widget, e)) {
+      return RET_OK;
+    }
+
     if (edit_is_number(widget) || edit->inc_value != NULL) {
       edit_inc(edit);
     } else {
@@ -636,8 +649,7 @@ static ret_t edit_on_key_down(widget_t* widget, key_event_t* e) {
       edit_dispatch_value_change_event(widget, EVT_VALUE_CHANGING);
     }
   } else if (key < 128 && isprint(key)) {
-    app_type_t app_type = system_info()->app_type;
-    if (app_type != APP_DESKTOP && app_type != APP_MOBILE) {
+    if (!input_method_is_native(input_method())) {
       edit_input_char(widget, (wchar_t)key);
     }
   } else {
@@ -1849,12 +1861,26 @@ ret_t edit_pre_input_with_sep(widget_t* widget, uint32_t key, char sep) {
   edit_t* edit = EDIT(widget);
   return_value_if_fail(edit != NULL && widget != NULL, RET_BAD_PARAMS);
 
+  if (key == TK_KEY_UP || key == TK_KEY_DOWN) {
+    return RET_OK;
+  }
+
   text = &(widget->text);
   text_edit_get_state(edit->model, &state);
   if (state.select_start < state.select_end) {
     uint32_t i = 0;
     wchar_t* s = text->str + state.select_start;
     wchar_t* d = text->str + state.select_start;
+
+    if (key == TK_KEY_LEFT) {
+      text_edit_unselect(edit->model);
+      text_edit_set_cursor(edit->model, state.select_start);
+      return RET_STOP;
+    } else if (key == TK_KEY_RIGHT) {
+      text_edit_unselect(edit->model);
+      text_edit_set_cursor(edit->model, state.select_end);
+      return RET_STOP;
+    }
 
     for (i = state.select_start; i < state.select_end; i++, s++) {
       if (*s == sep) {
@@ -1871,6 +1897,29 @@ ret_t edit_pre_input_with_sep(widget_t* widget, uint32_t key, char sep) {
     text_edit_unselect(edit->model);
     text_edit_set_cursor(edit->model, state.select_start);
     if (key == TK_KEY_BACKSPACE || key == TK_KEY_DELETE) {
+      return RET_STOP;
+    }
+  } else if (text->size > 1) {
+    int32_t i = 0;
+    if (state.cursor > 1 && text->str[state.cursor - 1] == sep && key == TK_KEY_LEFT) {
+      /*select prev part*/
+      for (i = state.cursor - 2; i >= 0; i--) {
+        if (text->str[i] == sep) {
+          break;
+        }
+      }
+      text_edit_set_cursor(edit->model, state.cursor - 1);
+      text_edit_set_select(edit->model, i + 1, state.cursor - 1);
+      return RET_STOP;
+    } else if (key == TK_KEY_RIGHT && text->str[state.cursor] == sep) {
+      /*select next part*/
+      for (i = state.cursor + 1; i < text->size; i++) {
+        if (text->str[i] == sep) {
+          break;
+        }
+      }
+      text_edit_set_cursor(edit->model, state.cursor + 1);
+      text_edit_set_select(edit->model, state.cursor + 1, i);
       return RET_STOP;
     }
   }

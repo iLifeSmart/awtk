@@ -308,6 +308,11 @@ typedef enum _ret_t {
 
 #endif
 
+#define return_value_if_equal(p, value) \
+  if ((p) == value) {                   \
+    return (value);                     \
+  }
+
 #define tk_min(a, b) ((a) < (b) ? (a) : (b))
 #define tk_abs(a) ((a) < (0) ? (-(a)) : (a))
 #define tk_max(a, b) ((a) > (b) ? (a) : (b))

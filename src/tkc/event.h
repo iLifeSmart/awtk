@@ -132,6 +132,11 @@ typedef struct _event_t {
    */
   void* target;
 
+  /**
+   * @property {void*} native_window_handle
+   * @annotation ["readable"]
+   * 原生窗口句柄。
+   */
   void* native_window_handle;
 } event_t;
 
@@ -156,9 +161,9 @@ event_t* event_cast(event_t* event);
  * @annotation ["scriptable"]
  * @param {event_t*} event event对象。
  *
- * @return {int}  返回event类型。
+ * @return {uint32_t}  返回event类型。
  */
-int event_get_type(event_t* event);
+uint32_t event_get_type(event_t* event);
 
 /**
  * @method event_create

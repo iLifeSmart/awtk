@@ -53,6 +53,7 @@ BEGIN_C_DECLS
 typedef ret_t (*widget_invalidate_t)(widget_t* widget, const rect_t* r);
 typedef ret_t (*widget_on_event_t)(widget_t* widget, event_t* e);
 typedef ret_t (*widget_on_event_before_children_t)(widget_t* widget, event_t* e);
+typedef ret_t (*widget_on_paint_t)(widget_t* widget, canvas_t* c);
 typedef ret_t (*widget_on_paint_background_t)(widget_t* widget, canvas_t* c);
 typedef ret_t (*widget_on_paint_self_t)(widget_t* widget, canvas_t* c);
 typedef ret_t (*widget_on_paint_children_t)(widget_t* widget, canvas_t* c);
@@ -2671,7 +2672,7 @@ ret_t widget_set_style_str(widget_t* widget, const char* state_and_name, const c
  * 在下面这个例子中，R=0x11 G=0x22 B=0x33 A=0xFF
  * 
  * ```c
- *  widget_set_style_color(label, "style:normal:bg_color", 0xFF332211);
+ *  widget_set_style_color(label, "normal:bg_color", 0xFF332211);
  * ```
  *
  * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
@@ -2964,6 +2965,16 @@ ret_t widget_on_pointer_move_children(widget_t* widget, pointer_event_t* e);
  * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
  */
 ret_t widget_on_pointer_up_children(widget_t* widget, pointer_event_t* e);
+
+/**
+ * @method widget_is_change_focus_key
+ * 是否是切换焦点的键。
+ * @param {widget_t*} widget 控件对象。
+ * @param {key_event_t*} e 事件对象。
+ *
+ * @return {bool_t} 返回TRUE表示是，否则表示否。
+ */
+bool_t widget_is_change_focus_key(widget_t* widget, key_event_t* e);
 
 /*public for subclass*/
 TK_EXTERN_VTABLE(widget);
