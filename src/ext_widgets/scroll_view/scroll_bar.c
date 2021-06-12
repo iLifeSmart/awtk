@@ -96,11 +96,16 @@ static ret_t scroll_bar_mobile_on_paint_self(widget_t* widget, canvas_t* c) {
   style_t* style = widget->astyle;
   color_t trans = color_init(80, 80, 80, 0xff);
   color_t fg = style_get_color(style, STYLE_ID_FG_COLOR, trans);
-
+  uint32_t round_radius = style_get_int(style, STYLE_ID_ROUND_RADIUS, 0);
   return_value_if_fail(scroll_bar_mobile_get_dragger_size(widget, &r) == RET_OK, RET_FAIL);
 
   canvas_set_fill_color(c, fg);
-  canvas_fill_rect(c, r.x, r.y, r.w, r.h);
+
+  if (round_radius > 0) {
+    canvas_fill_rounded_rect(c, &r, &r, &fg, round_radius);
+  } else {
+    canvas_fill_rect(c, r.x, r.y, r.w, r.h);
+  }
 
   return RET_OK;
 }
@@ -477,6 +482,9 @@ static ret_t scroll_bar_get_prop(widget_t* widget, const char* name, value_t* v)
   } else if (tk_str_eq(name, WIDGET_PROP_VALUE)) {
     value_set_int(v, scroll_bar->value);
     return RET_OK;
+  } else if (tk_str_eq(name, WIDGET_PROP_AUTO_HIDE)) {
+    value_set_bool(v, scroll_bar->auto_hide);
+    return RET_OK;
   }
 
   return RET_NOT_FOUND;
@@ -497,7 +505,9 @@ static ret_t scroll_bar_set_prop(widget_t* widget, const char* name, const value
     return RET_OK;
   } else if (tk_str_eq(name, WIDGET_PROP_VALUE)) {
     scroll_bar_set_value(widget, value_int(v));
-    scroll_bar_update_dragger(widget);
+    return RET_OK;
+  } else if (tk_str_eq(name, WIDGET_PROP_AUTO_HIDE)) {
+    scroll_bar_set_auto_hide(widget, value_bool(v));
     return RET_OK;
   }
 
@@ -580,6 +590,7 @@ ret_t scroll_bar_scroll_to(widget_t* widget, int32_t value, int32_t duration) {
     return RET_OK;
   }
 
+#ifndef WITHOUT_WIDGET_ANIMATORS
   scroll_bar->wa_value = widget_animator_value_create(widget, duration, 0, EASING_SIN_INOUT);
   return_value_if_fail(scroll_bar->wa_value != NULL, RET_OOM);
   widget_animator_value_set_params(scroll_bar->wa_value, scroll_bar->value, value);
@@ -592,6 +603,10 @@ ret_t scroll_bar_scroll_to(widget_t* widget, int32_t value, int32_t duration) {
   } else {
     scroll_bar->wa_opactiy = NULL;
   }
+#else
+  scroll_bar_set_value(widget, value);
+  scroll_bar_on_value_animate_end(widget, NULL);
+#endif
 
   return RET_OK;
 }
@@ -625,6 +640,8 @@ ret_t scroll_bar_set_value(widget_t* widget, int32_t value) {
       widget_dispatch(widget, (event_t*)&evt);
       widget_invalidate(widget, NULL);
     }
+
+    scroll_bar_update_dragger(widget);
   }
 
   return RET_OK;
@@ -644,10 +661,6 @@ ret_t scroll_bar_set_value_only(widget_t* widget, int32_t value) {
 
   scroll_bar->value = value;
 
-  if (!scroll_bar_is_mobile(widget)) {
-    widget_set_need_relayout_children(widget);
-  }
-
   return RET_OK;
 }
 
@@ -660,6 +673,8 @@ static widget_t* scroll_bar_create_internal(widget_t* parent, xy_t x, xy_t y, wh
   return_value_if_fail(scroll_bar != NULL, NULL);
 
   scroll_bar->animatable = TRUE;
+  scroll_bar->auto_hide = scroll_bar_is_mobile(widget);
+
   widget_set_state(widget, WIDGET_STATE_NORMAL);
 
   return widget;
@@ -701,6 +716,12 @@ widget_t* scroll_bar_cast(widget_t* widget) {
 ret_t scroll_bar_hide_by_opacity_animation(widget_t* widget, int32_t duration, int32_t delay) {
   scroll_bar_t* scroll_bar = SCROLL_BAR(widget);
   return_value_if_fail(scroll_bar != NULL, RET_BAD_PARAMS);
+
+  if (scroll_bar_is_mobile(widget) && !scroll_bar->auto_hide) {
+    return RET_OK;
+  }
+
+#ifndef WITHOUT_WIDGET_ANIMATORS
   if (scroll_bar->wa_opactiy != NULL) {
     widget_animator_destroy(scroll_bar->wa_opactiy);
     scroll_bar->wa_opactiy = NULL;
@@ -711,6 +732,11 @@ ret_t scroll_bar_hide_by_opacity_animation(widget_t* widget, int32_t duration, i
                      scroll_bar);
   widget_animator_opacity_set_params(scroll_bar->wa_opactiy, widget->opacity, 0);
   widget_animator_start(scroll_bar->wa_opactiy);
+#else
+  widget->opacity = 0;
+  scroll_bar_on_opactiy_animate_end(widget, NULL);
+#endif /*WITHOUT_WIDGET_ANIMATORS*/
+
   return RET_OK;
 }
 
@@ -727,5 +753,19 @@ ret_t scroll_bar_show_by_opacity_animation(widget_t* widget, int32_t duration, i
                      scroll_bar);
   widget_animator_opacity_set_params(scroll_bar->wa_opactiy, widget->opacity, 0xff);
   widget_animator_start(scroll_bar->wa_opactiy);
+
+  return RET_OK;
+}
+
+ret_t scroll_bar_set_auto_hide(widget_t* widget, bool_t auto_hide) {
+  scroll_bar_t* scroll_bar = SCROLL_BAR(widget);
+  return_value_if_fail(scroll_bar != NULL, RET_BAD_PARAMS);
+  assert(scroll_bar_is_mobile(widget));
+
+  scroll_bar->auto_hide = auto_hide;
+  if (!auto_hide) {
+    widget_set_visible(widget, TRUE);
+  }
+
   return RET_OK;
 }

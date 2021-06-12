@@ -78,12 +78,17 @@ static ret_t switch_scroll_to(widget_t* widget, int32_t xoffset_end) {
     return RET_OK;
   }
 
+#ifndef WITHOUT_WIDGET_ANIMATORS
   aswitch->wa = widget_animator_scroll_create(widget, ANIMATING_TIME, 0, EASING_SIN_INOUT);
   return_value_if_fail(aswitch->wa != NULL, RET_OOM);
 
   widget_animator_scroll_set_params(aswitch->wa, xoffset, 0, xoffset_end, 0);
   widget_animator_on(aswitch->wa, EVT_ANIM_END, switch_on_scroll_done, aswitch);
   widget_animator_start(aswitch->wa);
+#else
+  aswitch->xoffset = xoffset_end;
+  switch_on_scroll_done(widget, NULL);
+#endif /*WITHOUT_WIDGET_ANIMATORS*/
 
   return RET_OK;
 }
@@ -145,6 +150,7 @@ static ret_t switch_on_event(widget_t* widget, event_t* e) {
     case EVT_POINTER_UP: {
       aswitch->pressed = FALSE;
       if (!aswitch->point_down_aborted) {
+        switch_on_pointer_move(aswitch, (pointer_event_t*)e);
         switch_on_pointer_up(aswitch, (pointer_event_t*)e);
         widget_ungrab(widget->parent, widget);
       } else {

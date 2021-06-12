@@ -49,7 +49,7 @@ bool_t tk_mem_is_valid_addr(void* addr) {
 }
 
 static mem_allocator_t* mem_allocator_get(void) {
-  static mem_allocator_t std;
+  static mem_allocator_std_t std;
   if (s_allocator != NULL) {
     return s_allocator;
   }
@@ -89,12 +89,14 @@ ret_t tk_mem_init_ex(void* buffer, uint32_t size, ...) {
 
   return_value_if_fail(s_allocator != NULL, RET_BAD_PARAMS);
 
-  if (size < 100 * 1024) {
-    s_allocator = mem_allocator_pool_init(&pool, s_allocator, 100, 100, 80, 80, 32);
-  } else if (size < 1000 * 1024) {
-    s_allocator = mem_allocator_pool_init(&pool, s_allocator, 500, 500, 500, 200, 200);
-  } else {
-    s_allocator = mem_allocator_pool_init(&pool, s_allocator, 1000, 1000, 1000, 500, 500);
+  if (size > 32 * 1024) {
+    if (size < 100 * 1024) {
+      s_allocator = mem_allocator_pool_init(&pool, s_allocator, 100, 100, 80, 80, 32);
+    } else if (size < 1000 * 1024) {
+      s_allocator = mem_allocator_pool_init(&pool, s_allocator, 500, 500, 500, 200, 200);
+    } else {
+      s_allocator = mem_allocator_pool_init(&pool, s_allocator, 1000, 1000, 1000, 500, 500);
+    }
   }
 #ifdef ENABLE_MEM_LEAK_CHECK
   s_allocator = mem_allocator_debug_init(&s_debug, s_allocator);
@@ -119,7 +121,11 @@ static mem_allocator_t* mem_allocator_get(void) {
   return s_allocator;
 }
 
-#ifndef WITH_SDL
+#if (!defined(WITH_SDL) && !defined(LINUX))
+#define EXPORT_STD_MALLOC 1
+#endif
+
+#if defined(EXPORT_STD_MALLOC)
 /*export std malloc*/
 void* calloc(size_t count, size_t size) {
   return tk_calloc(count, size, __FUNCTION__, __LINE__);

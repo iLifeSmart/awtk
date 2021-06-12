@@ -79,6 +79,11 @@ static ret_t window_manager_start_or_reset_screen_saver_timer(window_manager_def
     } else {
       timer_modify(wm->screen_saver_timer_id, wm->screen_saver_time);
     }
+  } else {
+    if (wm->screen_saver_timer_id != TK_INVALID_ID) {
+      timer_remove(wm->screen_saver_timer_id);
+      wm->screen_saver_timer_id = TK_INVALID_ID;
+    }
   }
 
   return RET_OK;
@@ -117,6 +122,7 @@ static widget_t* window_manager_find_prev_normal_window(widget_t* widget) {
 }
 
 ret_t window_manager_default_snap_curr_window(widget_t* widget, widget_t* curr_win, bitmap_t* img) {
+#ifndef WITHOUT_WINDOW_ANIMATORS
   canvas_t* c = NULL;
   rect_t r = {0};
   canvas_t* canvas = NULL;
@@ -131,7 +137,8 @@ ret_t window_manager_default_snap_curr_window(widget_t* widget, widget_t* curr_w
   r = rect_init(curr_win->x, curr_win->y, curr_win->w, curr_win->h);
 
   canvas_save(c);
-  canvas = canvas_offline_create(c->lcd->w, c->lcd->h, lcd_get_desired_bitmap_format(c->lcd));
+  canvas = canvas_offline_create(canvas_get_width(c), canvas_get_height(c),
+                                 lcd_get_desired_bitmap_format(c->lcd));
   canvas_offline_begin_draw(canvas);
   canvas_set_clip_rect(canvas, &r);
   ENSURE(widget_on_paint_background(widget, canvas) == RET_OK);
@@ -141,10 +148,11 @@ ret_t window_manager_default_snap_curr_window(widget_t* widget, widget_t* curr_w
   ENSURE(canvas_offline_destroy(canvas) == RET_OK);
   img->flags |= BITMAP_FLAG_OPAQUE;
   canvas_restore(c);
-
+#endif
   return RET_OK;
 }
 
+#ifndef WITHOUT_WINDOW_ANIMATORS
 static ret_t window_manager_default_snap_prev_window_draw_dialog_highlighter_and_get_alpha(
     widget_t* widget, canvas_t* c, uint8_t* alpha) {
   value_t v;
@@ -166,8 +174,10 @@ static ret_t window_manager_default_snap_prev_window_draw_dialog_highlighter_and
   }
   return RET_FAIL;
 }
+#endif
 
 ret_t window_manager_default_snap_prev_window(widget_t* widget, widget_t* prev_win, bitmap_t* img) {
+#ifndef WITHOUT_WINDOW_ANIMATORS
   rect_t r = {0};
   canvas_t* c = NULL;
   canvas_t* canvas = NULL;
@@ -194,7 +204,8 @@ ret_t window_manager_default_snap_prev_window(widget_t* widget, widget_t* prev_w
   r = rect_init(prev_win->x, prev_win->y, prev_win->w, prev_win->h);
 
   canvas_save(c);
-  canvas = canvas_offline_create(c->lcd->w, c->lcd->h, lcd_get_desired_bitmap_format(c->lcd));
+  canvas = canvas_offline_create(canvas_get_width(c), canvas_get_height(c),
+                                 lcd_get_desired_bitmap_format(c->lcd));
   canvas_offline_begin_draw(canvas);
   canvas_set_clip_rect(canvas, &r);
   ENSURE(widget_on_paint_background(widget, canvas) == RET_OK);
@@ -235,6 +246,7 @@ ret_t window_manager_default_snap_prev_window(widget_t* widget, widget_t* prev_w
     dialog_highlighter_set_bg_clip_rect(dialog_highlighter, &r);
   }
   wm->curr_win = NULL;
+#endif
   return RET_OK;
 }
 

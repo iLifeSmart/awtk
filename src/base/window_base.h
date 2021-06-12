@@ -240,12 +240,20 @@ typedef struct _window_base_t {
    */
   bool_t single_instance;
 
+  /**
+   * @property {bool_t} strongly_focus
+   * @annotation ["set_prop","get_prop","readable","persitent","design","scriptable"]
+   * 点击非focusable控件时，是否让当前焦点控件失去焦点。比如点击窗口空白区域，是否让编辑器失去焦点。 
+   */
+  bool_t strongly_focus;
+
   /*private*/
   const asset_info_t* res_theme;
   font_manager_t* font_manager;
   native_window_t* native_window;
   widget_t* save_focus_widget;
   uint32_t grab_count_when_to_foreground;
+  bool_t need_relayout;
 } window_base_t;
 
 /**
@@ -394,6 +402,16 @@ widget_t* window_base_create(widget_t* parent, const widget_vtable_t* vt, xy_t x
  * @return {widget_t*} window_base对象。
  */
 widget_t* window_base_cast(widget_t* widget);
+
+/**
+ * @method window_base_set_need_relayout
+ * 设置是否需要relayout
+ * @param {widget_t*} widget window_base对象。
+ * @param {bool_t} need_relayout
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。。
+ */
+ret_t window_base_set_need_relayout(widget_t* widget, bool_t need_relayout);
 
 #define WINDOW_BASE(widget) ((window_base_t*)(window_base_cast(WIDGET(widget))))
 

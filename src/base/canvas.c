@@ -89,8 +89,8 @@ canvas_t* canvas_init(canvas_t* c, lcd_t* lcd, font_manager_t* font_manager) {
 
   c->clip_left = 0;
   c->clip_top = 0;
-  c->clip_right = lcd->w - 1;
-  c->clip_bottom = lcd->h - 1;
+  c->clip_right = canvas_get_width(c) - 1;
+  c->clip_bottom = canvas_get_height(c) - 1;
 
   return c;
 }
@@ -2037,4 +2037,6 @@ ret_t canvas_stroke_rounded_rect_ex(canvas_t* c, const rect_t* r, const rect_t* 
 }
 #endif /*WITHOUT_ROUNDED_RECT*/
 
+#ifndef AWTK_LITE
 #include "canvas_offline.inc"
+#endif
