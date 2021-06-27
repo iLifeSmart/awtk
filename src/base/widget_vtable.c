@@ -107,15 +107,19 @@ ret_t widget_on_paint_children_default(widget_t* widget, canvas_t* c) {
     continue;
   }
 
-  /* int32_t left = c->ox + iter->x;
-  int32_t top = c->oy + iter->y;
-  int32_t bottom = top + iter->h;
-  int32_t right = left + iter->w;
-  if (left > c->clip_right || right < c->clip_left || top > c->clip_bottom ||
-      bottom < c->clip_top) {
-    iter->dirty = FALSE;
-    continue;
-  }*/
+  if (!(iter->vt->allow_draw_outside)) {
+    int32_t tolerance = widget->dirty_rect_tolerance;
+    int32_t left = c->ox + iter->x - tolerance;
+    int32_t top = c->oy + iter->y - tolerance;
+    int32_t bottom = top + iter->h + 2 * tolerance;
+    int32_t right = left + iter->w + 2 * tolerance;
+
+    if (left > c->clip_right || right < c->clip_left || top > c->clip_bottom ||
+        bottom < c->clip_top) {
+      iter->dirty = FALSE;
+      continue;
+    }
+  }
 
   widget_paint(iter, c);
   WIDGET_FOR_EACH_CHILD_END();
@@ -229,7 +233,8 @@ ret_t widget_on_paint_null(widget_t* widget, canvas_t* c) {
   return RET_OK;
 }
 
-ret_t widget_paint_with_clip(widget_t* widget, canvas_t* c, widget_on_paint_t on_paint) {
+ret_t widget_paint_with_clip(widget_t* widget, rect_t* clip, canvas_t* c,
+                             widget_on_paint_t on_paint) {
   rect_t r = {0};
   rect_t r_save = {0};
   rect_t r_vg_save = {0};
@@ -246,7 +251,11 @@ ret_t widget_paint_with_clip(widget_t* widget, canvas_t* c, widget_on_paint_t on
     r_vg_save = rect_init(vg->clip_rect.x, vg->clip_rect.y, vg->clip_rect.w, vg->clip_rect.h);
   }
 
-  r = rect_init(c->ox, c->oy, widget->w, widget->h);
+  if (clip != NULL) {
+    r = *clip;
+  } else {
+    r = rect_init(c->ox, c->oy, widget->w, widget->h);
+  }
   r = rect_intersect(&r, &r_save);
   canvas_set_clip_rect(c, &r);
   if (vg != NULL) {
@@ -266,7 +275,7 @@ ret_t widget_paint_with_clip(widget_t* widget, canvas_t* c, widget_on_paint_t on
 }
 
 ret_t widget_on_paint_children_clip(widget_t* widget, canvas_t* c) {
-  return widget_paint_with_clip(widget, c, widget_on_paint_children_default);
+  return widget_paint_with_clip(widget, NULL, c, widget_on_paint_children_default);
 }
 
 TK_DECL_VTABLE(widget) = {.size = sizeof(widget_t),

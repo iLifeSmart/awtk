@@ -25,6 +25,35 @@
 #include "tkc/types_def.h"
 
 /**
+ * @enum keyboard_type_t
+ * 键盘的类型
+ */
+typedef enum _keyboard_type_t {
+  /**
+   * @const KEYBOARD_NONE
+   * 无键盘。
+   */
+  KEYBOARD_NONE = 0,
+  /**
+   * @const KEYBOARD_NORMAL
+   * 正常键盘。
+   */
+  KEYBOARD_NORMAL,
+  /**
+   * @const KEYBOARD_3KEYS
+   * 3键(RETURN+上下键，附加数字键等)。
+   * > RETURN键用于切换模式：焦点模式下，上下键用于切换焦点，非焦点模式下，上下键用于切修改控件的值。
+   */
+  KEYBOARD_3KEYS,
+  /**
+   * @const KEYBOARD_5KEYS
+   * 5键(RETURN+上下左右键，附加数字键等)。
+   * > RETURN键用于切换模式：焦点模式下，上下键用于切换焦点，非焦点模式下，上下键用于切修改控件的值。
+   */
+  KEYBOARD_5KEYS
+} keyboard_type_t;
+
+/**
  * @enum lcd_orientation_t
  * LCD旋转角度。
  */
@@ -230,13 +259,10 @@ typedef enum _app_type_t {
 #define TK_DEFAULT_FONT_SIZE 18
 #endif /*TK_DEFAULT_FONT_SIZE*/
 
-#ifndef TK_MAX_FPS
-#if defined(LINUX) || defined(MACOS) || defined(WIN32)
 #define TK_MAX_FPS 60
-#else
-#define TK_MAX_FPS 100
-#endif
-#endif /*TK_MAX_FPS*/
+#define TK_MAX_LOOP_FPS 120
+
+#define TK_MAX_SLEEP_TIME (1000 / TK_MAX_LOOP_FPS)
 
 /* alpha 大于 TK_OPACITY_ALPHA 的颜色认为是不透明颜色，不进行alpha混合。*/
 #define TK_OPACITY_ALPHA 0xfa
@@ -482,5 +508,11 @@ typedef struct _input_method_t input_method_t;
 
 struct _input_engine_t;
 typedef struct _input_engine_t input_engine_t;
+
+struct _canvas_t;
+typedef struct _canvas_t canvas_t;
+
+struct _lcd_t;
+typedef struct _lcd_t lcd_t;
 
 #endif /*TK_TYPES_DEF_H*/

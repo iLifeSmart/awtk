@@ -26,6 +26,7 @@
 #include "base/locale_info.h"
 #include "base/system_info.h"
 #include "base/assets_manager.h"
+#include "base/vgcanvas_asset_manager.inc"
 
 #define RAW_DIR "raw"
 #define ASSETS_DIR "assets"
@@ -233,6 +234,10 @@ static asset_info_t* try_load_image(assets_manager_t* am, const char* theme, con
     case ASSET_TYPE_IMAGE_BSVG: {
       extname = ".bsvg";
       subpath = "images/svg";
+      break;
+    }
+    case ASSET_TYPE_IMAGE_OTHER: {
+      extname = "";
       break;
     }
     default: {
@@ -458,6 +463,14 @@ static asset_info_t* assets_manager_load_asset(assets_manager_t* am, asset_type_
         break;
       }
 
+      if ((info = try_load_image(am, theme, name, ASSET_TYPE_IMAGE_OTHER, TRUE)) != NULL) {
+        break;
+      }
+
+      if ((info = try_load_image(am, theme, name, ASSET_TYPE_IMAGE_OTHER, FALSE)) != NULL) {
+        break;
+      }
+
       break;
     }
     case ASSET_TYPE_UI: {
@@ -574,6 +587,10 @@ ret_t assets_manager_set_res_root(assets_manager_t* am, const char* res_root) {
 
 ret_t assets_manager_clear_all(assets_manager_t* am) {
   return_value_if_fail(am != NULL, RET_BAD_PARAMS);
+
+  assets_manager_clear_cache(am, ASSET_TYPE_UI);
+  assets_manager_clear_cache(am, ASSET_TYPE_STYLE);
+  assets_manager_clear_cache(am, ASSET_TYPE_FONT);
 
   return darray_clear(&(am->assets));
 }

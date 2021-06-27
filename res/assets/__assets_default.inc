@@ -69,6 +69,7 @@
 #include "default/inc/ui/basic_fscript.data"
 #include "default/inc/ui/keyboard.data"
 #include "default/inc/ui/kb_hex.data"
+#include "default/inc/ui/gauge_h.data"
 #include "default/inc/ui/popdown.data"
 #include "default/inc/ui/color.data"
 #include "default/inc/ui/color_picker.data"
@@ -277,6 +278,7 @@
 #include "default/inc/images/right_on.res"
 #include "default/inc/images/gauge_pointer.res"
 #include "default/inc/images/flag_US.res"
+#include "default/inc/images/0.res"
 #include "default/inc/images/left_off.res"
 #include "default/inc/images/1.res"
 #include "default/inc/images/progress_circle.res"
@@ -321,6 +323,7 @@
 #include "default/inc/images/arrow_right_o.data"
 #include "default/inc/images/image_packed_bg.data"
 #include "default/inc/images/num_4.data"
+#include "default/inc/images/0.data"
 #include "default/inc/images/close_o.data"
 #include "default/inc/images/battery_1.data"
 #include "default/inc/images/slider_bg.data"
@@ -455,6 +458,7 @@
 #include "default/inc/images/htest.bsvg"
 #include "default/inc/images/ball.bsvg"
 #include "default/inc/images/china.bsvg"
+#include "default/inc/images/meter_pointer.bsvg"
 #include "default/inc/images/pointer_1.bsvg"
 #include "default/inc/images/pointer.bsvg"
 #include "default/inc/images/girl.bsvg"
@@ -546,6 +550,7 @@ ret_t assets_init_default(void) {
   assets_manager_add(am, ui_basic_fscript);
   assets_manager_add(am, ui_keyboard);
   assets_manager_add(am, ui_kb_hex);
+  assets_manager_add(am, ui_gauge_h);
   assets_manager_add(am, ui_popdown);
   assets_manager_add(am, ui_color);
   assets_manager_add(am, ui_color_picker);
@@ -753,6 +758,7 @@ ret_t assets_init_default(void) {
   assets_manager_add(am, image_right_on);
   assets_manager_add(am, image_gauge_pointer);
   assets_manager_add(am, image_flag_US);
+  assets_manager_add(am, image_0);
   assets_manager_add(am, image_left_off);
   assets_manager_add(am, image_1);
   assets_manager_add(am, image_progress_circle);
@@ -798,6 +804,7 @@ ret_t assets_init_default(void) {
   assets_manager_add(am, image_htest);
   assets_manager_add(am, image_ball);
   assets_manager_add(am, image_china);
+  assets_manager_add(am, image_meter_pointer);
   assets_manager_add(am, image_pointer_1);
   assets_manager_add(am, image_pointer);
   assets_manager_add(am, image_girl);

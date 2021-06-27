@@ -71,6 +71,15 @@ typedef struct _canvas_offline_gpu_t {
 
 #endif
 
+static ret_t canvas_offline_begin_frame(canvas_t* c, const rect_t* dirty_rect, lcd_draw_mode_t draw_mode) {
+  ret_t ret = RET_OK;
+  ret = canvas_offline_begin_draw(c);
+  return_value_if_fail(ret == RET_OK, ret);
+  ret = canvas_set_clip_rect(c, dirty_rect);
+  return_value_if_fail(ret == RET_OK, ret);
+  return RET_OK;
+}
+
 canvas_t* canvas_offline_create(uint32_t w, uint32_t h, bitmap_format_t format) {
   canvas_t* c = NULL;
   native_window_t* native_window = NULL;
@@ -146,10 +155,7 @@ canvas_t* canvas_offline_create(uint32_t w, uint32_t h, bitmap_format_t format) 
   canvas_set_assets_manager((canvas_t*)canvas, widget_get_assets_manager(window_manager()));
   canvas_set_global_alpha((canvas_t*)canvas, 0xff);
   vgcanvas_create_fbo(vg, w, h, FALSE, fbo);
-
-  return (canvas_t*)canvas;
 #else
-
   canvas = TKMEM_ZALLOC(canvas_offline_t);
   return_value_if_fail(canvas != NULL, NULL);
 
@@ -187,17 +193,18 @@ canvas_t* canvas_offline_create(uint32_t w, uint32_t h, bitmap_format_t format) 
 
   if (lcd != NULL) {
     canvas_t* c_tmp = NULL;
-    ((lcd_mem_t*)lcd)->vgcanvas = canvas_get_vgcanvas(c);
     c_tmp = canvas_init(&(canvas->base), lcd, widget_get_font_manager(window_manager()));
     canvas_set_assets_manager(c_tmp, widget_get_assets_manager(window_manager()));
     canvas_set_global_alpha(&(canvas->base), 0xff);
     canvas_begin_frame(c_tmp, NULL, LCD_DRAW_OFFLINE);
-    return c_tmp;
   } else {
+    TKMEM_FREE(canvas);
     return NULL;
   }
-
 #endif
+  ((canvas_t*)canvas)->end_frame = canvas_offline_end_draw;
+  ((canvas_t*)canvas)->begin_frame = canvas_offline_begin_frame;
+  return (canvas_t*)canvas; 
 }
 #ifdef AWTK_WEB
 ret_t canvas_offline_clear_canvas(canvas_t* canvas) {
@@ -469,7 +476,6 @@ ret_t canvas_offline_destroy(canvas_t* canvas) {
 #else
   system_info_set_lcd_w(info, ((canvas_offline_t*)canvas)->lcd_w);
   system_info_set_lcd_h(info, ((canvas_offline_t*)canvas)->lcd_h);
-  ((lcd_mem_t*)canvas->lcd)->vgcanvas = NULL;
   lcd_destroy(canvas->lcd);
 #endif
   if (bitmap != NULL) {

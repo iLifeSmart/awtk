@@ -1,66 +1,110 @@
 # 最新动态
 
+2021/06/27
+  * 修复输入法软键盘判断坐标的问题。
+
+2021/06/26
+  * 完善edit
+  * 完善offline canvas（感谢智明提供补丁）
+  * 修改ui loader的内存问题（感谢朱俊提供补丁）
+  * 增加window\_manager\_set\_max\_fps用于限制最大帧率。
+
+2021/06/25
+  * 完善编译脚步（感谢雨欣提供补丁）
+
+2021/06/24
+  * 支持多个脏矩形。
+  * gauge\_pointer支持精确脏矩形(可大幅提高gauge界面的流畅度)。
+  * 页面切换速度比动画速度快时导致显示不正常问题（感谢兆坤提供补丁)。
+  * 消除ui\_loader\_load edit、mledit所产生的警告信息（感谢兆坤提供补丁)。
+
+2021/06/23
+  * 完善awtk\_config.py（感谢朝泽提供补丁）
+  * 完善awtk\_main.inc（感谢朝泽提供补丁）
+
+2021/06/19
+  * 完善vgcanvas\_asset\_manager（感谢智明提供补丁）
+
+2021/06/18
+  * 把截屏函数和离线画布都改用多 vg 的模式（感谢智明提供补丁)
+  * 增加 vgcanvas\_asset\_manager 的机制，来保证不同 vg 公用同一份资源时候不会出现问题（感谢智明提供补丁）
+
+2021/06/17
+  * 增加rect\_has\_intersect。
+  * 完善widget\_paint\_with\_clip。
+  * 完善awtk\_main.inc（感谢朝泽提供补丁）
+  * 修改控件动画的刷新时间和最高帧率绑定一起（感谢智明提供补丁）
+  * 增加lcd的接口并且完善其他的类型lcd的接口（感谢智明提供补丁）
+  * 修复圆角矩形依赖宏来判断lcd类型来打点的问题（感谢智明提供补丁）
+  * 增加加载没有文件后缀的图片资源（感谢智明提供补丁）
+  * 完善keyboard对hard\_key的支持。
+
+2021/06/16
+  * 支持[极简键盘 (3 键键盘、5 键键盘和旋转按钮）](docs/how_to_support_5keys_3keys.md)
+  * edit/mledit不处理escape和功能键。 
+  * 修复拼音输入法assert: https://github.com/zlgopen/awtk/issues/563
+
 2021/06/15
-  * edit不再用左右键切换焦点。 
-  * 完善is\_same\_col/is\_same\_row的算法。
-  * 完善font manager字体卸载(感谢智明提供补丁)
-  * 完善canvas\_draw\_text\_bidi\_in\_rect对空行的处理。
+  * edit 不再用左右键切换焦点。 
+  * 完善 is\_same\_col/is\_same\_row 的算法。
+  * 完善 font manager 字体卸载（感谢智明提供补丁）
+  * 完善 canvas\_draw\_text\_bidi\_in\_rect 对空行的处理。
 
 2021/06/11
   * 修改一些编译警告。 
-  * 增加文档 [如何使用keil的AC6工具链编译](how_to_build_with_keil_ac6.md)
+  * 增加文档 [如何使用 keil 的 AC6 工具链编译](how_to_build_with_keil_ac6.md)
 
 2021/06/11
   * 完善焦点处理。
-  * pages支持clip。
-  * 完善edit对自动测试的支持。
-  * 重构clip view，将clip函数抽取出来方便重用。
-  * 增加data\_time\_format注释，导出相关函数(感谢雨欣提供补丁)
-  * 修复 widget\_set\_style\_color 函数的说明错误问题(感谢智明提供补丁)
-  * 增加 text\_selector 控件设置 value 会触发动画滚动效果(感谢智明提供补丁)
-  * 修复label显示多行阿拉伯文本的问题。
+  * pages 支持 clip。
+  * 完善 edit 对自动测试的支持。
+  * 重构 clip view，将 clip 函数抽取出来方便重用。
+  * 增加 data\_time\_format 注释，导出相关函数（感谢雨欣提供补丁）
+  * 修复 widget\_set\_style\_color 函数的说明错误问题（感谢智明提供补丁）
+  * 增加 text\_selector 控件设置 value 会触发动画滚动效果（感谢智明提供补丁）
+  * 修复 label 显示多行阿拉伯文本的问题。
 
 2021/06/10
   * 完善编辑器对左右键的处理。
-  * 修复vpage中注释的问题(感谢朝泽提供补丁)   
-  * 完善widget\_on\_keydown，优先处理焦点切换按钮。
+  * 修复 vpage 中注释的问题（感谢朝泽提供补丁）   
+  * 完善 widget\_on\_keydown，优先处理焦点切换按钮。
 
 2021/06/09
-  * 重构pages。
-  * 修复ui\_builder不能重入的问题。
-  * 增加window\_manager\_set\_ignore\_input\_events。
-  * 增加vpage扩展控件(配合pages控件使用，可以自动加载/卸载页面, 并提供入场/出场动画)
+  * 重构 pages。
+  * 修复 ui\_builder 不能重入的问题。
+  * 增加 window\_manager\_set\_ignore\_input\_events。
+  * 增加 vpage 扩展控件（配合 pages 控件使用，可以自动加载/卸载页面，并提供入场/出场动画）
 
 2021/06/08
-  * 完善编译脚本(感谢兆坤提供补丁)
-  * 完善slide menu，支持用左右键切换。
+  * 完善编译脚本（感谢兆坤提供补丁）
+  * 完善 slide menu，支持用左右键切换。
   * 修复嵌入式系统硬键盘无法输入的问题。
-  * 完善slide view，垂直slide view用上下键切换页面。
-  * 完善slide view，处理滑动太快，中间没有move事件的问题。
-  * 修复hscrollable，点击边缘控件没有滚动效果的问题(感谢智明提供补丁)
+  * 完善 slide view，垂直 slide view 用上下键切换页面。
+  * 完善 slide view，处理滑动太快，中间没有 move 事件的问题。
+  * 修复 hscrollable，点击边缘控件没有滚动效果的问题（感谢智明提供补丁）
 
 2021/06/07
   * 重构和完善文档。
-  * 完善mmap.c(感谢陈谭提供补丁)
-  * 完善release脚本拷贝自定义控件的动态库。
-  * self layout default的百分比使用浮点数。
-  * 完善file browser view的value changed事件(感谢智明提供补丁) 
+  * 完善 mmap.c（感谢陈谭提供补丁）
+  * 完善 release 脚本拷贝自定义控件的动态库。
+  * self layout default 的百分比使用浮点数。
+  * 完善 file browser view 的 value changed 事件（感谢智明提供补丁） 
 
 2021/06/06
-  * 重构widget部分代码。
+  * 重构 widget 部分代码。
 
 2021/06/05
-  * 完善switch控件。修复滑动太快，pointer down和pointer up之间没有move事件的问题。
+  * 完善 switch 控件。修复滑动太快，pointer down 和 pointer up 之间没有 move 事件的问题。
 
 2021/06/04
-  * scroll bar mobile支持auto\_hide属性。
+  * scroll bar mobile 支持 auto\_hide 属性。
   * 完善 scroll bar mobile 支持圆角。
   * 修复 hscroll\_label 在一开始未显示的 page 中无法自动滚动的问题（感谢智明提供补丁）
 
 2021/06/03
   * 完善 scroll bar。
   * 完善 menu layout。
-  * 修改ubjson\_writer\_write\_key\_len的问题（感谢攀峰提供补丁）。
+  * 修改 ubjson\_writer\_write\_key\_len 的问题（感谢攀峰提供补丁）。
 
 2021/06/02
   * 优化 widget\_set\_visible（感谢智明提供补丁） 
