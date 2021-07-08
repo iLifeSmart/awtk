@@ -1,4 +1,4 @@
-/**
+﻿/**
  * File:   window_manager_default.c
  * Author: AWTK Develop Team
  * Brief:  default window manager
@@ -36,7 +36,6 @@
 #include "window_manager/window_manager_default.h"
 
 static ret_t window_manager_animate_done(widget_t* widget);
-static ret_t window_manager_default_inc_fps(widget_t* widget);
 static ret_t window_manager_default_update_fps(widget_t* widget);
 static ret_t window_manager_default_invalidate(widget_t* widget, const rect_t* r);
 static ret_t window_manager_default_get_client_r(widget_t* widget, rect_t* r);
@@ -645,17 +644,18 @@ static ret_t window_manager_paint_normal(widget_t* widget, canvas_t* c) {
 
   if (WINDOW_MANAGER(wm)->max_fps) {
     uint32_t duration = 1000 / WINDOW_MANAGER(wm)->max_fps;
-    uint32_t elapsed_time = start_time - wm->last_paint_time;
-
-    /*如果时间未到，但是接近了也进行绘制。*/
-    elapsed_time = elapsed_time * 1.5;
+    uint32_t elapsed_time = start_time - wm->last_paint_time + wm->last_paint_cost;
+    /* 
+     * 上一帧的绘图耗时加上各种事件触发耗时小于绘图间隔时间，则跳过绘图并且控制睡眠时间。
+     * 控制睡眠时间是为了防止睡眠时间过长导致减低绘图次数。
+     */
     if (elapsed_time < duration) {
+      window_manager_set_curr_expected_sleep_time(widget, duration - elapsed_time);
       return RET_OK;
     }
   }
 
-  window_manager_default_inc_fps(widget);
-
+  fps_inc(&(wm->fps));
   if (WINDOW_MANAGER(wm)->show_fps) {
     rect_t fps_rect = rect_init(0, 0, 60, 30);
     window_manager_default_invalidate(widget, &fps_rect);
@@ -869,7 +869,7 @@ static ret_t window_manager_paint_animation(widget_t* widget, canvas_t* c) {
   ENSURE(window_animator_end_frame(wm->animator) == RET_OK);
 
   wm->last_paint_cost = time_now_ms() - start_time;
-  window_manager_default_inc_fps(widget);
+  fps_inc(&(wm->fps));
 
   if (ret == RET_DONE) {
     window_manager_animate_done(widget);
@@ -883,30 +883,12 @@ static ret_t window_manager_animate_done(widget_t* widget) {
 }
 #endif /*WITH_WINDOW_ANIMATORS*/
 
-static ret_t window_manager_default_inc_fps(widget_t* widget) {
-  window_manager_default_t* wm = WINDOW_MANAGER_DEFAULT(widget);
-
-  wm->fps_count++;
-
-  return RET_OK;
-}
-
 static ret_t window_manager_default_update_fps(widget_t* widget) {
   canvas_t* c = NULL;
-  uint32_t elapse = 0;
-  uint64_t now = time_now_ms();
   window_manager_default_t* wm = WINDOW_MANAGER_DEFAULT(widget);
 
-  elapse = now - wm->fps_time;
-  if (elapse >= 200) {
-    wm->fps = wm->fps_count * 1000 / elapse;
-
-    wm->fps_time = now;
-    wm->fps_count = 0;
-  }
-
   c = native_window_get_canvas(wm->native_window);
-  canvas_set_fps(c, WINDOW_MANAGER(wm)->show_fps, wm->fps);
+  canvas_set_fps(c, WINDOW_MANAGER(wm)->show_fps, fps_get(&(wm->fps)));
 
   return RET_OK;
 }
@@ -919,6 +901,7 @@ static ret_t window_manager_default_paint(widget_t* widget) {
 
   canvas_set_global_alpha(c, 0xff);
   window_manager_default_update_fps(widget);
+  window_manager_set_curr_expected_sleep_time(widget, 0xFFFFFFFF);
 
 #ifdef WITH_WINDOW_ANIMATORS
   if (wm->animator != NULL) {
@@ -1246,13 +1229,15 @@ static ret_t window_manager_default_layout_child(widget_t* widget, widget_t* win
 }
 
 static ret_t window_manager_default_resize(widget_t* widget, wh_t w, wh_t h) {
+  ret_t ret = RET_OK;
   rect_t r = rect_init(0, 0, w, h);
   window_manager_default_t* wm = WINDOW_MANAGER_DEFAULT(widget);
   return_value_if_fail(wm != NULL, RET_BAD_PARAMS);
 
-  widget_move_resize(widget, 0, 0, w, h);
+  ret = native_window_resize(wm->native_window, w, h, TRUE);
+  return_value_if_fail(ret == RET_OK, ret);
 
-  native_window_resize(wm->native_window, w, h, TRUE);
+  widget_move_resize(widget, 0, 0, w, h);
   native_window_invalidate(wm->native_window, &r);
   native_window_update_last_dirty_rect(wm->native_window);
 
@@ -1372,7 +1357,6 @@ static ret_t window_manager_default_native_window_resized(widget_t* widget, void
   native_window_info_t ainfo;
   int32_t lcd_orientation = system_info()->lcd_orientation;
   window_manager_default_t* wm = WINDOW_MANAGER_DEFAULT(widget);
-  native_window_t* nw = WINDOW_MANAGER_DEFAULT(widget)->native_window;
 
   return_value_if_fail(native_window_get_info(wm->native_window, &ainfo) == RET_OK, RET_FAIL);
 
@@ -1386,7 +1370,6 @@ static ret_t window_manager_default_native_window_resized(widget_t* widget, void
     h = w;
   }
 
-  native_window_on_resized(nw, w, h);
   if (widget->w == w && widget->h == h) {
     return RET_OK;
   }
