@@ -44,9 +44,12 @@ ret_t vgcanvas_reset(vgcanvas_t* vg) {
 }
 
 ret_t vgcanvas_reset_curr_state(vgcanvas_t* vg) {
-  return_value_if_fail(vg != NULL && vg->vt->reset_curr_state != NULL, RET_BAD_PARAMS);
-
-  return vg->vt->reset_curr_state(vg);
+  return_value_if_fail(vg != NULL, RET_BAD_PARAMS);
+  if (vg->vt->reset_curr_state != NULL) {
+    return vg->vt->reset_curr_state(vg);
+  } else {
+    return RET_NOT_IMPL;
+  }
 }
 
 ret_t vgcanvas_flush(vgcanvas_t* vg) {
@@ -400,10 +403,10 @@ ret_t vgcanvas_set_miter_limit(vgcanvas_t* vg, float_t value) {
   return vg->vt->set_miter_limit(vg, value);
 }
 
-ret_t vgcanvas_begin_frame(vgcanvas_t* vg, const rect_t* dirty_rect) {
+ret_t vgcanvas_begin_frame(vgcanvas_t* vg, const dirty_rects_t* dirty_rects) {
   return_value_if_fail(vg != NULL && vg->vt->begin_frame != NULL, RET_BAD_PARAMS);
 
-  return vg->vt->begin_frame(vg, dirty_rect);
+  return vg->vt->begin_frame(vg, dirty_rects);
 }
 
 ret_t vgcanvas_save(vgcanvas_t* vg) {

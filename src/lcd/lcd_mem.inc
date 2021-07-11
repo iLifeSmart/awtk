@@ -74,19 +74,26 @@ static bitmap_t* lcd_mem_init_online_fb(lcd_t* lcd, bitmap_t* fb, lcd_orientatio
   return fb;
 }
 
-static ret_t lcd_mem_begin_frame(lcd_t* lcd, const rect_t* dirty_rect) {
+static ret_t lcd_mem_begin_frame(lcd_t* lcd, const dirty_rects_t* dirty_rects) {
 #if WITH_LCD_CLEAR_ALPHA
-  rect_t r;
   bitmap_t fb;
-
-  if (lcd->draw_mode == LCD_DRAW_OFFLINE || dirty_rect == NULL) {
-    r = rect_init(0, 0, lcd->w, lcd->h);
-  } else {
-    r = rect_init(dirty_rect->x, dirty_rect->y, dirty_rect->w, dirty_rect->h);
-  }
-
   lcd_mem_init_drawing_fb(lcd, &fb);
-  return image_clear(&fb, &r, color_init(0x0, 0x0, 0x0, 0x0));
+
+  if (lcd->draw_mode == LCD_DRAW_OFFLINE || dirty_rects == NULL) {
+    rect_t r = rect_init(0, 0, lcd->w, lcd->h);
+    return image_clear(&fb, &r, color_init(0x0, 0x0, 0x0, 0x0));
+  } else {
+    if (dirty_rects->disable_multiple) {
+      return image_clear(&fb, (const rect_t*)&(dirty_rects->max), color_init(0x0, 0x0, 0x0, 0x0));
+    } else {
+      int32_t i = 0;
+      for (i = 0; i < dirty_rects->nr; i++) {
+        const rect_t* iter = dirty_rects->rects + i;
+        image_clear(&fb, iter, color_init(0x0, 0x0, 0x0, 0x0));
+      }
+      return RET_OK;
+    }
+  }
 #else
   return RET_OK;
 #endif
@@ -314,17 +321,7 @@ static ret_t lcd_mem_destroy(lcd_t* lcd) {
   lcd_mem_t* mem = (lcd_mem_t*)lcd;
   return_value_if_fail(lcd->begin_frame != NULL, RET_BAD_PARAMS);
 
-  if (mem->vgcanvas != NULL) {
-    vgcanvas_destroy(mem->vgcanvas);
-    mem->vgcanvas = NULL;
-  }
-
-  if (mem->own_offline_fb) {
-    TKMEM_FREE(mem->offline_fb);
-  }
-
-  graphic_buffer_destroy(mem->online_gb);
-  graphic_buffer_destroy(mem->offline_gb);
+  return_value_if_fail(lcd_mem_deinit(mem) == RET_OK, RET_BAD_PARAMS);
 
   memset(lcd, 0x00, sizeof(lcd_mem_t));
   TKMEM_FREE(lcd);
@@ -365,10 +362,9 @@ static ret_t lcd_mem_set_vgcanvas(lcd_t* lcd, vgcanvas_t* vgcanvas) {
   return RET_OK;
 }
 
-static lcd_t* lcd_mem_create(wh_t w, wh_t h, bool_t alloc) {
+static lcd_t* lcd_mem_init(lcd_mem_t* lcd, wh_t w, wh_t h, bool_t alloc) {
   lcd_t* base = NULL;
   system_info_t* info = system_info();
-  lcd_mem_t* lcd = TKMEM_ZALLOC(lcd_mem_t);
   uint32_t bpp = bitmap_get_bpp_of_format(LCD_FORMAT);
 
   return_value_if_fail(lcd != NULL, NULL);
@@ -419,6 +415,12 @@ static lcd_t* lcd_mem_create(wh_t w, wh_t h, bool_t alloc) {
   system_info_set_device_pixel_ratio(info, 1);
 
   return base;
+}
+
+static lcd_t* lcd_mem_create(wh_t w, wh_t h, bool_t alloc) {
+  lcd_mem_t* lcd = TKMEM_ZALLOC(lcd_mem_t);
+  return_value_if_fail(lcd != NULL, NULL);
+  return lcd_mem_init(lcd, w, h, alloc);
 }
 
 static lcd_t* lcd_mem_create_double_fb(wh_t w, wh_t h, uint8_t* online_fb, uint8_t* offline_fb) {

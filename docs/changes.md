@@ -1,4 +1,19 @@
 # 最新动态
+
+2021/07/11
+  * 增加函数 path\_extname\_is函数。
+  * 完善从zip文件加载资源的代码、工具和文档。
+
+2021/07/10
+  * 将dirty\_rects通过begin\_frame传递到canvas和lcd。
+  * 完善tab\_button\_group（感谢智明提供补丁）
+  * 修复开启了 WITH\_LCD\_CLEAR\_ALPHA 后使用透明窗口后，会导致刷新部分不正常的问题（感谢智明提供补丁）
+
+2021/07/09
+  * tokenizer\_next\_expr\_until添加了对"{}"和"[]"的处理（感谢朝泽提供补丁）
+  * 修复在 SDL 的桌面模式下拉伸窗口不正常的问题（感谢智明提供补丁）
+  * lcd\_mem 类增加一个 lcd\_mem\_init 函数（感谢智明提供补丁）
+
 2021/07/08
   * 修复不必要的警告（感谢兆坤提供补丁）
   * 导出lcd\_get\_dirty\_rect（感谢智明提供补丁）
