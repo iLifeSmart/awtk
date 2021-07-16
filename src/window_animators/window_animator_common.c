@@ -227,8 +227,7 @@ ret_t window_animator_prepare(window_animator_t* wa, canvas_t* c, widget_t* prev
   wa->prev_win = prev_win;
   wa->curr_win = curr_win;
   wa->ratio = c->lcd->ratio;
-  wa->duration = wa->duration ? wa->duration : 500;
-
+  wa->duration = wa->duration ? wa->duration : 200;
   window_animator_init(wa);
 #ifndef WITHOUT_WINDOW_ANIMATOR_CACHE
   window_manager_snap_prev_window(wm, prev_win, &(wa->prev_img));

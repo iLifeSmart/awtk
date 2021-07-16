@@ -272,7 +272,7 @@ typedef enum _app_type_t {
 
 #define TK_DRAG_THRESHOLD 10
 #define TK_CLICK_TOLERANCE 10
-#define TK_ANIMATING_TIME 500
+#define TK_ANIMATING_TIME 200
 #define TK_INPUTING_TIMEOUT 3000
 
 struct _widget_t;
