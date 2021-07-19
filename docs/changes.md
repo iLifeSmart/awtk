@@ -1,12 +1,50 @@
 # 最新动态
 
+2021/07/19
+  * fscript 增加 usubstr函数。
+
+2021/07/17
+  * 增加array\_clone\_and\_sort。
+  * 增加lcd\_is\_support\_dirty\_rect（感谢智明提供补丁）
+  * 用WITHOUT\_WINDOW\_ANIMATORS替代WITH\_WINDOW\_ANIMATORS（感谢智明提供补丁）。
+
+2021/07/16
+  * 增加 fscript str
+  * 增加 [字符串扩展模块](fscript_str.md)
+  * fscript math 增加 atan2/log/is\_prime/exp 等函数。
+  * fscript ext 增加 trim\_left/trim\_right/ulen/totitle/char\_at
+  * 完善 mem\_allocator\_std 内存统计（感谢 QQ276310465 提供补丁）
+  * fscript array 增加 min/max/avg/sum 等函数。
+  * 增加了 get\_offset接口以及相关的控件（感谢智明提供补丁）
+  * 修改 lcd\_mem 的编译警告问题（感谢智明提供补丁）
+  * 修复兼容以前开启脏矩形机制，解决以前的三 fb 无脏矩形的情况（感谢智明提供补丁）
+  * 修复滚动条在底部时候 layout 会偏移的问题和修复没有 WITH\_WIDGET\_TYPE\_CHECK 宏会导致非 mobile 的滚动条当做 mobile 滚动条的问题（感谢智明提供补丁）
+  * 完善event source manager（感谢林福提供补丁）
+  * 完善widget\_get，如果类型是wstr，转换成str。
+
+2021/07/15
+  * 完善 widget\_factory，允许覆盖之前注册的控件。
+  * 增加 object\_array\_sort 及 fscript 的包装
+  * 增加 object\_array\_dup 及 fscript 的包装
+  * fscript ext 增加 index\_of/last\_index\_of/char\_at
+
+2021/07/14
+  * 增加 object\_array\_shift 及 fscript 的包装
+  * 增加 object\_array\_index\_of 及 fscript 的包装
+  * 增加 object\_array\_last\_index\_of 及 fscript 的包装
+  * 增加 object\_array\_create\_with\_str 及 fscript 的包装
+  * 增加 object\_array\_get\_and\_remove 及 fscript 的包装
+  * 增加 array\_create\_with\_repeated\_value
+
 2021/07/13
   * 修改编译警告（感谢智明提供补丁）
+  * 完善 fscript 文档（感谢攀峰提供补丁）
+  * 修复 fscript returned 没有重置的问题（感谢林福提供补丁）。
 
 2021/07/12
   * 完善文档。
   * 优化 layout。
-  * 完善 input\_method\_default，支持T9/T9EXT的默认键盘。
+  * 完善 input\_method\_default，支持 T9/T9EXT 的默认键盘。
   * 修复异步 layout 和同步 invalidate 造成部分控件不刷新的问题。
 
 2021/07/11

@@ -142,17 +142,63 @@ static int32_t object_array_parse_index(const char* name) {
   }
 }
 
+int32_t object_array_index_of(object_t* obj, const value_t* v) {
+  int32_t i = 0;
+  object_array_t* o = OBJECT_ARRAY(obj);
+  return_value_if_fail(o != NULL, -1);
+
+  for (i = 0; i < o->size; i++) {
+    value_t* iter = o->props + i;
+    if (value_equal(iter, v)) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+int32_t object_array_last_index_of(object_t* obj, const value_t* v) {
+  int32_t i = 0;
+  object_array_t* o = OBJECT_ARRAY(obj);
+  return_value_if_fail(o != NULL, -1);
+
+  if (o->size > 0) {
+    for (i = o->size - 1; i >= 0; i--) {
+      value_t* iter = o->props + i;
+      if (value_equal(iter, v)) {
+        return i;
+      }
+    }
+  }
+
+  return -1;
+}
+
 ret_t object_array_remove(object_t* obj, uint32_t index) {
+  return object_array_get_and_remove(obj, index, NULL);
+}
+
+ret_t object_array_get_and_remove(object_t* obj, uint32_t index, value_t* v) {
   ret_t ret = RET_NOT_FOUND;
   object_array_t* o = OBJECT_ARRAY(obj);
   return_value_if_fail(o != NULL, RET_BAD_PARAMS);
+
   if (index < o->size) {
     value_t* iter = o->props + index;
-    value_reset(iter);
+    if (v != NULL) {
+      *v = *iter;
+      memset(iter, 0x00, sizeof(*iter));
+    } else {
+      value_reset(iter);
+    }
     ret = object_array_clean_invalid_props(obj);
   }
 
   return ret;
+}
+
+ret_t object_array_shift(object_t* obj, value_t* v) {
+  return object_array_get_and_remove(obj, 0, v);
 }
 
 static ret_t object_array_remove_prop(object_t* obj, const char* name) {
@@ -290,27 +336,11 @@ object_t* object_array_create(void) {
   return object_array_create_with_capacity(5);
 }
 
-object_t* object_array_clone(object_array_t* o) {
-  object_t* dup = NULL;
-  return_value_if_fail(o != NULL, NULL);
+object_t* object_array_clone(object_t* o) {
+  object_array_t* arr = OBJECT_ARRAY(o);
+  return_value_if_fail(arr != NULL, NULL);
 
-  dup = object_array_create_with_capacity(o->capacity);
-  return_value_if_fail(dup != NULL, NULL);
-
-  if (o->size > 0) {
-    uint32_t i = 0;
-    object_array_t* dup_o = OBJECT_ARRAY(dup);
-
-    for (i = 0; i < o->size; i++) {
-      value_t* src = o->props + i;
-      value_t* dst = dup_o->props + i;
-
-      value_deep_copy(dst, src);
-    }
-    dup_o->size = o->size;
-  }
-
-  return dup;
+  return object_array_dup(OBJECT(o), 0, arr->size);
 }
 
 object_array_t* object_array_cast(object_t* obj) {
@@ -321,4 +351,300 @@ object_array_t* object_array_cast(object_t* obj) {
 
 ret_t object_array_unref(object_t* obj) {
   return object_unref(obj);
+}
+
+object_t* object_array_create_with_str(const char* str, const char* sep, value_type_t type) {
+  str_t s;
+  value_t v;
+  object_t* obj = NULL;
+  const char* p = NULL;
+  const char* end = NULL;
+  return_value_if_fail(str != NULL && sep != NULL && type != VALUE_TYPE_INVALID, NULL);
+  obj = object_array_create();
+  return_value_if_fail(obj != NULL, NULL);
+
+  if (str_init(&s, 100) == NULL) {
+    OBJECT_UNREF(obj);
+    return NULL;
+  }
+
+  p = str;
+  do {
+    end = strstr(p, sep);
+    if (end != NULL) {
+      str_set_with_len(&s, p, end - p);
+    } else {
+      str_set(&s, p);
+    }
+
+    switch (type) {
+      case VALUE_TYPE_UINT8: {
+        value_set_uint8(&v, tk_atoi(s.str));
+        break;
+      }
+      case VALUE_TYPE_UINT16: {
+        value_set_uint16(&v, tk_atoi(s.str));
+        break;
+      }
+      case VALUE_TYPE_UINT32: {
+        value_set_uint32(&v, tk_atoi(s.str));
+        break;
+      }
+      case VALUE_TYPE_UINT64: {
+        value_set_uint64(&v, tk_atoul(s.str));
+        break;
+      }
+      case VALUE_TYPE_INT8: {
+        value_set_int8(&v, tk_atoi(s.str));
+        break;
+      }
+      case VALUE_TYPE_INT16: {
+        value_set_int16(&v, tk_atoi(s.str));
+        break;
+      }
+      case VALUE_TYPE_INT32: {
+        value_set_int32(&v, tk_atoi(s.str));
+        break;
+      }
+      case VALUE_TYPE_INT64: {
+        value_set_int64(&v, tk_atoul(s.str));
+        break;
+      }
+      case VALUE_TYPE_FLOAT: {
+        value_set_float(&v, tk_atof(s.str));
+        break;
+      }
+      case VALUE_TYPE_FLOAT32: {
+        value_set_float32(&v, tk_atof(s.str));
+        break;
+      }
+      case VALUE_TYPE_DOUBLE: {
+        value_set_double(&v, tk_atof(s.str));
+        break;
+      }
+      default: {
+        value_set_str(&v, s.str);
+        break;
+      }
+    }
+    object_array_push(obj, &v);
+    if (end != NULL) {
+      p = end + strlen(sep);
+    }
+  } while (end != NULL && *p);
+
+  str_reset(&s);
+
+  return obj;
+}
+
+ret_t object_array_join(object_t* obj, const char* sep, str_t* result) {
+  str_t s;
+  uint32_t i = 0;
+  ret_t ret = RET_OK;
+  object_array_t* o = OBJECT_ARRAY(obj);
+  return_value_if_fail(o != NULL && sep != NULL && result != NULL, RET_BAD_PARAMS);
+
+  str_set(result, "");
+  if (o->size < 1) {
+    return RET_OK;
+  }
+
+  str_init(&s, 50);
+  for (i = 0; i < o->size; i++) {
+    value_t* iter = o->props + i;
+    str_from_value(&s, iter);
+    if (i > 0) {
+      if (str_append(result, sep) != RET_OK) {
+        ret = RET_OOM;
+        break;
+      }
+    }
+    if (str_append(result, s.str) != RET_OK) {
+      ret = RET_OOM;
+      break;
+    }
+  }
+  str_reset(&s);
+
+  return ret;
+}
+
+object_t* object_array_dup(object_t* obj, uint32_t start, uint32_t end) {
+  uint32_t i = 0;
+  object_t* dup = NULL;
+  object_array_t* o = OBJECT_ARRAY(obj);
+  return_value_if_fail(o != NULL, NULL);
+
+  end = tk_min(end, o->size);
+  if (start == end || o->size == 0) {
+    return object_array_create();
+  }
+
+  return_value_if_fail(start < end, NULL);
+  dup = object_array_create_with_capacity(end - start);
+  return_value_if_fail(dup != NULL, NULL);
+
+  for (i = start; i < end; i++) {
+    value_t* iter = o->props + i;
+    object_array_push(dup, iter);
+  }
+
+  return dup;
+}
+
+static int value_cmp_as_int(const void* a, const void* b) {
+  return value_int((const value_t*)a) - value_int((const value_t*)b);
+}
+
+static int value_cmp_as_int_r(const void* a, const void* b) {
+  return value_int((const value_t*)b) - value_int((const value_t*)a);
+}
+
+static int value_cmp_as_double(const void* a, const void* b) {
+  return value_double((const value_t*)a) - value_double((const value_t*)b);
+}
+
+static int value_cmp_as_double_r(const void* a, const void* b) {
+  return value_double((const value_t*)b) - value_double((const value_t*)a);
+}
+
+static int value_cmp_as_str(const void* a, const void* b) {
+  return strcmp(value_str((const value_t*)a), value_str((const value_t*)b));
+}
+
+static int value_cmp_as_str_r(const void* a, const void* b) {
+  return strcmp(value_str((const value_t*)b), value_str((const value_t*)a));
+}
+
+static int value_cmp_as_str_i(const void* a, const void* b) {
+  return strcasecmp(value_str((const value_t*)a), value_str((const value_t*)b));
+}
+
+static int value_cmp_as_str_i_r(const void* a, const void* b) {
+  return strcasecmp(value_str((const value_t*)b), value_str((const value_t*)a));
+}
+
+ret_t object_array_sort(object_t* obj, tk_compare_t cmp) {
+  object_array_t* o = OBJECT_ARRAY(obj);
+  return_value_if_fail(obj != NULL && cmp != NULL, RET_BAD_PARAMS);
+
+  qsort(o->props, o->size, sizeof(value_t), cmp);
+
+  return RET_OK;
+}
+
+ret_t object_array_sort_as_int(object_t* obj, bool_t ascending) {
+  if (ascending) {
+    return object_array_sort(obj, value_cmp_as_int);
+  } else {
+    return object_array_sort(obj, value_cmp_as_int_r);
+  }
+}
+
+ret_t object_array_sort_as_double(object_t* obj, bool_t ascending) {
+  if (ascending) {
+    return object_array_sort(obj, value_cmp_as_double);
+  } else {
+    return object_array_sort(obj, value_cmp_as_double_r);
+  }
+}
+
+ret_t object_array_sort_as_str(object_t* obj, bool_t ascending, bool_t ignore_case) {
+  if (ascending) {
+    if (ignore_case) {
+      return object_array_sort(obj, value_cmp_as_str_i);
+    } else {
+      return object_array_sort(obj, value_cmp_as_str);
+    }
+  } else {
+    if (ignore_case) {
+      return object_array_sort(obj, value_cmp_as_str_i_r);
+    } else {
+      return object_array_sort(obj, value_cmp_as_str_r);
+    }
+  }
+}
+
+ret_t object_array_min(object_t* obj, value_t* result) {
+  int32_t i = 0;
+  double value = 0;
+  object_array_t* o = OBJECT_ARRAY(obj);
+  return_value_if_fail(result != NULL, RET_BAD_PARAMS);
+  value_set_double(result, 0);
+  return_value_if_fail(o != NULL, RET_BAD_PARAMS);
+  if (o->size == 0) {
+    return RET_OK;
+  }
+  value = value_double(o->props);
+  for (i = 1; i < o->size; i++) {
+    double t = value_double(o->props + i);
+    if (value > t) {
+      value = t;
+    }
+  }
+
+  value_set_double(result, value);
+
+  return RET_OK;
+}
+
+ret_t object_array_max(object_t* obj, value_t* result) {
+  int32_t i = 0;
+  double value = 0;
+  object_array_t* o = OBJECT_ARRAY(obj);
+  return_value_if_fail(result != NULL, RET_BAD_PARAMS);
+  value_set_double(result, 0);
+  return_value_if_fail(o != NULL, RET_BAD_PARAMS);
+  if (o->size == 0) {
+    return RET_OK;
+  }
+  value = value_double(o->props);
+  for (i = 1; i < o->size; i++) {
+    double t = value_double(o->props + i);
+    if (value < t) {
+      value = t;
+    }
+  }
+
+  value_set_double(result, value);
+
+  return RET_OK;
+}
+
+ret_t object_array_sum(object_t* obj, value_t* result) {
+  int32_t i = 0;
+  double value = 0;
+  object_array_t* o = OBJECT_ARRAY(obj);
+  return_value_if_fail(result != NULL, RET_BAD_PARAMS);
+  value_set_double(result, 0);
+  return_value_if_fail(o != NULL, RET_BAD_PARAMS);
+
+  for (i = 0; i < o->size; i++) {
+    value += value_double(o->props + i);
+  }
+
+  value_set_double(result, value);
+
+  return RET_OK;
+}
+
+ret_t object_array_avg(object_t* obj, value_t* result) {
+  int32_t i = 0;
+  double value = 0;
+  object_array_t* o = OBJECT_ARRAY(obj);
+  return_value_if_fail(result != NULL, RET_BAD_PARAMS);
+  value_set_double(result, 0);
+  return_value_if_fail(o != NULL, RET_BAD_PARAMS);
+
+  if (o->size > 0) {
+    for (i = 0; i < o->size; i++) {
+      value += value_double(o->props + i);
+    }
+    value /= o->size;
+  }
+
+  value_set_double(result, value);
+
+  return RET_OK;
 }

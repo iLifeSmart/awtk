@@ -906,6 +906,24 @@ char* tk_str_toupper(char* str) {
   return str;
 }
 
+char* tk_str_totitle(char* str) {
+  char* p = str;
+  char* prev = str;
+  return_value_if_fail(str != NULL, NULL);
+
+  while (*p) {
+    if (isalpha(*p)) {
+      if (p == str || (!isalpha(*prev) && !isdigit(*prev))) {
+        *p = toupper(*p);
+      }
+    }
+    prev = p;
+    p++;
+  }
+
+  return str;
+}
+
 char* tk_str_tolower(char* str) {
   char* p = str;
   return_value_if_fail(str != NULL, NULL);
@@ -1127,3 +1145,68 @@ ret_t data_url_copy(const char* dst_url, const char* src_url) {
   return ret;
 }
 #endif /*WITH_DATA_READER_WRITER*/
+
+static void tk_quick_sort_impl(void** array, size_t left, size_t right, tk_compare_t cmp) {
+  size_t save_left = left;
+  size_t save_right = right;
+  void* x = array[left];
+
+  while (left < right) {
+    while (cmp(array[right], x) >= 0 && left < right) right--;
+    if (left != right) {
+      array[left] = array[right];
+      left++;
+    }
+
+    while (cmp(array[left], x) <= 0 && left < right) left++;
+    if (left != right) {
+      array[right] = array[left];
+      right--;
+    }
+  }
+  array[left] = x;
+
+  if (save_left < left) {
+    tk_quick_sort_impl(array, save_left, left - 1, cmp);
+  }
+
+  if (save_right > left) {
+    tk_quick_sort_impl(array, left + 1, save_right, cmp);
+  }
+
+  return;
+}
+
+ret_t tk_qsort(void** array, size_t nr, tk_compare_t cmp) {
+  ret_t ret = RET_OK;
+
+  return_value_if_fail(array != NULL && cmp != NULL, RET_BAD_PARAMS);
+
+  if (nr > 1) {
+    tk_quick_sort_impl(array, 0, nr - 1, cmp);
+  }
+
+  return ret;
+}
+
+const char* tk_strrstr(const char* str, const char* substr) {
+  char c = 0;
+  uint32_t len = 0;
+  const char* p = NULL;
+  const char* end = NULL;
+  return_value_if_fail(str != NULL && substr != NULL, NULL);
+
+  c = *substr;
+  len = strlen(substr);
+  end = str + strlen(str) - 1;
+
+  for (p = end; p >= str; p--) {
+    if (*p == c) {
+      if (strncmp(p, substr, len) == 0) {
+        return p;
+      }
+    }
+  }
+
+  return NULL;
+}

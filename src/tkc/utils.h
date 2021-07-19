@@ -322,6 +322,18 @@ char* tk_strndup(const char* str, uint32_t len);
 uint32_t tk_strlen(const char* str);
 
 /**
+ * @method tk_strrstr
+ *
+ * 从后往前查找指定的字符串。
+ *
+ * @param {const char*} str 字符串。
+ * @param {const char*} substr 子字符串。
+ *
+ * @return {const char*} 返回字符串的位置或者NULL。
+ */
+const char* tk_strrstr(const char* str, const char* substr);
+
+/**
  * @method tk_str_append
  *
  * 字符串追加函数。
@@ -617,6 +629,7 @@ void* tk_pointer_from_int(int32_t v);
  * @method tk_str_toupper
  *
  * 将小写字母转换为大写字母。
+ * >修改传入的字符串。
  *
  * @param {char*} str 要被转换成大写字母的字符串。
  *
@@ -625,9 +638,22 @@ void* tk_pointer_from_int(int32_t v);
 char* tk_str_toupper(char* str);
 
 /**
+ * @method tk_str_totitle
+ *
+ * 将单词首字母转换为大写字母。
+ * >修改传入的字符串。
+ *
+ * @param {char*} str 被转换的字符串。
+ *
+ * @return {char*} 返回转换后的字符串。
+ */
+char* tk_str_totitle(char* str);
+
+/**
  * @method tk_str_tolower
  *
  * 将大写字母转换为小写字母。
+ * >修改传入的字符串。
  *
  * @param {char*} str 要被转换成小写字母的字符串。
  *
@@ -694,6 +720,19 @@ ret_t object_to_json(object_t* obj, str_t* str);
  * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
  */
 ret_t data_url_copy(const char* dst_url, const char* src_url);
+
+/**
+ * @method tk_qsort
+ * 
+ * 快速排序。
+ *
+ * @param {void**} array 数据。
+ * @param {size_t} nr 元素个数。
+ * @param {tk_compare_t} cmp 比较函数。
+ *
+ * @return {ret_t} 返回RET_OK表示成功，否则表示失败。
+ */
+ret_t tk_qsort(void** array, size_t nr, tk_compare_t cmp);
 
 const char* tk_normalize_key_name(const char* name, char fixed_name[TK_NAME_LEN + 1]);
 
